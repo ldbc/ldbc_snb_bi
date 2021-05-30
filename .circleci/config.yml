@@ -54,9 +54,6 @@ jobs:
             scripts/load-in-one-step.sh
             cd ..
       - run:
-          name: Test
-          command: mvn test -B
-      - run:
           name: Run Cypher Python script
           command: |
             cd cypher
