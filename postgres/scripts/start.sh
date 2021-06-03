@@ -8,6 +8,8 @@ cd ..
 
 . scripts/vars.sh
 
+scripts/stop.sh
+
 echo "mounting -> ${POSTGRES_DATA_DIR}"
 
 docker run --rm \

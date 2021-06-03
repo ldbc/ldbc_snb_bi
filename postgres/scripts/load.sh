@@ -35,60 +35,34 @@ echo ===========================================================================
 
 docker exec -i ${POSTGRES_CONTAINER_NAME} dropdb --if-exists ${POSTGRES_DATABASE} -U ${POSTGRES_USER}
 docker exec -i ${POSTGRES_CONTAINER_NAME} createdb ${POSTGRES_DATABASE} -U ${POSTGRES_USER} --template template0 --locale "POSIX"
-cat schema-and-load-scripts/schema.sql | docker exec -i ${POSTGRES_CONTAINER_NAME} psql -d ${POSTGRES_DATABASE} -U ${POSTGRES_USER}
+cat sql/schema-composite-merged-fk.sql | docker exec -i ${POSTGRES_CONTAINER_NAME} psql -d ${POSTGRES_DATABASE} -U ${POSTGRES_USER}
 
-echo PGDD ${POSTGRES_DATA_DIR}
+# echo PGDD ${POSTGRES_DATA_DIR}
 
-cat schema-and-load-scripts/snb-load.sql | \
-  sed "s|\${PATHVAR}|/data|g" | \
-  sed "s|\${HEADER}|, HEADER, FORMAT csv|g" | \
-  sed "s|\${POSTFIX}|.csv|g" | \
-  docker exec -i ${POSTGRES_CONTAINER_NAME} psql -d ${POSTGRES_DATABASE} -U ${POSTGRES_USER}
+# cat schema-and-load-scripts/snb-load.sql | \
+#     sed "s|\${PATHVAR}|/data|g" | \
+#     sed "s|\${HEADER}|, HEADER, FORMAT csv|g" | \
+#     sed "s|\${POSTFIX}|.csv|g" | \
+#     docker exec -i ${POSTGRES_CONTAINER_NAME} psql -d ${POSTGRES_DATABASE} -U ${POSTGRES_USER}
 
-cat schema-and-load-scripts/schema_constraints.sql | docker exec -i ${POSTGRES_CONTAINER_NAME} psql -d ${POSTGRES_DATABASE} -U ${POSTGRES_USER}
+PATHVAR=${DATA_DIR}
+POSTFIX=".csv"
+HEADER=", HEADER, FORMAT csv"
 
-# # we regenerate PostgreSQL-specific CSV files for posts and comments, if either
-# #  - it doesn't exist
-# #  - the source CSV is newer
-# #  - we are forced to do so by environment variable PG_FORCE_REGENERATE=yes
+echo "-> Static entities"
+cat sql/snb-load-composite-merged-fk-static.sql | \
+    sed "s|\${PATHVAR}|/data/initial_snapshot/|g" | \
+    sed "s|\${POSTFIX}|${POSTFIX}|g" | \
+    sed "s|\${HEADER}|${HEADER}|g" | \
+    docker exec -i ${POSTGRES_CONTAINER_NAME} psql -d ${POSTGRES_DATABASE} -U ${POSTGRES_USER}
 
-# if [ ! -f ${PG_CSV_DIR}/dynamic/post_0_0-postgres.csv -o ${PG_CSV_DIR}/dynamic/post_0_0.csv -nt ${PG_CSV_DIR}/dynamic/post_0_0-postgres.csv -o "${PG_FORCE_REGENERATE}x" = "yesx" ]; then
-#   cat ${PG_CSV_DIR}/dynamic/post_0_0.csv | \
-#     awk -F '|' '{ print $1"|"$2"|"$3"|"$4"|"$5"|"$6"|"$7"|"$8"|"$9"|"$11"|"$10"|"}' > \
-#     ${PG_CSV_DIR}/dynamic/post_0_0-postgres.csv
-# fi
-# if [ ! -f ${PG_CSV_DIR}/dynamic/comment_0_0-postgres.csv -o ${PG_CSV_DIR}/dynamic/comment_0_0.csv -nt ${PG_CSV_DIR}/dynamic/comment_0_0-postgres.csv -o "${PG_FORCE_REGENERATE}x" = "yesx" ]; then
-#   cat ${PG_CSV_DIR}/dynamic/comment_0_0.csv | \
-#     awk -F '|' '{print $1"|"$2"||"$3"|"$4"||"$5"|"$6"|"$7"|"$8"||"$9 $10}' > \
-#     ${PG_CSV_DIR}/dynamic/comment_0_0-postgres.csv
-# fi
+echo "-> Dynamic entities"
+cat sql/snb-load-composite-merged-fk-dynamic.sql | \
+    sed "s|\${PATHVAR}|/data/initial_snapshot/|g" | \
+    sed "s|\${DYNAMIC_PREFIX}|dynamic/|g" | \
+    sed "s|\${POSTFIX}|${POSTFIX}|g" | \
+    sed "s|\${HEADER}|${HEADER}|g" | \
+    docker exec -i ${POSTGRES_CONTAINER_NAME} psql -d ${POSTGRES_DATABASE} -U ${POSTGRES_USER}
 
-# if [ "${PG_CREATE_MESSAGE_FILE}x" != "nox" ]; then
-#   if [ ! -f ${PG_CSV_DIR}/message_0_0-postgres.csv -o ${PG_CSV_DIR}/post_0_0-postgres.csv -nt ${PG_CSV_DIR}/message_0_0-postgres.csv -o $PG_DATA_DIR/comment_0_0-postgres.csv -nt ${PG_CSV_DIR}/message_0_0-postgres.csv -o "${PG_FORCE_REGENERATE}x" = "yesx" ] ; then
-#     # create CSV file header
-#     head -n 1 ${PG_CSV_DIR}/post_0_0-postgres.csv | sed -e 's/$/replyOfPostreplyOfComment/' >${PG_CSV_DIR}/message_0_0-postgres.csv
+# cat schema-and-load-scripts/schema_constraints.sql | docker exec -i ${POSTGRES_CONTAINER_NAME} psql -d ${POSTGRES_DATABASE} -U ${POSTGRES_USER}
 
-#     if [ "${PG_CREATE_MESSAGE_FILE}x" = "sort_by_datex" ]; then
-#       sortExec='sort -t| -k3'
-#     else
-#       # we just pipe data untouched
-#       sortExec=cat
-#     fi
-
-#     cat <(tail -n +2 ${PG_CSV_DIR}/post_0_0-postgres.csv) <(tail -n +2 ${PG_CSV_DIR}/comment_0_0-postgres.csv) | $sortExec >>$PG_DATA_DIR/message_0_0-postgres.csv
-#   fi
-# fi
-
-# # TODO: revise, cleanup
-# if [ "${PG_LOAD_TO_DB}x" = "loadx" ]; then
-#   # /usr/bin/dropdb --if-exists ${POSTGRES_DATABASE} -U ${POSTGRES_USER} -p ${PG_PORT}
-#   docker exec -i ${POSTGRES_CONTAINER_NAME} dropdb --if-exists ${POSTGRES_DATABASE} -U ${POSTGRES_USER}
-#   # /usr/bin/createdb ${POSTGRES_DATABASE} -U ${POSTGRES_USER} -p ${PG_PORT} --template template0 -l "C"
-#   docker exec -i ${POSTGRES_CONTAINER_NAME} createdb ${POSTGRES_DATABASE} -U ${POSTGRES_USER} --template template0 --locale "POSIX"
-#   # /usr/bin/psql -d ${POSTGRES_DATABASE} -U ${POSTGRES_USER} -p ${PG_PORT} -a -f schema.sql
-#   cat schema.sql | docker exec -i ${POSTGRES_CONTAINER_NAME} psql -d ${POSTGRES_DATABASE} -U ${POSTGRES_USER}
-#   # (cat snb-load.sql | sed "s|PATHVAR|${PG_CSV_DIR}|g"; echo "\q\n") | /usr/bin/psql -d ${POSTGRES_DATABASE} -U ${POSTGRES_USER} -p ${PG_PORT}
-#   (cat snb-load.sql | sed "s|PATHVAR|/data|g"; echo "\q\n") | docker exec -i ${POSTGRES_CONTAINER_NAME} psql -U postgres
-#   # /usr/bin/psql -d ${POSTGRES_DATABASE} -U ${POSTGRES_USER} -p ${PG_PORT} -a -f schema_constraints.sql
-#   cat schema_constraints.sql | docker exec -i ${POSTGRES_CONTAINER_NAME} psql -d ${POSTGRES_DATABASE} -U ${POSTGRES_USER}
-# fi
