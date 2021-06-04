@@ -1,7 +1,7 @@
 # LDBC SNB Cypher implementation
 
 [Cypher](http://www.opencypher.org/) implementation of the [LDBC SNB benchmark](https://github.com/ldbc/ldbc_snb_docs).
-Note that some BI queries are not expressed using pure Cypher, instead, they make use of the [APOC](https://neo4j.com/labs/) and [Graph Data Science](https://neo4j.com/product/graph-data-science-library/) Neo4j libraries.
+Note that some BI queries are not expressed using pure Cypher, instead, they make use of the [APOC](https://neo4j.com/labs/apoc/) and [Graph Data Science](https://neo4j.com/product/graph-data-science-library/) Neo4j libraries.
 
 ## Loading the data in Neo4j
 
