@@ -10,7 +10,23 @@ cd ..
 
 scripts/stop.sh
 
-echo "mounting -> ${POSTGRES_DATA_DIR}"
+echo "==============================================================================="
+echo "Starting Postgres container with the following parameters"
+echo "-------------------------------------------------------------------------------"
+echo "POSTGRES_VERSION: ${POSTGRES_VERSION}"
+echo "POSTGRES_CONTAINER_NAME: ${POSTGRES_CONTAINER_NAME}"
+echo "POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}"
+echo "POSTGRES_DATABASE: ${POSTGRES_DATABASE}"
+echo "POSTGRES_SHARED_MEMORY: ${POSTGRES_SHARED_MEMORY}"
+echo "POSTGRES_USER: ${POSTGRES_USER}"
+echo "POSTGRES_DATA_DIR (on the host machine):"
+echo "  ${POSTGRES_DATA_DIR}"
+echo "==============================================================================="
+
+if [ ! -d ${POSTGRES_DATA_DIR} ]; then
+    echo "Directory ${POSTGRES_DATA_DIR} does not exist."
+    exit 1
+fi
 
 docker run --rm \
     --publish=5432:5432 \
@@ -21,6 +37,10 @@ docker run --rm \
     --shm-size=${POSTGRES_SHARED_MEMORY} \
     postgres:${POSTGRES_VERSION}
 
-echo "Waiting for the database to start..."
-sleep 10
+echo -n "Waiting for the database to start ."
+until python3 scripts/test-db-connection.py > /dev/null 2>&1; do
+    echo -n " ."
+    sleep 1
+done
+echo
 echo "Database started"

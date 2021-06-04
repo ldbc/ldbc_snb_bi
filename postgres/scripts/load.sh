@@ -25,7 +25,6 @@ echo Loading data to the Postgres database with the following configuration
 echo -------------------------------------------------------------------------------
 echo POSTGRES_VERSION: ${POSTGRES_VERSION}
 echo POSTGRES_DATA_DIR: ${POSTGRES_DATA_DIR}
-echo POSTGRES_SCHEMA_DIR: ${POSTGRES_SCHEMA_DIR}
 echo POSTGRES_CONTAINER_NAME: ${POSTGRES_CONTAINER_NAME}
 echo POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
 echo POSTGRES_DATABASE: ${POSTGRES_DATABASE}

@@ -1,6 +1,4 @@
 export POSTGRES_VERSION=13.3
-#export POSTGRES_DATA_DIR=`pwd`/data/social-network-preprocessed/
-export POSTGRES_SCHEMA_DIR=`pwd`/schema
 export POSTGRES_CONTAINER_NAME=snb-postgres
 export POSTGRES_PASSWORD=mysecretpassword
 export POSTGRES_DATABASE=ldbcsnb
