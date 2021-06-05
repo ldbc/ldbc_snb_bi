@@ -16,9 +16,9 @@ SELECT f.f_forumid      AS "forum.id"
      , person m   -- moderator
      , place  ci  -- city
      , place  co  -- country
- WHERE 1=1
+ WHERE
     -- join
-   AND tc.tc_tagclassid = t.t_tagclassid
+       tc.tc_tagclassid = t.t_tagclassid
    AND t.t_tagid = pt.mt_tagid
    AND pt.mt_messageid = p.m_messageid
    AND p.m_ps_forumid = f.f_forumid

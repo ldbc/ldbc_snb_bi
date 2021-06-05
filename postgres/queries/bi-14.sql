@@ -8,9 +8,9 @@ WITH person1_list AS (
       FROM place co -- country
          , place ci -- city
          , person p
-     WHERE 1=1
+     WHERE
         -- join
-       AND co.pl_placeid = ci.pl_containerplaceid
+           co.pl_placeid = ci.pl_containerplaceid
        AND ci.pl_placeid = p.p_placeid
         -- filter
        AND co.pl_name = :country1
@@ -20,9 +20,9 @@ WITH person1_list AS (
       FROM place co -- country
          , place ci -- city
          , person p
-     WHERE 1=1
+     WHERE
         -- join
-       AND co.pl_placeid = ci.pl_containerplaceid
+           co.pl_placeid = ci.pl_containerplaceid
        AND ci.pl_placeid = p.p_placeid
         -- filter
        AND co.pl_name = :country2
@@ -36,9 +36,9 @@ WITH person1_list AS (
          , person2_list p2
          , message m -- message by p2
          , message r -- reply by p1
-     WHERE 1=1
+     WHERE
         -- join
-       AND m.m_messageid = r.m_c_replyof
+           m.m_messageid = r.m_c_replyof
        AND p1.personid = r.m_creatorid
        AND p2.personid = m.m_creatorid
 )
@@ -51,9 +51,9 @@ WITH person1_list AS (
          , person2_list p2
          , message m -- message by p1
          , message r -- reply by p2
-     WHERE 1=1
+     WHERE
         -- join
-       AND m.m_messageid = r.m_c_replyof
+           m.m_messageid = r.m_c_replyof
        AND p2.personid = r.m_creatorid
        AND p1.personid = m.m_creatorid
 )
@@ -65,9 +65,9 @@ WITH person1_list AS (
       FROM person1_list p1
          , person2_list p2
          , knows k
-     WHERE 1=1
+     WHERE
         -- join
-       AND p1.personid = k.k_person1id
+           p1.personid = k.k_person1id
        AND p2.personid = k.k_person2id
 )
 ,  case4 AS (
@@ -79,9 +79,9 @@ WITH person1_list AS (
          , person2_list p2
          , message m -- message by p2
          , likes l
-     WHERE 1=1
+     WHERE
         -- join
-       AND p2.personid = m.m_creatorid
+           p2.personid = m.m_creatorid
        AND m.m_messageid = l.l_messageid
        AND l.l_personid = p1.personid
 )
@@ -94,9 +94,9 @@ WITH person1_list AS (
          , person2_list p2
          , message m -- message by p1
          , likes l
-     WHERE 1=1
+     WHERE
         -- join
-       AND p1.personid = m.m_creatorid
+           p1.personid = m.m_creatorid
        AND m.m_messageid = l.l_messageid
        AND l.l_personid = p2.personid
 )
@@ -120,16 +120,16 @@ WITH person1_list AS (
            INNER JOIN place ci ON (co.pl_placeid = ci.pl_containerplaceid) -- city
            LEFT  JOIN person1_list p1l ON (ci.pl_placeid = p1l.cityid)
            LEFT  JOIN pair_scores s ON (p1l.personid = s.person1id)
-     WHERE 1=1
+     WHERE
         -- filter
-       AND co.pl_name = :country1
+           co.pl_name = :country1
 )
 SELECT s.person1id AS "person1.id"
      , s.person2id AS "person2.id"
      , s.cityName AS "city1.name"
      , s.score
   FROM score_ranks s
- WHERE 1=1
+ WHERE
     -- filter
    AND s.rn = 1
  ORDER BY s.score DESC, s.person1id, s.person2id

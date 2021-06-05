@@ -7,9 +7,9 @@ WITH person_tag_interest AS (
       FROM person p
          , person_tag pt
          , tag t
-     WHERE 1=1
+     WHERE
         -- join
-       AND p.p_personid = pt.pt_personid
+           p.p_personid = pt.pt_personid
        AND pt.pt_tagid = t.t_tagid
         -- filter
        AND t.t_name = :tag
@@ -21,9 +21,9 @@ WITH person_tag_interest AS (
          , person p
          , message_tag pt
          , tag t
-     WHERE 1=1
+     WHERE
         -- join
-       AND m.m_creatorid = p.p_personid
+           m.m_creatorid = p.p_personid
        AND m.m_messageid = pt.mt_messageid
        AND pt.mt_tagid = t.t_tagid
         -- filter
@@ -44,9 +44,9 @@ SELECT p.personid AS "person.id"
   FROM person_score p
      , knows k
      , person_score f -- the friend
- WHERE 1=1
+ WHERE
     -- join
-   AND p.personid = k.k_person1id
+       p.personid = k.k_person1id
    AND k.k_person2id = f.personid
  GROUP BY p.personid, p.score
  ORDER BY p.score + sum(f.score) DESC, p.personid

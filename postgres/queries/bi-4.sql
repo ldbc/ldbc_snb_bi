@@ -7,9 +7,9 @@ WITH top100_popular_forums AS (
        , person p
        , place ci -- city
        , place co -- country
-   WHERE 1=1
+   WHERE
       -- join
-     AND fp.fp_personid = p.p_personid
+         fp.fp_personid = p.p_personid
      AND p.p_placeid = ci.pl_placeid
      AND ci.pl_containerplaceid = co.pl_placeid
       -- filter
@@ -29,11 +29,10 @@ SELECT au.p_personid AS "person.id"
        INNER JOIN forum_person fp ON (t.forumid = fp.fp_forumid)
        -- author of the post
        INNER JOIN person au ON (fp.fp_personid = au.p_personid)
-       LEFT JOIN message p ON (1=1
-                        AND au.p_personid = p.m_creatorid
-                        AND p.m_ps_forumid IN (SELECT forumid from top100_popular_forums)
-                        AND p.m_c_replyof IS NULL
-                           )
+       LEFT JOIN message p
+       ON au.p_personid = p.m_creatorid
+       AND p.m_ps_forumid IN (SELECT forumid from top100_popular_forums)
+       AND p.m_c_replyof IS NULL
  GROUP BY au.p_personid, au.p_firstname, au.p_lastname, au.p_creationdate
  ORDER BY postCount DESC, au.p_personid
  LIMIT 100

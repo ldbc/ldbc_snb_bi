@@ -8,17 +8,16 @@
 WITH RECURSIVE friends(startPerson, hopCount, friend) AS (
     SELECT p_personid, 0, p_personid
       FROM person
-     WHERE 1=1
-       AND p_personid = :personId
+     WHERE p_personid = :personId
   UNION
     SELECT f.startPerson
          , f.hopCount+1
          , CASE WHEN f.friend = k.k_person1id then k.k_person2id ELSE k.k_person1id END
       FROM friends f
          , knows k
-     WHERE 1=1
+     WHERE
         -- join
-       AND f.friend = k.k_person1id -- note, that knows table have both (p1, p2) and (p2, p1)
+           f.friend = k.k_person1id -- note, that knows table have both (p1, p2) and (p2, p1)
         -- filter
         -- stop condition
        AND f.hopCount < :maxPathDistance
@@ -35,9 +34,9 @@ WITH RECURSIVE friends(startPerson, hopCount, friend) AS (
          , person tf -- the friend's preson record
          , place ci -- city
          , place co -- country
-     WHERE 1=1
+     WHERE
         -- join
-       AND f.friend = tf.p_personid
+           f.friend = tf.p_personid
        AND tf.p_placeid = ci.pl_placeid
        AND ci.pl_containerplaceid = co.pl_placeid
         -- filter
@@ -52,9 +51,9 @@ WITH RECURSIVE friends(startPerson, hopCount, friend) AS (
          , message_tag pt
          , tag t
          , tagclass tc
-     WHERE 1=1
+     WHERE
         -- join
-       AND f.friendid = m.m_creatorid
+           f.friendid = m.m_creatorid
        AND m.m_messageid = pt.mt_messageid
        AND pt.mt_tagid = t.t_tagid
        AND t.t_tagclassid = tc.tc_tagclassid
@@ -67,9 +66,9 @@ SELECT m.friendid AS "person.id"
   FROM messages_of_tagclass_by_friends m
      , message_tag pt
      , tag t
- WHERE 1=1
+ WHERE
     -- join
-   AND m.messageid = pt.mt_messageid
+       m.messageid = pt.mt_messageid
    AND pt.mt_tagid = t.t_tagid
  GROUP BY m.friendid, t.t_name
  ORDER BY messageCount DESC, t.t_name, m.friendid

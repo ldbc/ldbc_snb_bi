@@ -10,9 +10,9 @@ WITH poster_w_liker AS (
        -- as an optimization, we use that the set of message1 is the same as message2
        , message m1 LEFT JOIN likes l2 ON (m1.m_messageid = l2.l_messageid)
        --, person p2 -- we don't need the person itself as its ID is in the like l2
-   WHERE 1=1
+   WHERE
       -- join
-     AND t.t_tagid = pt.mt_tagid
+         t.t_tagid = pt.mt_tagid
      AND pt.mt_messageid = m1.m_messageid
       -- filter
      AND t.t_name = :tag
@@ -21,9 +21,9 @@ WITH poster_w_liker AS (
   SELECT m3.m_creatorid as personid, count(*) as popularityScore
     FROM message m3
        , likes l3
-   WHERE 1=1
+   WHERE
       -- join
-     AND m3.m_messageid = l3.l_messageid
+         m3.m_messageid = l3.l_messageid
    GROUP BY personId
 )
 SELECT pl.posterPersonid as "person1.id"

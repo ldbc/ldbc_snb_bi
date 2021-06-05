@@ -10,9 +10,9 @@ SELECT t.t_name
      , message_tag mt
      , tag t
      , tagClass tc
- WHERE 1=1
+ WHERE
     -- join
-   AND tc.tc_tagclassid = t.t_tagclassid
+       tc.tc_tagclassid = t.t_tagclassid
    AND m.m_messageid = mt.mt_messageid
    AND mt.mt_tagid = t.t_tagid
     -- filter

@@ -12,9 +12,9 @@ SELECT cr.p_personid AS person_id
      , message m LEFT JOIN message  r ON (m.m_messageid = r.m_c_replyof) -- m: all messages, not just posts; r: direct reply to m
               LEFT JOIN likes l ON (m.m_messageid = l.l_messageid)  -- l: likes to m
      , person cr -- creator
- WHERE 1=1
+ WHERE
     -- join
-   AND t.t_tagid = pt.mt_tagid
+       t.t_tagid = pt.mt_tagid
    AND pt.mt_messageid = m.m_messageid
    AND m.m_creatorid = cr.p_personid
     -- filter

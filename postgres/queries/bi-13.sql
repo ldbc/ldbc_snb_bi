@@ -8,9 +8,9 @@ WITH zombies AS (
          , place ci -- city
          , person p
            LEFT JOIN message m ON (p.p_personid = m.m_creatorid AND m.m_creationdate BETWEEN p.p_creationdate AND :endDate)
-     WHERE 1=1
+     WHERE
         -- join
-       AND co.pl_placeid = ci.pl_containerplaceid
+           co.pl_placeid = ci.pl_containerplaceid
        AND ci.pl_placeid = p.p_placeid
         -- filter
        AND co.pl_name = :country

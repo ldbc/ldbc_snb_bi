@@ -19,9 +19,9 @@ WITH RECURSIVE reply_scores(r_threadid
       FROM forum f
          , message p
          , message c -- comment
-     WHERE 1=1
+     WHERE
         -- join
-       AND f.f_forumid = p.m_ps_forumid
+           f.f_forumid = p.m_ps_forumid
        AND p.m_messageid = c.m_c_replyof
         -- filter
        AND f.f_creationdate BETWEEN :startDate AND :endDate
@@ -34,18 +34,18 @@ WITH RECURSIVE reply_scores(r_threadid
          , 0.5 AS r_score
       FROM reply_scores r
          , message c
-     WHERE 1=1
+     WHERE
         -- join
-       AND r.r_reply_messageid = c.m_c_replyof
+           r.r_reply_messageid = c.m_c_replyof
 )
    , person_pair_scores_directed AS (
     SELECT r_orig_personid AS orig_personid
          , r_reply_personid AS reply_personid
          , sum(r_score) AS score
       FROM reply_scores
-     WHERE 1=1
+     WHERE
         -- discard self replies from the score earned
-       AND r_orig_personid != r_reply_personid
+           r_orig_personid != r_reply_personid
      GROUP BY r_orig_personid, r_reply_personid
 )
    , person_pair_scores AS (
@@ -80,8 +80,7 @@ WITH RECURSIVE reply_scores(r_threadid
          , 1 AS hopCount
          , max(CASE WHEN k_person2id = :person2Id THEN 1 ELSE 0 END) OVER () as person2Reached
       FROM wknows
-     WHERE 1=1
-       AND k_person1id = :person1Id
+     WHERE k_person1id = :person1Id
   UNION ALL
     SELECT p.startPerson AS startPerson
          , k_person2id AS endPerson
@@ -91,16 +90,15 @@ WITH RECURSIVE reply_scores(r_threadid
          , max(CASE WHEN k_person2id = :person2Id THEN 1 ELSE 0 END) OVER () as person2Reached
       FROM paths p
          , wknows k
-     WHERE 1=1
+     WHERE
         -- join
-       AND p.endPerson = k.k_person1id
+           p.endPerson = k.k_person1id
        AND NOT p.path && ARRAY[k.k_person2id] -- person2id is not in the path
         -- stop condition
        AND p.person2Reached = 0
 )
 SELECT path, weight
   FROM paths
- WHERE 1=1
-   AND endPerson = :person2Id
+ WHERE endPerson = :person2Id
  ORDER BY weight DESC, path
 ;
