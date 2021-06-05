@@ -38,3 +38,5 @@ until docker exec --interactive --tty ${NEO4J_CONTAINER_NAME} cypher-shell "RETU
 done
 echo
 echo "Database started"
+
+docker exec --interactive --tty ${NEO4J_CONTAINER_NAME} cypher-shell "RETURN gds.version() AS gdsVersion"
