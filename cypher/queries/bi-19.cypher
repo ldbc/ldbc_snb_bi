@@ -6,7 +6,7 @@
 MATCH
   (person1:Person)-[:IS_LOCATED_IN]->(city1:City {id: $city1Id}),
   (person2:Person)-[:IS_LOCATED_IN]->(city2:City {id: $city2Id})
-CALL gds.beta.shortestPath.dijkstra.stream({
+CALL gds.shortestPath.dijkstra.stream({
   nodeQuery: 'MATCH (p:Person) RETURN id(p) AS id',
   relationshipQuery:
     'MATCH
@@ -16,8 +16,8 @@ CALL gds.beta.shortestPath.dijkstra.stream({
         id(personA) AS source,
         id(personB) AS target,
         1.0/count(replyOf) AS weight',
-  sourceNode: id(person1),
-  targetNode: id(person2),
+  sourceNode: person1,
+  targetNode: person2,
   relationshipWeightProperty: 'weight'
 })
 YIELD totalCost
