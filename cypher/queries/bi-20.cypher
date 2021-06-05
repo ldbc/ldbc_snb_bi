@@ -6,7 +6,7 @@
 MATCH
   (company:Company {name: $company})<-[:WORK_AT]-(person1:Person),
   (person2:Person {id: $person2Id})
-CALL gds.alpha.shortestPath.stream({
+CALL gds.beta.shortestPath.dijkstra.stream({
   nodeQuery: 'MATCH (p:Person) RETURN id(p) AS id',
   relationshipQuery:
     'MATCH
@@ -16,12 +16,11 @@ CALL gds.alpha.shortestPath.stream({
         id(personA) AS source,
         id(personB) AS target,
         abs(saA.classYear - saB.classYear) + 1 AS weight',
-  startNode: person1,
-  endNode: person2,
+  sourceNode: id(person1),
+  targetNode: id(person2),
   relationshipWeightProperty: 'weight'
 })
-YIELD nodeId, cost
-WHERE nodeId = id(person2)
-RETURN person1.id, cost AS totalWeight
+YIELD totalCost
+RETURN person1.id, totalCost AS totalWeight
 ORDER BY totalWeight DESC, person1.id ASC
 LIMIT 20
