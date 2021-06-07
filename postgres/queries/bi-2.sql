@@ -3,29 +3,29 @@
 \set tagClass '\'MusicalArtist\''
  */
 WITH detail AS (
-SELECT t.t_name
-     , count(DISTINCT CASE WHEN m.m_creationdate <  :date + INTERVAL '100 days' THEN m.m_messageid ELSE NULL END) AS countMonth1
-     , count(DISTINCT CASE WHEN m.m_creationdate >= :date + INTERVAL '100 days' THEN m.m_messageid ELSE NULL END) AS countMonth2
-  FROM message m
-     , message_tag mt
-     , tag t
-     , tagClass tc
+SELECT Tag.name AS TagName
+     , count(DISTINCT CASE WHEN Message.creationDate <  :date + INTERVAL '100 days' THEN Message.id ELSE NULL END) AS countMonth1
+     , count(DISTINCT CASE WHEN Message.creationDate >= :date + INTERVAL '100 days' THEN Message.id ELSE NULL END) AS countMonth2
+  FROM Message
+     , Message_hasTag_Tag
+     , Tag
+     , TagClass
  WHERE
     -- join
-       tc.tc_tagclassid = t.t_tagclassid
-   AND m.m_messageid = mt.mt_messageid
-   AND mt.mt_tagid = t.t_tagid
+       TagClass.id = Tag.TypeTagClassId
+   AND Message.id = Message_hasTag_tag.MessageId
+   AND Message_hasTag_tag.TagId = Tag.id
     -- filter
-   AND tc.tc_name = :tagClass
-   AND :date <= m.m_creationdate
-   AND m.m_creationdate <= :date + INTERVAL '200 days'
- GROUP BY t.t_name
+   AND TagClass.name = :tagClass
+   AND :date <= Message.creationDate
+   AND Message.creationDate <= :date + INTERVAL '200 days'
+ GROUP BY Tag.name
 )
-SELECT t_name as "tag.name"
+SELECT TagName AS "tag.name"
      , countMonth1
      , countMonth2
      , abs(countMonth1-countMonth2) AS diff
-  FROM detail d
- ORDER BY diff desc, t_name
+  FROM detail
+ ORDER BY diff desc, TagName
  LIMIT 100
 ;

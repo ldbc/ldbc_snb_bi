@@ -3,31 +3,31 @@
 \set lengthThreshold '20'
 \set languages '\'{"ar", "hu"}\''::varchar[]
  */
-WITH RECURSIVE message_all(ma_postid, ma_language, ma_creatorid, ma_posttype
-                      , ma_content_isempty, ma_length, ma_creationday) AS (
-    SELECT m_messageid, m_ps_language, m_creatorid, 'Post'
-         , m_content IS NULL AS ma_content_isempty
-         , m_length
-         , m_creationdate --date_trunc('day', m_creationdate) AS ma_creationday
-      FROM message
-     WHERE m_c_replyof IS NULL -- post, not comment
+WITH RECURSIVE message_all(id, language, CreatorPersonId, content_isempty, length, creationDay) AS (
+    SELECT id, language, CreatorPersonId
+         , content IS NULL AS content_isempty
+         , length
+         , creationDate --date_trunc('day', creationDate) AS creationDay
+      FROM Post
   UNION ALL
-    SELECT m_messageid, ma.ma_language, m_creatorid, 'Comment'
-         , m_content IS NULL AS ma_content_isempty
-         , m_length
-         , m_creationdate --date_trunc('day', m_creationdate) AS ma_creationday
-      FROM message p, message_all ma
-     WHERE p.m_c_replyof = ma.ma_postid
+    SELECT Comment.id AS id, message_all.language, Comment.CreatorPersonId AS CreatorPersonId
+         , Comment.content IS NULL AS content_isempty
+         , Comment.length
+         , Comment.creationDate --date_trunc('day', creationDate) AS creationDay
+      FROM Comment, message_all
+     WHERE Comment.ParentPostId = message_all.id
+        OR Comment.ParentCommentId = message_all.id
 )
 , person_w_posts AS (
-    SELECT p.p_personid, count(ma_postid) as messageCount
-      FROM person p left join message_all ma
-        ON p.p_personid = ma.ma_creatorid
-       AND NOT ma.ma_content_isempty
-       AND ma_length < :lengthThreshold
-       AND ma_creationday > :date
-       AND ma_language = ANY(:languages)
-     GROUP BY p.p_personid
+    SELECT Person.id, count(message_all.id) as messageCount
+      FROM Person
+      LEFT JOIN message_all
+        ON Person.id = message_all.CreatorPersonId
+       AND NOT message_all.content_isempty
+       AND length < :lengthThreshold
+       AND creationDay > :date
+       AND language = ANY(:languages)
+     GROUP BY Person.id
 )
 , message_count_distribution AS (
     SELECT pp.messageCount, count(*) as personCount

@@ -1,39 +1,40 @@
-/* Q4. Top posters in a country
+/* Q4. Top message creators by country
 \set country '\'Belarus\''
  */
-WITH top100_popular_forums AS (
-  SELECT fp_forumid AS forumid
-    FROM forum_person fp
-       , person p
-       , place ci -- city
-       , place co -- country
+WITH Top100_Popular_Forums AS (
+  SELECT Forum_hasMember_Person.ForumId AS id
+    FROM Forum_hasMember_Person
+       , Person
+       , City
+       , Country
    WHERE
       -- join
-         fp.fp_personid = p.p_personid
-     AND p.p_placeid = ci.pl_placeid
-     AND ci.pl_containerplaceid = co.pl_placeid
+         Forum_hasMember_Person.PersonId = Person.id
+     AND Person.LocationCityId = City.id
+     AND City.PartOfCountryId = Country.id
       -- filter
-     AND co.pl_name = :country
-   GROUP BY fp_forumid
-   ORDER BY count(*) DESC, fp_forumid
+     AND Country.name = :country
+   GROUP BY ForumId
+   ORDER BY count(*) DESC, ForumId
    LIMIT 100
 )
-SELECT au.p_personid AS "person.id"
-     , au.p_firstname AS "person.firstName"
-     , au.p_lastname AS "person.lastName"
-     , au.p_creationdate
-     -- a single person might be member of more than 1 of the top100 forums, so their posts should be DISTINCT counted
-     , count(DISTINCT p.m_messageid) AS postCount
-     -- TODO: count (message)-[:REPLY_OF*0]->(post)-[:CONTAINER_OF]->(forum)
-  FROM top100_popular_forums t
-       INNER JOIN forum_person fp ON (t.forumid = fp.fp_forumid)
-       -- author of the post
-       INNER JOIN person au ON (fp.fp_personid = au.p_personid)
-       LEFT JOIN message p
-       ON au.p_personid = p.m_creatorid
-       AND p.m_ps_forumid IN (SELECT forumid from top100_popular_forums)
-       AND p.m_c_replyof IS NULL
- GROUP BY au.p_personid, au.p_firstname, au.p_lastname, au.p_creationdate
- ORDER BY postCount DESC, au.p_personid
- LIMIT 100
+SELECT au.id AS "person.id"
+     , au.firstName AS "person.firstName"
+     , au.lastName AS "person.lastName"
+     , au.creationDate
+     -- a single person might be member of more than 1 of the top100 forums, so their messages should be DISTINCT counted
+     , count(DISTINCT Message.id) AS messageCount
+     -- TODO: count (message)-[:REPLY_OF*0]->(message)-[:CONTAINER_OF]->(forum)
+  FROM Top100_Popular_Forums
+       INNER JOIN Forum_hasMember_Person
+               ON Top100_Popular_Forums.id = Forum_hasMember_Person.ForumId
+       -- author of the message
+       INNER JOIN Person au
+               ON Forum_hasMember_Person.PersonId = au.id
+       LEFT JOIN Message
+              ON au.id = Message.CreatorPersonId
+       AND Message.ContainerForumId IN (SELECT id FROM Top100_Popular_Forums)
+GROUP BY au.id, au.firstName, au.lastName, au.creationDate
+ORDER BY messageCount DESC, au.id
+LIMIT 100
 ;

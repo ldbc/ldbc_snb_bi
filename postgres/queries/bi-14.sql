@@ -2,136 +2,137 @@
 \set country1 '\'Indonesia\''
 \set country2 '\'Brazil\''
  */
-WITH person1_list AS (
-    SELECT p.p_personid AS personid
-         , ci.pl_placeid AS cityid
-      FROM place co -- country
-         , place ci -- city
-         , person p
+-- TODO: maybe LATERAL joins could work for top-1 selection
+WITH Person1Candidates AS (
+    SELECT Person.id AS id
+         , City.id AS LocationCityId
+      FROM Country
+         , City
+         , Person
      WHERE
         -- join
-           co.pl_placeid = ci.pl_containerplaceid
-       AND ci.pl_placeid = p.p_placeid
+           Country.id = City.PartOfCountryId
+       AND City.id = Person.LocationCityId
         -- filter
-       AND co.pl_name = :country1
+       AND Country.name = :country1
 )
-,  person2_list AS (
-    SELECT p.p_personid AS personid
-      FROM place co -- country
-         , place ci -- city
-         , person p
+,  Person2Candidates AS (
+    SELECT Person.id AS id
+      FROM Country
+         , City
+         , Person
      WHERE
         -- join
-           co.pl_placeid = ci.pl_containerplaceid
-       AND ci.pl_placeid = p.p_placeid
+           Country.id = City.PartOfCountryId
+       AND City.id = Person.LocationCityId
         -- filter
-       AND co.pl_name = :country2
+       AND Country.name = :country2
 )
 ,  case1 AS (
     SELECT DISTINCT
-           p1.personid AS person1id
-         , p2.personid AS person2id
+           p1.id AS Person1Id
+         , p2.id AS Person2Id
          , 4 AS score
-      FROM person1_list p1
-         , person2_list p2
-         , message m -- message by p2
-         , message r -- reply by p1
+      FROM Person1Candidates p1
+         , Person2Candidates p2
+         , Message m -- message by p2
+         , Message r -- reply by p1
      WHERE
         -- join
-           m.m_messageid = r.m_c_replyof
-       AND p1.personid = r.m_creatorid
-       AND p2.personid = m.m_creatorid
+           m.id = r.ParentMessageId
+       AND p1.id = r.CreatorPersonId
+       AND p2.id = m.CreatorPersonId
 )
 ,  case2 AS (
     SELECT DISTINCT
-           p1.personid AS person1id
-         , p2.personid AS person2id
+           p1.id AS Person1Id
+         , p2.id AS Person2Id
          , 1 AS score
-      FROM person1_list p1
-         , person2_list p2
-         , message m -- message by p1
-         , message r -- reply by p2
+      FROM Person1Candidates p1
+         , Person2Candidates p2
+         , Message m -- message by p1
+         , Message r -- reply by p2
      WHERE
         -- join
-           m.m_messageid = r.m_c_replyof
-       AND p2.personid = r.m_creatorid
-       AND p1.personid = m.m_creatorid
+           m.id = r.ParentMessageId
+       AND p2.id = r.CreatorPersonId
+       AND p1.id = m.CreatorPersonId
 )
 ,  case3 AS (
     SELECT -- no need for distinct
-           p1.personid AS person1id
-         , p2.personid AS person2id
+           p1.id AS Person1Id
+         , p2.id AS Person2Id
          , 15 AS score
-      FROM person1_list p1
-         , person2_list p2
-         , knows k
+      FROM Person1Candidates p1
+         , Person2Candidates p2
+         , Person_knows_Person
      WHERE
         -- join
-           p1.personid = k.k_person1id
-       AND p2.personid = k.k_person2id
+           p1.id = Person_knows_Person.Person1Id
+       AND p2.id = Person_knows_Person.Person2Id
 )
 ,  case4 AS (
     SELECT DISTINCT
-           p1.personid AS person1id
-         , p2.personid AS person2id
+           p1.id AS Person1Id
+         , p2.id AS Person2Id
          , 10 AS score
-      FROM person1_list p1
-         , person2_list p2
-         , message m -- message by p2
-         , likes l
+      FROM Person1Candidates p1
+         , Person2Candidates p2
+         , Message m -- message by p2
+         , Person_likes_Message l
      WHERE
         -- join
-           p2.personid = m.m_creatorid
-       AND m.m_messageid = l.l_messageid
-       AND l.l_personid = p1.personid
+           p2.id = m.CreatorPersonId
+       AND m.id = l.MessageId
+       AND l.PersonId = p1.id
 )
 ,  case5 AS (
     SELECT DISTINCT
-           p1.personid AS person1id
-         , p2.personid AS person2id
+           p1.id AS Person1Id
+         , p2.id AS Person2Id
          , 1 AS score
-      FROM person1_list p1
-         , person2_list p2
-         , message m -- message by p1
-         , likes l
+      FROM Person1Candidates p1
+         , Person2Candidates p2
+         , Message m -- message by p1
+         , Person_likes_Message l
      WHERE
         -- join
-           p1.personid = m.m_creatorid
-       AND m.m_messageid = l.l_messageid
-       AND l.l_personid = p2.personid
+           p1.id = m.CreatorPersonId
+       AND m.id = l.MessageId
+       AND l.PersonId = p2.id
 )
 ,  pair_scores AS (
-    SELECT person1id, person2id, sum(score) AS score
+    SELECT Person1Id, Person2Id, sum(score) AS score
       FROM (SELECT * FROM case1
             UNION ALL SELECT * FROM case2
             UNION ALL SELECT * FROM case3
             UNION ALL SELECT * FROM case4
             UNION ALL SELECT * FROM case5
            ) t
-     GROUP BY person1id, person2id
+     GROUP BY Person1Id, Person2Id
 )
 ,  score_ranks AS (
-    SELECT s.person1id
-         , s.person2id
-         , ci.pl_name AS cityName
+    SELECT s.Person1Id
+         , s.Person2Id
+         , City.name AS cityName
          , s.score
-         , row_number() OVER (PARTITION BY ci.pl_placeid ORDER BY s.score DESC NULLS LAST, s.person1id, s.person2id) AS rn
-      FROM place co -- country
-           INNER JOIN place ci ON (co.pl_placeid = ci.pl_containerplaceid) -- city
-           LEFT  JOIN person1_list p1l ON (ci.pl_placeid = p1l.cityid)
-           LEFT  JOIN pair_scores s ON (p1l.personid = s.person1id)
+         , row_number() OVER (PARTITION BY City.id ORDER BY s.score DESC NULLS LAST, s.Person1Id, s.Person2Id) AS rownum
+      FROM Country
+           INNER JOIN City ON (Country.id = City.PartOfCountryId)
+            LEFT JOIN Person1Candidates p1 ON (City.id = p1.LocationCityId)
+            LEFT JOIN pair_scores s ON (p1.id = s.Person1Id)
      WHERE
         -- filter
-           co.pl_name = :country1
+           Country.name = :country1
 )
-SELECT s.person1id AS "person1.id"
-     , s.person2id AS "person2.id"
-     , s.cityName AS "city1.name"
-     , s.score
-  FROM score_ranks s
+SELECT score_ranks.Person1Id AS "person1.id"
+     , score_ranks.Person2Id AS "person2.id"
+     , score_ranks.cityName AS "city1.name"
+     , score_ranks.score
+  FROM score_ranks
  WHERE
     -- filter
-   AND s.rn = 1
- ORDER BY s.score DESC, s.person1id, s.person2id
+       score_ranks.rownum = 1
+ ORDER BY score_ranks.score DESC, score_ranks.Person1Id, score_ranks.Person2Id
  LIMIT 100
 ;

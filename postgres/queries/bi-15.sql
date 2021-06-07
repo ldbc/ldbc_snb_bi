@@ -1,8 +1,8 @@
-/* Q15. Weighted interaction paths
-\set person1Id 19791209303405
-\set person2Id 19791209308983
+/* Q15. Trusted connection paths through forums created in a given timeframe
+\set person1id 19791209303405
+\set person2id 19791209308983
 \set startDate '\'2010-11-01T00:00:00.000+00:00\''::timestamp
-\set endDate   '\'2010-12-01T00:00:00.000+00:00\''::timestamp
+\set endDate '\'2010-12-01T00:00:00.000+00:00\''::timestamp
  */
 
 WITH RECURSIVE reply_scores(r_threadid
@@ -11,32 +11,31 @@ WITH RECURSIVE reply_scores(r_threadid
                           , r_reply_messageid
                           , r_score
                            ) AS (
-    SELECT p.m_messageid AS r_threadid
-         , p.m_creatorid AS r_orig_personid
-         , c.m_creatorid AS r_reply_personid
-         , c.m_messageid AS r_reply_messageid
+    SELECT Post.id AS r_threadid
+         , Post.CreatorPersonId AS r_orig_personid
+         , Comment.CreatorPersonId AS r_reply_personid
+         , Comment.id AS r_reply_messageid
          , 1.0 AS r_score
-      FROM forum f
-         , message p
-         , message c -- comment
+      FROM Forum
+         , Post
+         , Comment
      WHERE
         -- join
-           f.f_forumid = p.m_ps_forumid
-       AND p.m_messageid = c.m_c_replyof
+           Forum.id = Post.ContainerForumId
+       AND Post.id = coalesce(Comment.ParentPostId, Comment.ParentCommentId)
         -- filter
-       AND f.f_creationdate BETWEEN :startDate AND :endDate
-       AND p.m_c_replyof IS NULL -- post, not comment
+       AND Forum.creationDate BETWEEN :startDate AND :endDate
   UNION ALL
     SELECT r.r_threadid AS r_threadid
          , r.r_reply_personid AS r_orig_personid
-         , c.m_creatorid AS r_reply_personid
-         , c.m_messageid AS r_reply_messageid
+         , Comment.CreatorPersonId AS r_reply_personid
+         , Comment.id AS r_reply_messageid
          , 0.5 AS r_score
       FROM reply_scores r
-         , message c
+         , Comment
      WHERE
         -- join
-           r.r_reply_messageid = c.m_c_replyof
+           r.r_reply_messageid = coalesce(Comment.ParentPostId, Comment.ParentCommentId)
 )
    , person_pair_scores_directed AS (
     SELECT r_orig_personid AS orig_personid
@@ -50,21 +49,23 @@ WITH RECURSIVE reply_scores(r_threadid
 )
    , person_pair_scores AS (
         -- note: this should already have both (A, B, score) and (B, A, score)
-    SELECT coalesce(s1.orig_personid, s2.reply_personid) AS person1id
-         , coalesce(s1.reply_personid, s2.orig_personid) AS person2id
+    SELECT coalesce(s1.orig_personid, s2.reply_personid) AS Person1Id
+         , coalesce(s1.reply_personid, s2.orig_personid) AS Person2Id
          , coalesce(s1.score, 0.0) + coalesce(s2.score, 0.0) AS score
       FROM person_pair_scores_directed s1
            FULL JOIN person_pair_scores_directed s2
-                  ON (s1.orig_personid = s2.reply_personid AND s1.reply_personid = s2.orig_personid)
+                  ON s1.orig_personid = s2.reply_personid 
+                 AND s1.reply_personid = s2.orig_personid
 )
    , wknows AS (
         -- weighted knows
-    SELECT k_person1id
-         , k_person2id
+    SELECT Person_knows_Person.Person1Id
+         , Person_knows_Person.Person2Id
          , coalesce(score, 0.0) AS score
-      FROM knows k
+      FROM Person_knows_Person
            LEFT JOIN person_pair_scores pps
-                  ON (k.k_person1id = pps.person1id AND k.k_person2id = pps.person2id)
+                  ON Person_knows_Person.Person1Id = pps.Person1Id
+                 AND Person_knows_Person.Person2Id = pps.Person2Id
 )
    , paths(startPerson
          , endPerson
@@ -73,32 +74,32 @@ WITH RECURSIVE reply_scores(r_threadid
          , hopCount
          , person2Reached -- shows if person2 has been reached by any paths produced in the iteration that produced the path represented by this row
           ) AS (
-    SELECT k_person1id AS startPerson
-         , k_person2id AS endPerson
-         , ARRAY[k_person1id, k_person2id]::bigint[] AS path
+    SELECT Person1Id AS startPerson
+         , Person2Id AS endPerson
+         , ARRAY[Person1Id, Person2Id]::bigint[] AS path
          , score AS weight
          , 1 AS hopCount
-         , max(CASE WHEN k_person2id = :person2Id THEN 1 ELSE 0 END) OVER () as person2Reached
+         , max(CASE WHEN Person2Id = :person2id THEN 1 ELSE 0 END) OVER () as person2Reached
       FROM wknows
-     WHERE k_person1id = :person1Id
+     WHERE Person1Id = :person1id
   UNION ALL
     SELECT p.startPerson AS startPerson
-         , k_person2id AS endPerson
-         , array_append(path, k_person2id) AS path
+         , Person2Id AS endPerson
+         , array_append(path, Person2Id) AS path
          , weight + score AS weight
          , hopCount + 1 AS hopCount
-         , max(CASE WHEN k_person2id = :person2Id THEN 1 ELSE 0 END) OVER () as person2Reached
+         , max(CASE WHEN Person2Id = :person2id THEN 1 ELSE 0 END) OVER () as person2Reached
       FROM paths p
          , wknows k
      WHERE
         -- join
-           p.endPerson = k.k_person1id
-       AND NOT p.path && ARRAY[k.k_person2id] -- person2id is not in the path
+           p.endPerson = k.Person1Id
+       AND NOT p.path && ARRAY[k.Person2Id] -- Person2Id is not in the path
         -- stop condition
        AND p.person2Reached = 0
 )
 SELECT path, weight
   FROM paths
- WHERE endPerson = :person2Id
+ WHERE endPerson = :person2id
  ORDER BY weight DESC, path
 ;

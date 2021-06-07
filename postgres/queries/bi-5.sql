@@ -1,32 +1,35 @@
-/* Q5. Most active Posters of a given Topic
+/* Q5. Most active posters in a given topic
 \set tag '\'Abbas_I_of_Persia\''
  */
 WITH detail AS (
-SELECT cr.p_personid AS person_id
-     , count(DISTINCT r.m_messageid)  AS replyCount
-     , count(DISTINCT l.l_messageid||' '||l.l_personid) AS likeCount
-     , count(DISTINCT m.m_messageid)  AS messageCount
-     , null as score
-  FROM tag t
-     , message_tag pt
-     , message m LEFT JOIN message  r ON (m.m_messageid = r.m_c_replyof) -- m: all messages, not just posts; r: direct reply to m
-              LEFT JOIN likes l ON (m.m_messageid = l.l_messageid)  -- l: likes to m
-     , person cr -- creator
+SELECT CreatorPerson.id AS CreatorPersonId
+     , count(DISTINCT Comment.Id)  AS replyCount
+     , count(DISTINCT Person_likes_Message.MessageId||' '||Person_likes_Message.PersonId) AS likeCount
+     , count(DISTINCT Message.Id)  AS messageCount
+     , NULL as score
+  FROM Tag
+     , Message_hasTag_Tag
+     , Message
+  LEFT JOIN Comment
+         ON Message.id = coalesce(Comment.ParentPostId, Comment.ParentCommentId)
+  LEFT JOIN Person_likes_Message
+         ON Message.id = Person_likes_Message.MessageId
+     , Person CreatorPerson -- creator
  WHERE
     -- join
-       t.t_tagid = pt.mt_tagid
-   AND pt.mt_messageid = m.m_messageid
-   AND m.m_creatorid = cr.p_personid
+       Tag.id = Message_hasTag_Tag.TagId
+   AND Message_hasTag_Tag.MessageId = Message.id
+   AND Message.CreatorPersonId = CreatorPerson.id
     -- filter
-   AND t.t_name = :tag
- GROUP BY cr.p_personid
+   AND Tag.name = :tag
+ GROUP BY CreatorPerson.id
 )
-SELECT person_id AS "person.id"
+SELECT CreatorPersonId AS "person.id"
      , replyCount
      , likeCount
      , messageCount
      , 1*messageCount + 2*replyCount + 10*likeCount AS score
   FROM detail
- ORDER BY score DESC, person_id
+ ORDER BY score DESC, CreatorPersonId
  LIMIT 100
 ;

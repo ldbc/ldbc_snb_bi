@@ -1,34 +1,34 @@
 /* Q3. Popular topics in a country
 \set tagClass '\'MusicalArtist\''
-\set country  '\'Burma\''
+\set country '\'Burma\''
  */
-SELECT f.f_forumid      AS "forum.id"
-     , f.f_title        AS "forum.title"
-     , f.f_creationdate AS "forum.creationDate"
-     , f.f_moderatorid  AS "person.id"
-     , count(DISTINCT p.m_messageid) AS postCount
+SELECT Forum.id                AS "forum.id"
+     , Forum.title             AS "forum.title"
+     , Forum.creationDate      AS "forum.creationDate"
+     , Forum.ModeratorPersonId AS "person.id"
+     , count(DISTINCT Message.id) AS messageCount
      -- TODO: count (message)-[:REPLY_OF*0]->(post)-[:CONTAINER_OF]->(forum)
-  FROM tagClass tc
-     , tag t
-     , message_tag pt
-     , message p
-     , forum f
-     , person m   -- moderator
-     , place  ci  -- city
-     , place  co  -- country
+  FROM tagClass
+     , tag
+     , Message_hasTag_Tag
+     , Message
+     , Forum
+     , Person AS ModeratorPerson -- moderator
+     , City
+     , Country
  WHERE
     -- join
-       tc.tc_tagclassid = t.t_tagclassid
-   AND t.t_tagid = pt.mt_tagid
-   AND pt.mt_messageid = p.m_messageid
-   AND p.m_ps_forumid = f.f_forumid
-   AND f.f_moderatorid = m.p_personid
-   AND m.p_placeid = ci.pl_placeid
-   AND ci.pl_containerplaceid = co.pl_placeid
+       TagClass.id = Tag.TypeTagClassId
+   AND Tag.id = Message_hasTag_Tag.TagId
+   AND Message_hasTag_Tag.MessageId = Message.id
+   AND Message.ContainerForumId = Forum.id
+   AND Forum.ModeratorPersonId = ModeratorPerson.id
+   AND ModeratorPerson.LocationCityId = City.id
+   AND City.PartOfCountryId = Country.id
     -- filter
-   AND tc.tc_name = :tagClass
-   AND co.pl_name = :country
- GROUP BY f.f_forumid, f.f_title, f.f_creationdate, f.f_moderatorid
- ORDER BY postCount DESC, f.f_forumid
+   AND TagClass.name = :tagClass
+   AND Country.name = :country
+ GROUP BY Forum.id, Forum.title, Forum.creationDate, Forum.ModeratorPersonId
+ ORDER BY messageCount DESC, Forum.id
  LIMIT 20
 ;

@@ -2,33 +2,37 @@
 \set country '\'Belarus\''
 \set endDate '\'2013-01-01T00:00:00.000+00:00\''::timestamp
  */
-WITH zombies AS (
-    SELECT p.p_personid AS zombieid
-      FROM place co -- country
-         , place ci -- city
-         , person p
-           LEFT JOIN message m ON (p.p_personid = m.m_creatorid AND m.m_creationdate BETWEEN p.p_creationdate AND :endDate)
+WITH Zombies AS (
+    SELECT Person.id AS zombieid
+      FROM Country
+         , City
+         , Person
+           LEFT JOIN Message
+             ON Person.id = Message.CreatorPersonId
+            AND Message.creationDate BETWEEN Person.creationDate AND :endDate -- the lower bound is an optmization to prune messages
      WHERE
         -- join
-           co.pl_placeid = ci.pl_containerplaceid
-       AND ci.pl_placeid = p.p_placeid
+           Country.id = City.PartOfCountryId
+       AND City.id = Person.LocationCityId
         -- filter
-       AND co.pl_name = :country
-       AND p.p_creationdate < :endDate
-     GROUP BY p.p_personid
+       AND Country.name = :country
+       AND Person.creationDate < :endDate
+     GROUP BY Person.id
         -- average of [0, 1) messages per month is equivalent with having less messages than the month span between person creationDate and parameter :endDate
-    HAVING count(m_messageid) < 12*extract(YEAR FROM :endDate)+extract(MONTH FROM :endDate) - (12*extract(YEAR FROM p.p_creationdate) + extract(MONTH FROM p.p_creationdate)) + 1
+    HAVING count(Message.id) < 12*extract(YEAR FROM :endDate)            + extract(MONTH FROM :endDate)
+                            - (12*extract(YEAR FROM Person.creationDate) + extract(MONTH FROM Person.creationDate))
+                            + 1
 )
-SELECT z.zombieid AS "zombie.id"
+SELECT Z.zombieid AS "zombie.id"
      , count(zl.zombieid) AS zombieLikeCount
-     , count(l.l_personid) AS totalLikeCount
-     , CASE WHEN count(l.l_personid) = 0 THEN 0 ELSE count(zl.zombieid)::float/count(l.l_personid) END AS zombieScore
-  FROM message m
-       INNER JOIN likes l ON (m.m_messageid = l.l_messageid)
-       INNER JOIN person p ON (l.l_personid = p.p_personid AND p.p_creationdate < :endDate)
-       LEFT  JOIN zombies zl ON (p.p_personid = zl.zombieid) -- see if the like was given by a zombie
-       RIGHT JOIN zombies z ON (z.zombieid = m.m_creatorid)
- GROUP BY z.zombieid
- ORDER BY zombieScore DESC, z.zombieid
+     , count(Person_likes_Message.PersonId) AS totalLikeCount
+     , CASE WHEN count(Person_likes_Message.PersonId) = 0 THEN 0 ELSE count(zl.zombieid)::float/count(Person_likes_Message.PersonId) END AS zombieScore
+  FROM Message
+       INNER JOIN Person_likes_Message ON (Message.id = Person_likes_Message.MessageId)
+       INNER JOIN Person ON (Person_likes_Message.PersonId = Person.id AND Person.creationDate < :endDate)
+       LEFT  JOIN Zombies ZL ON (Person.id = ZL.zombieid) -- see if the like was given by a zombie
+       RIGHT JOIN Zombies Z ON (Z.zombieid = Message.CreatorPersonId)
+ GROUP BY Z.zombieid
+ ORDER BY zombieScore DESC, Z.zombieid
  LIMIT 100
 ;
