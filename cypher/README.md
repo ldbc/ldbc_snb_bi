@@ -5,34 +5,43 @@ Note that some BI queries are not expressed using pure Cypher, instead, they mak
 
 ## Loading the data in Neo4j
 
-The Neo4j instance is run in Docker. To initialize the environment variables, use:
+The Neo4j instance is run in Docker.
+
+## Generating the data set
+
+The Neo4j implementation expects the data to be in `composite-projected-fk` CSV layout, without headers and with quoted fields.
+To generate data that confirms this requirement, run Datagen with the `--explode-edges` and the `--format-options header=false,quoteAll=true` options.
+
+(Rationale: Files should not have headers as these are provided separately (in the `headers/` directory) and quoting the fields in the CSV is required to [preserve trailing spaces](https://neo4j.com/docs/operations-manual/4.2/tools/neo4j-admin-import/#import-tool-header-format).)
+
+In Datagen's directory (`ldbc_snb_datagen_spark`), issue the following command:
 
 ```bash
+# build
+tools/build.sh
+
+# set the desired SF and generate
+export SF=0.003
+rm -rf sf${SF}/
+tools/run.py ./target/ldbc_snb_datagen_${PLATFORM_VERSION}-${DATAGEN_VERSION}.jar -- --format csv --scale-factor ${SF} --mode bi --explode-edges --format-options header=false,quoteAll=true --output-dir sf${SF}
+export NEO4J_CSV_DIR=`pwd`/sf${SF}/csv/bi/composite-projected-fk/
+```
+
+## Loading the data
+
+To load the data, issue the following commands in this repository:
+
+```bash
+# initialize variables
 . scripts/environment-variables-default.sh
-```
 
-To load a data set other than the example data set, you might want to adjust the following variables:
-
-```bash
-export NEO4J_CSV_DIR=/path/to/the/directory/social_network/
-export NEO4J_CSV_POSTFIX=_0_0.csv
-```
-
-```bash
+# load
 scripts/load-in-one-step.sh
 ```
 
-This script replaces the headers in the input CSVs, load them, starts Neo4j, and creates indices.
-
-## Loading the example data set
-
-Transform the example data set in the [data converter](https://github.com/ldbc/ldbc_snb_data_converter) repository:
-
-Then, in in this repository, run
+To load the microbatches, run:
 
 ```bash
-. scripts/environment-variables-default.sh
-export NEO4J_CSV_DIR=${DATA_CONVERTER_DIR}/ldbc_snb_data_converter/data/csv-composite-projected-fk
-export NEO4J_CSV_POSTFIX=.csv
-scripts/load-in-one-step.sh
+# perform microbatch loading
+python3 batches-cypher.py ${NEO4J_CSV_DIR}
 ```

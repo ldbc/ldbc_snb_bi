@@ -24,19 +24,14 @@ docker run --rm \
     ${NEO4J_ENV_VARS} \
     --volume=${NEO4J_DATA_DIR}:/data \
     --volume=${NEO4J_CONTAINER_ROOT}/logs:/logs \
-    --volume=${NEO4J_CONTAINER_ROOT}/import:/var/lib/neo4j/import \
+    --volume=${NEO4J_CSV_DIR}:/var/lib/neo4j/import \
     --volume=${NEO4J_CONTAINER_ROOT}/plugins:/plugins \
-    --env NEO4JLABS_PLUGINS='["apoc", "graph-data-science"]' \
     --env NEO4J_AUTH=none \
+    --env NEO4J_apoc_import_file_enabled=true \
     --name ${NEO4J_CONTAINER_NAME} \
     neo4j:${NEO4J_VERSION}
 
-echo -n "Waiting for the database to start ."
-until docker exec --interactive --tty ${NEO4J_CONTAINER_NAME} cypher-shell "RETURN 42 AS dummy" > /dev/null 2>&1; do
-    echo -n " ."
+echo "Waiting for the database to start..."
+until docker exec --interactive ${NEO4J_CONTAINER_NAME} cypher-shell "RETURN 'Database has started successfully' AS message"; do
     sleep 1
 done
-echo
-echo "Database started"
-
-docker exec --interactive --tty ${NEO4J_CONTAINER_NAME} cypher-shell "RETURN gds.version() AS gdsVersion"
