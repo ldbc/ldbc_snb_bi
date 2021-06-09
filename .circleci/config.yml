@@ -25,6 +25,7 @@ jobs:
             sudo apt update
             # install dependencies
             sudo apt install -y wget unzip
+            cypher/scripts/install-dependencies.sh
       - run:
           name: Download data
           command: |

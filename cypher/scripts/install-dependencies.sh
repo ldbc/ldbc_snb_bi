@@ -1,3 +1,6 @@
 #!/bin/bash
 
-pip3 install -U neo4j
+set -e
+set -o pipefail
+
+pip3 install -U neo4j==4.2.1
