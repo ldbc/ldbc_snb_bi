@@ -15,8 +15,7 @@ WITH RECURSIVE message_all(id, language, CreatorPersonId, content_isempty, lengt
          , Comment.length
          , Comment.creationDate --date_trunc('day', creationDate) AS creationDay
       FROM Comment, message_all
-     WHERE Comment.ParentPostId = message_all.id
-        OR Comment.ParentCommentId = message_all.id
+     WHERE coalesce(Comment.ParentPostId, Comment.ParentCommentId) = message_all.id
 )
 , person_w_posts AS (
     SELECT Person.id, count(message_all.id) as messageCount
