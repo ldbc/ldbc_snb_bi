@@ -24,38 +24,24 @@ jobs:
             export DEBIAN_FRONTEND=noninteractive
             sudo apt update
             # install dependencies
-            sudo apt install -y curl git wget unzip maven netcat
-            # driver
-            git clone --depth 1 --branch dev https://github.com/ldbc/ldbc_snb_driver && cd ldbc_snb_driver && mvn install -DskipTests && cd ..
-            # Cypher
-            cd cypher
-            scripts/install-dependencies.sh
-            cd ..
-            # PostgreSQL
-            # TODO
+            sudo apt install -y wget unzip
       - run:
           name: Download data
           command: |
             mkdir test-data/
             cd test-data
-            wget -q https://ldbc.github.io/ldbc_snb_data_converter/csv-composite-projected-fk.zip
-            unzip csv-composite-projected-fk.zip
+            wget -q https://ldbc.github.io/ldbc_snb_datagen_spark/social-network-sf0.003-bi-composite-projected-fk-no-header.zip
+            unzip -q social-network-sf0.003-bi-composite-projected-fk-no-header.zip
             cd ..
       - run:
-          name: Load
+          name: Test Cypher toolchain
           command: |
-            # PostgreSQL
-            # TODO
             # Cypher
+            export NEO4J_CSV_DIR=`pwd`/test-data/social-network-sf0.003-bi-composite-projected-fk-no-header/csv/bi/composite-projected-fk/
             cd cypher
             . scripts/environment-variables-default.sh
-            export NEO4J_CSV_DIR=`pwd`/../test-data/csv-composite-projected-fk
-            export NEO4J_CSV_POSTFIX=.csv
             scripts/load-in-one-step.sh
+            python3 batches-cypher.py ${NEO4J_CSV_DIR}
             cd ..
-      - run:
-          name: Run Cypher Python script
-          command: |
-            cd cypher
-            python3 bi.py
+      #     python3 bi.py
       - slack/status
