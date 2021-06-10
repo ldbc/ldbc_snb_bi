@@ -8,22 +8,22 @@ WHERE Person_Delete_candidates.id = Person.id
 
 DELETE FROM Person_likes_Comment
 USING Person_Delete_candidates
-WHERE Person_Delete_candidates.id = Person_likes_Comment.id
+WHERE Person_Delete_candidates.id = Person_likes_Comment.PersonId
 ;
 
 DELETE FROM Person_likes_Post
 USING Person_Delete_candidates
-WHERE Person_Delete_candidates.id = Person_likes_Post.id
+WHERE Person_Delete_candidates.id = Person_likes_Post.PersonId
 ;
 
 DELETE FROM Person_workAt_Company
 USING Person_Delete_candidates
-WHERE Person_Delete_candidates.id = Person_workAt_Company.id
+WHERE Person_Delete_candidates.id = Person_workAt_Company.PersonId
 ;
 
 DELETE FROM Person_studyAt_University
 USING Person_Delete_candidates
-WHERE Person_Delete_candidates.id = Person_studyAt_University.id
+WHERE Person_Delete_candidates.id = Person_studyAt_University.PersonId
 ;
 
 -- treat KNOWS edges as undirected
@@ -35,12 +35,12 @@ WHERE Person_Delete_candidates.id = Person_knows_Person.Person1Id
 
 DELETE FROM Person_hasInterest_Tag
 USING Person_Delete_candidates
-WHERE Person_Delete_candidates.id = Person_hasInterest_Tag.id
+WHERE Person_Delete_candidates.id = Person_hasInterest_Tag.PersonId
 ;
 
 DELETE FROM Forum_hasMember_Person
 USING Person_Delete_candidates
-WHERE Person_Delete_candidates.id = Forum_hasMember_Person.id
+WHERE Person_Delete_candidates.id = Forum_hasMember_Person.PersonId
 ;
 
 UPDATE Forum
@@ -80,7 +80,7 @@ JOIN Comment
 ----------------------------------------------------------------------------------------------------
 DELETE FROM Person_likes_Post
 USING Person_likes_Post_Delete_candidates
-WHERE Person_likes_Post_Delete_candidates.src = Person_likes_Post.id
+WHERE Person_likes_Post_Delete_candidates.src = Person_likes_Post.PersonId
   AND Person_likes_Post_Delete_candidates.trg = Person_likes_Post.PostId
 ;
 
@@ -89,7 +89,7 @@ WHERE Person_likes_Post_Delete_candidates.src = Person_likes_Post.id
 ----------------------------------------------------------------------------------------------------
 DELETE FROM Person_likes_Comment
 USING Person_likes_Comment_Delete_candidates
-WHERE Person_likes_Comment_Delete_candidates.src = Person_likes_Comment.id
+WHERE Person_likes_Comment_Delete_candidates.src = Person_likes_Comment.PersonId
   AND Person_likes_Comment_Delete_candidates.trg = Person_likes_Comment.CommentId
 ;
 
@@ -102,7 +102,7 @@ USING Forum_Delete_candidates
 
 DELETE FROM Forum_hasMember_Person
 USING Forum_Delete_candidates
-WHERE Forum_Delete_candidates.id = Forum_hasMember_Person.id
+WHERE Forum_Delete_candidates.id = Forum_hasMember_Person.ForumId
 ;
 
 -- offload cascading Post deletes to DEL6
@@ -118,7 +118,7 @@ JOIN Forum_Delete_candidates
 ----------------------------------------------------------------------------------------------------
 DELETE FROM Forum_hasMember_Person
 USING Forum_hasMember_Person_Delete_candidates
-WHERE Forum_hasMember_Person_Delete_candidates.src = Forum_hasMember_Person.id
+WHERE Forum_hasMember_Person_Delete_candidates.src = Forum_hasMember_Person.ForumId
   AND Forum_hasMember_Person_Delete_candidates.trg = Forum_hasMember_Person.PersonId
 ;
 
@@ -137,7 +137,7 @@ WHERE Person_likes_Post_Delete_candidates.trg = Person_likes_Post.PostId
 
 DELETE FROM Post_hasTag_Tag
 USING Post_Delete_candidates
-WHERE Post_Delete_candidates.id = Post_hasTag_Tag.id
+WHERE Post_Delete_candidates.id = Post_hasTag_Tag.PostId
 ;
 
 -- Offload cascading deletes to DEL7
@@ -153,56 +153,56 @@ JOIN Post_Delete_candidates
 ----------------------------------------------------------------------------------------------------
 DELETE FROM Comment
 USING (
-  WITH RECURSIVE message_thread AS (
+  WITH RECURSIVE Message_Thread AS (
       SELECT id
       FROM Comment_Delete_candidates -- starting from the delete candidate comments
       UNION
       SELECT Comment.id AS id
-      FROM message_thread
+      FROM Message_Thread
       JOIN Comment
-        ON Comment.ParentCommentId = message_thread.id
-        OR Comment.ParentPostId = message_thread.id
+        ON Comment.ParentCommentId = Message_Thread.id
+        OR Comment.ParentPostId = Message_Thread.id
   )
   SELECT id
-  FROM message_thread
+  FROM Message_Thread
   ) sub
 WHERE sub.id = Comment.id
 ;
 
 DELETE FROM Person_likes_Comment
 USING (
-  WITH RECURSIVE message_thread AS (
+  WITH RECURSIVE Message_Thread AS (
       SELECT id
       FROM Comment_Delete_candidates -- starting from the delete candidate comments
       UNION
       SELECT Comment.id AS id
-      FROM message_thread
+      FROM Message_Thread
       JOIN Comment
-        ON Comment.ParentCommentId = message_thread.id
-        OR Comment.ParentPostId = message_thread.id
+        ON Comment.ParentCommentId = Message_Thread.id
+        OR Comment.ParentPostId = Message_Thread.id
   )
   SELECT id
-  FROM message_thread
+  FROM Message_Thread
   ) sub
 WHERE sub.id = Person_likes_Comment.CommentId
 ;
 
 DELETE FROM Comment_hasTag_Tag
 USING (
-  WITH RECURSIVE message_thread AS (
+  WITH RECURSIVE Message_Thread AS (
       SELECT id
       FROM Comment_Delete_candidates -- starting from the delete candidate comments
       UNION ALL
       SELECT comment.id AS id
-      FROM message_thread
+      FROM Message_Thread
       JOIN comment
-        ON comment.ParentCommentId = message_thread.id
-        OR comment.ParentPostId = message_thread.id
+        ON comment.ParentCommentId = Message_Thread.id
+        OR comment.ParentPostId = Message_Thread.id
   )
   SELECT id
-  FROM message_thread
+  FROM Message_Thread
   ) sub
-WHERE sub.id = Comment_hasTag_Tag.id
+WHERE sub.id = Comment_hasTag_Tag.CommentId
 ;
 
 ----------------------------------------------------------------------------------------------------
