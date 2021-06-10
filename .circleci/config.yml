@@ -46,7 +46,7 @@ jobs:
             cd cypher
             . scripts/environment-variables-default.sh
             scripts/load-in-one-step.sh
-            python3 batches-cypher.py ${NEO4J_CSV_DIR}
+            python3 batches.py ${NEO4J_CSV_DIR}
             cd ..
             # python3 bi.py
       - run:

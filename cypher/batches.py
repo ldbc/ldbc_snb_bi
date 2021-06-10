@@ -23,7 +23,7 @@ def run_update(session, query_spec, batch, csv_file):
 
 
 if len(sys.argv) < 2:
-    print("Usage: batches-cypher.py <DATA_DIRECTORY>")
+    print("Usage: batches.py <DATA_DIRECTORY>")
     exit(1)
 
 # to ensure that all inserted edges have their endpoints at the time of their insertion, we insert nodes first and edges second

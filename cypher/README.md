@@ -38,5 +38,5 @@ To load the microbatches, run:
 
 ```bash
 # perform microbatch loading
-python3 batches-cypher.py ${NEO4J_CSV_DIR}
+python3 batches.py ${NEO4J_CSV_DIR}
 ```
