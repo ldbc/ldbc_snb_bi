@@ -1,4 +1,3 @@
-import duckdb
 import psycopg2
 import sys
 import os
@@ -9,8 +8,6 @@ def vacuum(con):
     pg_con.cursor().execute("VACUUM FULL")
     pg_con.set_isolation_level(old_isolation_level)
 
-#print(f"Running DuckDB version {duckdb.__version__}")
-### PG
 print("Running Postgres / psycopg2")
 
 print("Datagen / load initial data set using SQL")
@@ -19,8 +16,6 @@ if len(sys.argv) < 2:
     print("Usage: load.py <DATA_DIRECTORY>")
     exit(1)
 
-#con = duckdb.connect(database="ldbc-sql-workflow-test.duckdb")
-### PG
 pg_con = psycopg2.connect(database="ldbcsnb", host="localhost", user="postgres", password="mysecretpassword",  port=5432)
 con = pg_con.cursor()
 
@@ -51,9 +46,6 @@ for entity in static_entities:
     for csv_file in [f for f in os.listdir(f"{static_path}/{entity}") if f.endswith(".csv")]:
         csv_path = f"{static_path}/{entity}/{csv_file}"
         print(f"- {csv_path}")
-        #con.execute(f"COPY {entity} FROM '{csv_path}' (DELIMITER '|', HEADER)")
-        ### PG
-        #print(f"COPY {entity} FROM '/data/initial_snapshot/static/{entity}/{csv_file}' (DELIMITER '|', HEADER, FORMAT csv)")
         con.execute(f"COPY {entity} FROM '/data/initial_snapshot/static/{entity}/{csv_file}' (DELIMITER '|', HEADER, FORMAT csv)")
         pg_con.commit()
 
@@ -63,14 +55,9 @@ for entity in dynamic_entities:
     for csv_file in [f for f in os.listdir(f"{dynamic_path}/{entity}") if f.endswith(".csv")]:
         csv_path = f"{dynamic_path}/{entity}/{csv_file}"
         print(f"- {csv_path}")
-        #con.execute(f"COPY {entity} FROM '{csv_path}' (DELIMITER '|', HEADER, TIMESTAMPFORMAT '%Y-%m-%dT%H:%M:%S.%g+00:00')")
-        ### PG
-        #print(f"COPY {entity} FROM '/data/initial_snapshot/dynamic/{entity}/{csv_file}' (DELIMITER '|', HEADER, FORMAT csv)")
         con.execute(f"COPY {entity} FROM '/data/initial_snapshot/dynamic/{entity}/{csv_file}' (DELIMITER '|', HEADER, FORMAT csv)")
         pg_con.commit()
 
-# ALTER TABLE is not yet supported in DuckDB
-### PG
 con.execute(load_script("ddl/constraints.sql"))
 pg_con.commit()
 

@@ -1,4 +1,3 @@
-import duckdb
 import psycopg2
 from datetime import datetime, date
 from dateutil.relativedelta import relativedelta
@@ -8,8 +7,6 @@ import csv
 import re
 import sys
 import os
-
-#print(f"Running DuckDB version {duckdb.__version__}")
 
 print("Datagen / apply batches using SQL")
 
@@ -31,8 +28,6 @@ with open(f"ddl/schema-delete-candidates.sql", "r") as schema_delete_candidates_
 with open(f"dml/snb-deletes.sql", "r") as delete_script_file:
     delete_script = delete_script_file.read()
 
-#con = duckdb.connect(database='ldbc-sql-workflow-test.duckdb')
-### PG
 pg_con = psycopg2.connect(database="ldbcsnb", host="localhost", user="postgres", password="mysecretpassword",  port=5432)
 con = pg_con.cursor()
 
@@ -60,8 +55,6 @@ while batch_start_date < network_end_date:
         for csv_file in [f for f in os.listdir(batch_path) if f.endswith(".csv")]:
             csv_path = f"{batch_path}/{csv_file}"
             print(f"- {csv_path}")
-            #con.execute(f"COPY {entity} FROM '{csv_path}' (DELIMITER '|', HEADER, TIMESTAMPFORMAT '%Y-%m-%dT%H:%M:%S.%g+00:00')")
-            ### PG
             con.execute(f"COPY {entity} FROM '/data/inserts/dynamic/{entity}/{batch_dir}/{csv_file}' (DELIMITER '|', HEADER, FORMAT csv)")
             pg_con.commit()
 
@@ -80,8 +73,6 @@ while batch_start_date < network_end_date:
         for csv_file in [f for f in os.listdir(batch_path) if f.endswith(".csv")]:
             csv_path = f"{batch_path}/{csv_file}"
             print(f"- {csv_path}")
-            #con.execute(f"COPY {entity}_Delete_candidates FROM '{csv_path}' (DELIMITER '|', HEADER, TIMESTAMPFORMAT '%Y-%m-%dT%H:%M:%S.%g+00:00')")
-            ### PG
             con.execute(f"COPY {entity}_Delete_candidates FROM '/data/deletes/dynamic/{entity}/{batch_dir}/{csv_file}' (DELIMITER '|', HEADER, FORMAT csv)")
             pg_con.commit()
 
