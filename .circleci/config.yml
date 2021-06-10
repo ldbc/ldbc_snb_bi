@@ -32,15 +32,17 @@ jobs:
           command: |
             mkdir test-data/
             cd test-data
-            wget -q https://ldbc.github.io/ldbc_snb_datagen_spark/social-network-sf0.003-bi-composite-projected-fk-no-header.zip
-            unzip -q social-network-sf0.003-bi-composite-projected-fk-no-header.zip
-            wget -q https://ldbc.github.io/ldbc_snb_datagen_spark/social-network-sf0.003-bi-composite-merged-fk.zip
-            unzip -q social-network-sf0.003-bi-composite-merged-fk.zip
+            # Neo4j
+            wget -q https://ldbc.github.io/ldbc_snb_datagen_spark/social-network-sf0.003-bi-composite-projected-fk-neo4j.zip
+            unzip -q social-network-sf0.003-bi-composite-projected-fk-neo4j.zip
+            # Postgres
+            wget -q https://ldbc.github.io/ldbc_snb_datagen_spark/social-network-sf0.003-bi-composite-merged-fk-postgres.zip
+            unzip -q social-network-sf0.003-bi-composite-merged-fk-postgres.zip
             cd ..
       - run:
           name: Test Cypher toolchain
           command: |
-            export NEO4J_CSV_DIR=`pwd`/test-data/social-network-sf0.003-bi-composite-projected-fk-no-header/csv/bi/composite-projected-fk/
+            export NEO4J_CSV_DIR=`pwd`/test-data/social-network-sf0.003-bi-composite-projected-fk-neo4j/csv/bi/composite-projected-fk/
             cd cypher
             . scripts/environment-variables-default.sh
             scripts/load-in-one-step.sh
@@ -50,7 +52,7 @@ jobs:
       - run:
           name: Test Postgres toolchain
           command: |
-            export POSTGRES_CSV_DIR=`pwd`/test-data/social-network-sf0.003-bi-composite-merged-fk/csv/bi/composite-merged-fk/
+            export POSTGRES_CSV_DIR=`pwd`/test-data/social-network-sf0.003-bi-composite-merged-fk-postgres/csv/bi/composite-merged-fk/
             cd postgres
             scripts/start.sh
             scripts/create-db.sh
