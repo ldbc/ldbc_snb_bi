@@ -15,7 +15,7 @@ while read line; do
   HEADER=${array[1]}
 
   echo ${FILENAME}: ${HEADER}
-  echo ${HEADER} | cat - <(tail -n +2 parameters/${FILENAME}.csv) > parameters/${FILENAME}.txt
-done < parameters/headers.txt
+  echo ${HEADER} | cat - <(tail -n +2 ../parameters/${FILENAME}.csv) > ../parameters/${FILENAME}.txt
+done < ../parameters/headers.txt
 
 echo "Finished preprocessing parameter files"

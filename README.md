@@ -10,9 +10,15 @@ Implementations for the BI workload of the [LDBC Social Network Benchmark](https
 
 :warning: Implementations in this repository are preliminary, i.e. they are unaudited and - in rare cases - do not pass validation. For details, feel free to contact us through an issue or email.
 
+## Implementations
+
 The repository contains two reference implementations:
 
 * `cypher`: queries are expressed in the Cypher language and run in the Neo4j graph database management system (version 4) and its stored procedure libraries (e.g. Graph Data Science)
 * `postgres`: queries are implemented in SQL and run in PostgreSQL relational database management system (version 13)
 
 Both implementations use Docker for ease of setup and execution. However, the setups can be adjusted to use a non-containerized DBMS.
+
+## Usage
+
+See [`.circleci/config.yml`](.circleci/config.yml) for an up-to-date example on how to use the projects in this repository.

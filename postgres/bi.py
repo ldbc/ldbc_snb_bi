@@ -70,7 +70,7 @@ for query_variant in ["1"]: #, "2", "3", "4", "5", "6", "7", "8", "9", "10", "11
     query_file = open(f'queries/bi-{query_num}.sql', 'r')
     query_spec = query_file.read()
 
-    parameters_csv = csv.DictReader(open(f'../cypher/parameters/bi-{query_variant}.csv'), delimiter='|')
+    parameters_csv = csv.DictReader(open(f'../parameters/bi-{query_variant}.csv'), delimiter='|')
 
     k = 0
     for query_parameters in parameters_csv:

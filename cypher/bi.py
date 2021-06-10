@@ -37,7 +37,7 @@ with driver.session() as session:
         query_file = open(f'queries/bi-{query_num}.cypher', 'r')
         query_spec = query_file.read()
 
-        parameters_csv = csv.DictReader(open(f'parameters/bi-{query_variant}.csv'), delimiter='|')
+        parameters_csv = csv.DictReader(open(f'../parameters/bi-{query_variant}.csv'), delimiter='|')
 
         k = 0
         for query_parameters in parameters_csv:
