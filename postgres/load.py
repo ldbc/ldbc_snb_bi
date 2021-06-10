@@ -71,8 +71,7 @@ for entity in dynamic_entities:
 
 # ALTER TABLE is not yet supported in DuckDB
 ### PG
-constraints = load_script("ddl/constraints.sql")
-con.execute(constraints)
+con.execute(load_script("ddl/constraints.sql"))
 pg_con.commit()
 
 print("Vacuuming")

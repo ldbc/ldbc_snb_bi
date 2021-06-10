@@ -32,40 +32,6 @@ CREATE TABLE TagClass (
 
 -- static tables / separate table per individual subtype
 
--- CREATE TABLE Company (
---     id bigint not null,
---     name varchar(256) not null,
---     url varchar(256) not null,
---     isLocatedIn_Country bigint
--- );
-
--- CREATE TABLE University (
---     id bigint not null,
---     name varchar(256) not null,
---     url varchar(256) not null,
---     isLocatedIn_City bigint
--- );
-
--- CREATE TABLE Continent (
---     id bigint not null,
---     name varchar(256) not null,
---     url varchar(256) not null
--- );
-
--- CREATE TABLE Country (
---     id bigint not null,
---     name varchar(256) not null,
---     url varchar(256) not null,
---     isPartOf_Continent bigint
--- );
-
--- CREATE TABLE City (
---     id bigint not null,
---     name varchar(256) not null,
---     url varchar(256) not null,
---     isPartOf_Country bigint
--- );
-
 -- dynamic tables
 
 CREATE TABLE Comment (
