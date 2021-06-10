@@ -26,6 +26,7 @@ jobs:
             # install dependencies
             sudo apt install -y wget unzip
             cypher/scripts/install-dependencies.sh
+            postgres/scripts/install-dependencies.sh
       - run:
           name: Download data
           command: |
@@ -33,16 +34,28 @@ jobs:
             cd test-data
             wget -q https://ldbc.github.io/ldbc_snb_datagen_spark/social-network-sf0.003-bi-composite-projected-fk-no-header.zip
             unzip -q social-network-sf0.003-bi-composite-projected-fk-no-header.zip
+            wget -q https://ldbc.github.io/ldbc_snb_datagen_spark/social-network-sf0.003-bi-composite-merged-fk.zip
+            unzip -q social-network-sf0.003-bi-composite-merged-fk.zip
             cd ..
       - run:
           name: Test Cypher toolchain
           command: |
-            # Cypher
             export NEO4J_CSV_DIR=`pwd`/test-data/social-network-sf0.003-bi-composite-projected-fk-no-header/csv/bi/composite-projected-fk/
             cd cypher
             . scripts/environment-variables-default.sh
             scripts/load-in-one-step.sh
             python3 batches-cypher.py ${NEO4J_CSV_DIR}
             cd ..
-      #     python3 bi.py
+            # python3 bi.py
+      - run:
+          name: Test Postgres toolchain
+          command: |
+            export POSTGRES_CSV_DIR=`pwd`/test-data/social-network-sf0.003-bi-composite-merged-fk/csv/bi/composite-merged-fk/
+            cd postgres
+            scripts/start.sh
+            scripts/create-db.sh
+            python3 load.py ${POSTGRES_CSV_DIR}
+            python3 batches.py ${POSTGRES_CSV_DIR}
+            cd ..
+            # python3 by.py
       - slack/status
