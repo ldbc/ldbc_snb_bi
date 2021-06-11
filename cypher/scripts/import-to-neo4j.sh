@@ -54,6 +54,7 @@ docker run --rm \
     neo4j:${NEO4J_VERSION} \
     neo4j-admin import \
     --id-type=INTEGER \
+    --ignore-empty-strings=true \
     --nodes=Place="/headers/static/Place.csv$(find ${NEO4J_CSV_DIR}/initial_snapshot/static/Place -type f -name 'part-*.csv' -printf ',/import/initial_snapshot/static/Place/%f')" \
     --nodes=Organisation="/headers/static/Organisation.csv$(find ${NEO4J_CSV_DIR}/initial_snapshot/static/Organisation -type f -name 'part-*.csv' -printf ',/import/initial_snapshot/static/Organisation/%f')" \
     --nodes=TagClass="/headers/static/TagClass.csv$(find ${NEO4J_CSV_DIR}/initial_snapshot/static/TagClass -type f -name 'part-*.csv' -printf ',/import/initial_snapshot/static/TagClass/%f')" \
