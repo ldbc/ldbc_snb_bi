@@ -14,8 +14,8 @@ Implementations for the BI workload of the [LDBC Social Network Benchmark](https
 
 The repository contains two reference implementations:
 
-* `cypher`: queries are expressed in the Cypher language and run in the Neo4j graph database management system (version 4) and its stored procedure libraries (e.g. Graph Data Science)
-* `postgres`: queries are implemented in SQL and run in PostgreSQL relational database management system (version 13)
+* [`cypher`](cypher/): queries are expressed in the Cypher language and run in the Neo4j graph database management system (version 4) and its stored procedure libraries (e.g. Graph Data Science)
+* [`postgres`](postgres/): queries are implemented in SQL and run in PostgreSQL relational database management system (version 13)
 
 Both implementations use Docker for ease of setup and execution. However, the setups can be adjusted to use a non-containerized DBMS.
 
