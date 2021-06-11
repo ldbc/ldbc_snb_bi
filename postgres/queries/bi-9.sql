@@ -2,42 +2,18 @@
 \set startDate '\'2011-10-01\''::timestamp
 \set endDate '\'2011-10-15\''::timestamp
  */
-WITH RECURSIVE message_all(PostId
-                      , ThreadCreatorPersonId
-                      , MessageId
-                      , creationDate
-                      , MessageType
-                       ) AS (
-    SELECT id AS PostId
-         , CreatorPersonId AS ThreadCreatorPersonId
-         , id AS MessageId
-         , creationDate
-         , 'Post'
-      FROM Post
-     WHERE creationDate BETWEEN :startDate AND :endDate
-  UNION ALL
-    SELECT psa.PostId AS PostId
-         , psa.ThreadCreatorPersonId AS ThreadCreatorPersonId
-         , id AS messageId
-         , Comment.creationDate
-         , 'Comment'
-      FROM Comment
-         , message_all psa
-     WHERE coalesce(Comment.ParentPostId, Comment.ParentCommentId) = psa.MessageId
-        -- this is a performance optimization only
-       AND Comment.creationDate BETWEEN :startDate AND :endDate
-)
 SELECT Person.id AS "person.id"
      , Person.firstName AS "person.firstName"
      , Person.lastName AS "person.lastName"
-     , count(DISTINCT psa.PostId) AS threadCount
-     -- if the thread initiator message does not count as a reply
-     --, count(DISTINCT CASE WHEN psa.psa_messagetype = 'Comment' then psa.psa_messageid ELSE null END) AS messageCount
-     , count(DISTINCT psa.MessageId) AS messageCount
+     , count(DISTINCT MessageThread.RootPostId) AS threadCount
+     , count(DISTINCT MessageThread.MessageId) AS messageCount
   FROM Person
-  LEFT JOIN message_all psa
-    ON Person.id = psa.ThreadCreatorPersonId
-   AND psa.creationDate BETWEEN :startDate AND :endDate
+  LEFT JOIN Post
+    ON Person.id = Post.CreatorPersonId
+   AND Post.creationDate BETWEEN :startDate AND :endDate
+  LEFT JOIN MessageThread
+    ON Post.id = MessageThread.RootPostId
+   AND MessageThread.creationDate BETWEEN :startDate AND :endDate
  GROUP BY Person.id, Person.firstName, Person.lastName
  ORDER BY messageCount DESC, Person.id
  LIMIT 100

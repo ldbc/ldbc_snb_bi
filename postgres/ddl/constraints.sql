@@ -44,11 +44,12 @@ CREATE VIEW Message AS
 
 -- recursive view containing the root Post of each Message (for Posts, themselves; for Comments, traversing up the Message thread to the root Post of the tree)
 CREATE VIEW MessageThread AS
-    WITH RECURSIVE MessageThread_CTE(creationDate, MessageId, RootPostId, content, imageFile, locationIP, browserUsed, language, length, CreatorPersonId, ContainerForumId, LocationCountryId, ParentMessageId, type) AS (
+    WITH RECURSIVE MessageThread_CTE(creationDate, MessageId, RootPostId, RootPostLanguage, content, imageFile, locationIP, browserUsed, language, length, CreatorPersonId, ContainerForumId, LocationCountryId, ParentMessageId, type) AS (
         SELECT
             creationDate,
             id AS MessageId,
             id AS RootPostId,
+            language AS RootPostLanguage,
             content,
             imageFile,
             locationIP,
@@ -63,18 +64,19 @@ CREATE VIEW MessageThread AS
         FROM Post
         UNION ALL
         SELECT
-            Comment.creationDate,
+            Comment.creationDate AS creationDate,
             Comment.id AS MessageId,
             MessageThread_CTE.RootPostId AS RootPostId,
-            Comment.content,
+            MessageThread_CTE.RootPostLanguage AS RootPostLanguage,
+            Comment.content AS content,
             NULL::varchar(40) AS imageFile,
-            Comment.locationIP,
-            Comment.browserUsed,
+            Comment.locationIP AS locationIP,
+            Comment.browserUsed AS browserUsed,
             NULL::varchar(40) AS language,
-            Comment.length,
-            Comment.CreatorPersonId,
+            Comment.length AS length,
+            Comment.CreatorPersonId AS CreatorPersonId,
             MessageThread_CTE.ContainerForumId AS ContainerForumId,
-            Comment.LocationCountryId,
+            Comment.LocationCountryId AS LocationCityId,
             coalesce(Comment.ParentPostId, Comment.ParentCommentId) AS ParentMessageId,
             'Comment' AS type
         FROM Comment, MessageThread_CTE
