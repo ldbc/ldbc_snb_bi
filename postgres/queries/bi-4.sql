@@ -19,7 +19,6 @@ WITH Top100_Popular_Forums AS (
          -- filter
       AND Forum.creationDate > :date
       GROUP BY Country.Id, Forum.Id
-      ORDER BY count(*) DESC, Forum.id, Country.id
   ) ForumMembershipPerCountry
   GROUP BY ForumId
   ORDER BY maxNumberOfMembers DESC, ForumId
