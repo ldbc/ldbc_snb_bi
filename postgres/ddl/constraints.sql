@@ -43,12 +43,12 @@ CREATE VIEW Message AS
 ;
 
 -- recursive view containing the root Post of each Message (for Posts, themselves; for Comments, traversing up the Message thread to the root Post of the tree)
-CREATE VIEW Message_Thread AS
-    WITH RECURSIVE Message_Thread_CTE(creationDate, id, rootPostId, content, imageFile, locationIP, browserUsed, language, length, CreatorPersonId, ContainerForumId, LocationCountryId, ParentMessageId, type) AS (
+CREATE VIEW MessageThread AS
+    WITH RECURSIVE MessageThread_CTE(creationDate, MessageId, RootPostId, content, imageFile, locationIP, browserUsed, language, length, CreatorPersonId, ContainerForumId, LocationCountryId, ParentMessageId, type) AS (
         SELECT
             creationDate,
-            id,
-            id AS rootPostId,
+            id AS MessageId,
+            id AS RootPostId,
             content,
             imageFile,
             locationIP,
@@ -59,13 +59,13 @@ CREATE VIEW Message_Thread AS
             ContainerForumId,
             LocationCountryId,
             NULL::bigint AS ParentMessageId,
-            'Post'
+            'Post' AS type
         FROM Post
         UNION ALL
         SELECT
             Comment.creationDate,
-            Comment.id,
-            Message_Thread_CTE.rootPostId AS rootPostId,
+            Comment.id AS MessageId,
+            MessageThread_CTE.RootPostId AS RootPostId,
             Comment.content,
             NULL::varchar(40) AS imageFile,
             Comment.locationIP,
@@ -73,14 +73,14 @@ CREATE VIEW Message_Thread AS
             NULL::varchar(40) AS language,
             Comment.length,
             Comment.CreatorPersonId,
-            NULL::bigint AS ContainerForumId,
+            MessageThread_CTE.ContainerForumId AS ContainerForumId,
             Comment.LocationCountryId,
             coalesce(Comment.ParentPostId, Comment.ParentCommentId) AS ParentMessageId,
-            'Comment'
-        FROM Comment, Message_Thread_CTE
-        WHERE coalesce(Comment.ParentPostId, Comment.ParentCommentId) = Message_Thread_CTE.id
+            'Comment' AS type
+        FROM Comment, MessageThread_CTE
+        WHERE coalesce(Comment.ParentPostId, Comment.ParentCommentId) = MessageThread_CTE.MessageId
     )
-    SELECT * FROM Message_Thread_CTE;
+    SELECT * FROM MessageThread_CTE;
 
 CREATE VIEW Person_likes_Message AS
     SELECT creationDate, PersonId, CommentId AS MessageId FROM Person_likes_Comment

@@ -6,12 +6,11 @@ SELECT Forum.id                AS "forum.id"
      , Forum.title             AS "forum.title"
      , Forum.creationDate      AS "forum.creationDate"
      , Forum.ModeratorPersonId AS "person.id"
-     , count(DISTINCT Message.id) AS messageCount
-     -- TODO: count (message)-[:REPLY_OF*0]->(post)-[:CONTAINER_OF]->(forum)
+     , count(DISTINCT MessageThread.MessageId) AS messageCount
   FROM tagClass
      , tag
      , Message_hasTag_Tag
-     , Message
+     , MessageThread
      , Forum
      , Person AS ModeratorPerson -- moderator
      , City
@@ -20,8 +19,8 @@ SELECT Forum.id                AS "forum.id"
     -- join
        TagClass.id = Tag.TypeTagClassId
    AND Tag.id = Message_hasTag_Tag.TagId
-   AND Message_hasTag_Tag.MessageId = Message.id
-   AND Message.ContainerForumId = Forum.id
+   AND Message_hasTag_Tag.MessageId = MessageThread.MessageId
+   AND MessageThread.ContainerForumId = Forum.id
    AND Forum.ModeratorPersonId = ModeratorPerson.id
    AND ModeratorPerson.LocationCityId = City.id
    AND City.PartOfCountryId = Country.id

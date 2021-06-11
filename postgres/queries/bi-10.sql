@@ -1,6 +1,6 @@
 /* Q10. Experts in social circle
-\set personId 19791209310731
-\set country '\'Pakistan\''
+\set personId 30786325588624
+\set country '\'China\''
 \set tagClass '\'MusicalArtist\''
 \set minPathDistance 2
 \set maxPathDistance 3
@@ -10,9 +10,6 @@ Above that, I also encountered the following error because of the explosion in t
   ERROR:  could not write to tuplestore temporary file: No space left on device
  */
 WITH RECURSIVE friends(startPersonId, path, friendId) AS (
-   --  SELECT id, ARRAY[]::record[], id
-   --    FROM Person
-   --   WHERE id = :personId
     SELECT :personId AS startPersonId, ARRAY[]::record[], :personId AS friendId
   UNION ALL
     SELECT f.startPersonId
