@@ -6,18 +6,16 @@
 \set maxPathDistance 5
  */
 WITH RECURSIVE friends(startPerson, hopCount, friend) AS (
-    SELECT p_personid, 0, p_personid
-      FROM person
-     WHERE p_personid = :personId
+    SELECT :personId AS startPersonId, 0, :personId AS friendId
   UNION
     SELECT f.startPerson
          , f.hopCount+1
-         , CASE WHEN f.friend = k.k_person1id then k.k_person2id ELSE k.k_person1id END
+         , CASE WHEN f.friend = k.Person1Id then k.Person2Id ELSE k.Person1Id END
       FROM friends f
-         , knows k
+         , Person_knows_Person k
      WHERE
         -- join
-           f.friend = k.k_person1id -- note, that knows table have both (p1, p2) and (p2, p1)
+           f.friend = k.Person1Id -- note, that knows table have both (p1, p2) and (p2, p1)
         -- filter
         -- stop condition
        AND f.hopCount < :maxPathDistance
@@ -29,48 +27,48 @@ WITH RECURSIVE friends(startPerson, hopCount, friend) AS (
      GROUP BY startPerson, friend
 )
    , friend_list AS (
-    SELECT DISTINCT f.friend AS friendid
-      FROM friends_shortest f
-         , person tf -- the friend's preson record
-         , place ci -- city
-         , place co -- country
+    SELECT DISTINCT friends_shortest.friend AS friendid
+      FROM friends_shortest
+         , Person tf -- the friend's person record
+         , City -- city
+         , Country -- country
      WHERE
         -- join
-           f.friend = tf.p_personid
-       AND tf.p_placeid = ci.pl_placeid
-       AND ci.pl_containerplaceid = co.pl_placeid
+           friends_shortest.friend = tf.id
+       AND tf.LocationCityId = City.id
+       AND City.PartOfCountryId = Country.id
         -- filter
-       AND f.hopCount BETWEEN :minPathDistance AND :maxPathDistance
-       AND co.pl_name = :country
+       AND friends_shortest.hopCount BETWEEN :minPathDistance AND :maxPathDistance
+       AND Country.name = :country
 )
    , messages_of_tagclass_by_friends AS (
-    SELECT DISTINCT f.friendid
-         , m.m_messageid AS messageid
-      FROM friend_list f
-         , message m
-         , message_tag pt
-         , tag t
-         , tagclass tc
+    SELECT DISTINCT friend_list.friendId AS friendId
+         , Message.id AS MessageId
+      FROM friend_list
+         , Message
+         , Message_hasTag_Tag
+         , Tag
+         , TagClass
      WHERE
         -- join
-           f.friendid = m.m_creatorid
-       AND m.m_messageid = pt.mt_messageid
-       AND pt.mt_tagid = t.t_tagid
-       AND t.t_tagclassid = tc.tc_tagclassid
+           friend_list.friendId = Message.CreatorPersonId
+       AND Message.id = Message_hasTag_Tag.MessageId
+       AND Message_hasTag_Tag.TagId = Tag.id
+       AND Tag.TypeTagClassId = TagClass.id
         -- filter
-       AND tc.tc_name = :tagClass
+       AND TagClass.name = :tagClass
 )
-SELECT m.friendid AS "person.id"
-     , t.t_name AS "tag.name"
+SELECT m.friendId AS "person.id"
+     , Tag.name AS "tag.name"
      , count(*) AS messageCount
   FROM messages_of_tagclass_by_friends m
-     , message_tag pt
-     , tag t
+     , Message_hasTag_Tag
+     , Tag
  WHERE
     -- join
-       m.messageid = pt.mt_messageid
-   AND pt.mt_tagid = t.t_tagid
- GROUP BY m.friendid, t.t_name
- ORDER BY messageCount DESC, t.t_name, m.friendid
+       m.MessageId = Message_hasTag_Tag.MessageId
+   AND Message_hasTag_Tag.TagId = Tag.id
+ GROUP BY m.friendId, Tag.name
+ ORDER BY messageCount DESC, Tag.name, m.friendId
  LIMIT 100
 ;
