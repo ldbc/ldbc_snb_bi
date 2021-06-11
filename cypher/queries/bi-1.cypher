@@ -24,7 +24,7 @@ WITH
     ELSE                           3
   END AS lengthCategory,
   count(message) AS messageCount,
-  floor(sum(message.length) / count(message)) AS averageMessageLength,
+  sum(message.length) / toFloat(count(message)) AS averageMessageLength,
   sum(message.length) AS sumMessageLength
 RETURN
   year,
