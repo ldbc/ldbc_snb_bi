@@ -1,5 +1,5 @@
 /* Q1. Posting summary
-\set datetime '\'2011-07-21T22:00:00.000+00:00\''::timestamp
+\set datetime '\'2011-12-01T00:00:00.000+00:00\''::timestamp
  */
 WITH
   message_count AS (
@@ -14,7 +14,7 @@ WITH
              WHEN length <  40 THEN 0 -- short
              WHEN length <  80 THEN 1 -- one liner
              WHEN length < 160 THEN 2 -- tweet
-             ELSE                     3 -- long
+             ELSE                   3 -- long
            END AS lengthCategory
          , length
       FROM message
