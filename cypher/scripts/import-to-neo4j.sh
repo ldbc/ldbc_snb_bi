@@ -16,6 +16,11 @@ cd ..
 # make sure directories exist
 mkdir -p ${NEO4J_CONTAINER_ROOT}/{logs,import,plugins}
 
+if [ ! -d ${NEO4J_CSV_DIR} ]; then
+    echo "Neo4j CSV directory does not exist. \$NEO4J_CSV_DIR is set to: ${NEO4J_CSV_DIR}"
+    exit 1
+fi
+
 # start with a fresh data dir (required by the CSV importer)
 mkdir -p ${NEO4J_DATA_DIR}
 rm -rf ${NEO4J_DATA_DIR}/*
