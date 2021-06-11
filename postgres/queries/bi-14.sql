@@ -1,6 +1,6 @@
 /* Q14. International dialog
-\set country1 '\'Indonesia\''
-\set country2 '\'Brazil\''
+\set country1 '\'Chile\''
+\set country2 '\'Argentina\''
  */
 -- TODO: maybe LATERAL joins could work for top-1 selection
 WITH Person1Candidates AS (

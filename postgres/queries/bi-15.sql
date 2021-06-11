@@ -1,6 +1,6 @@
 /* Q15. Trusted connection paths through forums created in a given timeframe
-\set person1id 19791209303405
-\set person2id 19791209308983
+\set person1id 21990232564808
+\set person2id 26388279076936
 \set startDate '\'2010-11-01T00:00:00.000+00:00\''::timestamp
 \set endDate '\'2010-12-01T00:00:00.000+00:00\''::timestamp
  */
@@ -79,7 +79,7 @@ WITH RECURSIVE reply_scores(r_threadid
          , ARRAY[Person1Id, Person2Id]::bigint[] AS path
          , score AS weight
          , 1 AS hopCount
-         , max(CASE WHEN Person2Id = :person2id THEN 1 ELSE 0 END) OVER () as person2Reached
+         , max(CASE WHEN Person2Id = :person2id THEN 1 ELSE 0 END) OVER () AS person2Reached
       FROM wknows
      WHERE Person1Id = :person1id
   UNION ALL
@@ -88,7 +88,7 @@ WITH RECURSIVE reply_scores(r_threadid
          , array_append(path, Person2Id) AS path
          , weight + score AS weight
          , hopCount + 1 AS hopCount
-         , max(CASE WHEN Person2Id = :person2id THEN 1 ELSE 0 END) OVER () as person2Reached
+         , max(CASE WHEN Person2Id = :person2id THEN 1 ELSE 0 END) OVER () AS person2Reached
       FROM paths p
          , wknows k
      WHERE
