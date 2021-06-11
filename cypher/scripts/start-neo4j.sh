@@ -26,6 +26,7 @@ docker run --rm \
     --volume=${NEO4J_CONTAINER_ROOT}/logs:/logs \
     --volume=${NEO4J_CSV_DIR}:/var/lib/neo4j/import \
     --volume=${NEO4J_CONTAINER_ROOT}/plugins:/plugins \
+    --env NEO4JLABS_PLUGINS='["apoc", "graph-data-science"]' \
     --env NEO4J_AUTH=none \
     --env NEO4J_apoc_import_file_enabled=true \
     --name ${NEO4J_CONTAINER_NAME} \
