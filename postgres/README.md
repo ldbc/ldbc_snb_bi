@@ -31,6 +31,7 @@ scripts/create-db.sh
 
 # load and apply the microbatches
 python3 load.py ${POSTGRES_CSV_DIR}
+```
 
 To load the microbatches, run:
 
