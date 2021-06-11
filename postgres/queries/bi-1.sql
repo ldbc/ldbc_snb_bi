@@ -19,7 +19,7 @@ WITH
          , length
       FROM message
      WHERE creationDate < :datetime
-       AND content IS NOT NULL -- TODO NULL vs empty string
+       AND content IS NOT NULL
 )
 SELECT messageYear, isComment, lengthCategory
      , count(*) AS messageCount
