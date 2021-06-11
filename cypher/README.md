@@ -17,8 +17,9 @@ tools/build.sh
 
 # set the desired SF and generate
 export SF=0.003
-rm -rf sf${SF}/
-tools/run.py ./target/ldbc_snb_datagen_${PLATFORM_VERSION}-${DATAGEN_VERSION}.jar -- --format csv --scale-factor ${SF} --mode bi --explode-edges --format-options header=false,quoteAll=true --output-dir sf${SF}
+rm -rf sf${SF}/csv/bi/composite-projected-fk/
+tools/run.py ./target/ldbc_snb_datagen_${PLATFORM_VERSION}-${DATAGEN_VERSION}.jar -- \
+    --format csv --scale-factor ${SF} --mode bi --explode-edges --format-options header=false,quoteAll=true --output-dir sf${SF}
 export NEO4J_CSV_DIR=`pwd`/sf${SF}/csv/bi/composite-projected-fk/
 ```
 

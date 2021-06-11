@@ -14,8 +14,9 @@ tools/build.sh
 
 # set the desired SF and generate
 export SF=0.003
-rm -rf sf${SF}/
-tools/run.py ./target/ldbc_snb_datagen_${PLATFORM_VERSION}-${DATAGEN_VERSION}.jar -- --format csv --scale-factor ${SF} --mode bi --output-dir sf${SF}
+rm -rf sf${SF}/csv/bi/composite-merged-fk/
+tools/run.py ./target/ldbc_snb_datagen_${PLATFORM_VERSION}-${DATAGEN_VERSION}.jar -- \
+    --format csv --scale-factor ${SF} --mode bi --output-dir sf${SF}
 export POSTGRES_CSV_DIR=`pwd`/sf${SF}/csv/bi/composite-merged-fk/
 ```
 
