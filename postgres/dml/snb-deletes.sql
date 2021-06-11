@@ -153,54 +153,54 @@ JOIN Post_Delete_candidates
 ----------------------------------------------------------------------------------------------------
 DELETE FROM Comment
 USING (
-  WITH RECURSIVE Message_Thread AS (
+  WITH RECURSIVE MessageThread AS (
       SELECT id
       FROM Comment_Delete_candidates -- starting from the delete candidate comments
       UNION
       SELECT Comment.id AS id
-      FROM Message_Thread
+      FROM MessageThread
       JOIN Comment
-        ON Comment.ParentCommentId = Message_Thread.id
-        OR Comment.ParentPostId = Message_Thread.id
+        ON Comment.ParentCommentId = MessageThread.id
+        OR Comment.ParentPostId = MessageThread.id
   )
   SELECT id
-  FROM Message_Thread
+  FROM MessageThread
   ) sub
 WHERE sub.id = Comment.id
 ;
 
 DELETE FROM Person_likes_Comment
 USING (
-  WITH RECURSIVE Message_Thread AS (
+  WITH RECURSIVE MessageThread AS (
       SELECT id
       FROM Comment_Delete_candidates -- starting from the delete candidate comments
       UNION
       SELECT Comment.id AS id
-      FROM Message_Thread
+      FROM MessageThread
       JOIN Comment
-        ON Comment.ParentCommentId = Message_Thread.id
-        OR Comment.ParentPostId = Message_Thread.id
+        ON Comment.ParentCommentId = MessageThread.id
+        OR Comment.ParentPostId = MessageThread.id
   )
   SELECT id
-  FROM Message_Thread
+  FROM MessageThread
   ) sub
 WHERE sub.id = Person_likes_Comment.CommentId
 ;
 
 DELETE FROM Comment_hasTag_Tag
 USING (
-  WITH RECURSIVE Message_Thread AS (
+  WITH RECURSIVE MessageThread AS (
       SELECT id
       FROM Comment_Delete_candidates -- starting from the delete candidate comments
       UNION ALL
       SELECT comment.id AS id
-      FROM Message_Thread
+      FROM MessageThread
       JOIN comment
-        ON comment.ParentCommentId = Message_Thread.id
-        OR comment.ParentPostId = Message_Thread.id
+        ON comment.ParentCommentId = MessageThread.id
+        OR comment.ParentPostId = MessageThread.id
   )
   SELECT id
-  FROM Message_Thread
+  FROM MessageThread
   ) sub
 WHERE sub.id = Comment_hasTag_Tag.CommentId
 ;
