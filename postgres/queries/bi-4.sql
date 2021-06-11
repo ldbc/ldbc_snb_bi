@@ -2,23 +2,28 @@
 \set date '\'2012-09-01\''::timestamp
  */
 WITH Top100_Popular_Forums AS (
-  SELECT Forum.id AS id
-    FROM Forum_hasMember_Person
-       , Person
-       , City
-       , Country
-       , Forum
-   WHERE
-      -- join
-         Forum_hasMember_Person.PersonId = Person.id
-     AND Forum.id = Forum_hasMember_Person.ForumId
-     AND Person.LocationCityId = City.id
-     AND City.PartOfCountryId = Country.id
-      -- filter
-     AND Forum.creationDate > :date
-   GROUP BY Country.Id, Forum.Id
-   ORDER BY count(*) DESC, Forum.id, Country.id
-   LIMIT 100
+  SELECT DISTINCT ForumId AS id, max(numberOfMembers) AS maxNumberOfMembers
+  FROM (
+   SELECT Forum.id AS ForumId, count(Person.id) AS numberOfMembers, Country.id AS CountryId
+      FROM Forum_hasMember_Person
+         , Person
+         , City
+         , Country
+         , Forum
+      WHERE
+         -- join
+            Forum_hasMember_Person.PersonId = Person.id
+      AND Forum.id = Forum_hasMember_Person.ForumId
+      AND Person.LocationCityId = City.id
+      AND City.PartOfCountryId = Country.id
+         -- filter
+      AND Forum.creationDate > :date
+      GROUP BY Country.Id, Forum.Id
+      ORDER BY count(*) DESC, Forum.id, Country.id
+  ) ForumMembershipPerCountry
+  GROUP BY ForumId
+  ORDER BY maxNumberOfMembers DESC, ForumId
+  LIMIT 100
 )
 SELECT au.id AS "person.id"
      , au.firstName AS "person.firstName"

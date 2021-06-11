@@ -6,6 +6,7 @@ MATCH (country:Country)<-[:IS_PART_OF]-(:City)<-[:IS_LOCATED_IN]-(person:Person)
 WHERE forum.creationDate > $date
 WITH country, forum, count(person) AS numberOfMembers
 ORDER BY numberOfMembers DESC, forum.id ASC, country.id
+WITH DISTINCT forum, max(numberOfMembers) AS maxNumberOfMembers
 LIMIT 100
 WITH collect(forum) AS popularForums
 UNWIND popularForums AS forum
