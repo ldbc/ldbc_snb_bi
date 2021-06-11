@@ -1,6 +1,6 @@
 /* Q8. Central person for a tag
 \set tag '\'Che_Guevara\''
-\set date '\'2011-07-22T00:00:00.000+00:00\''::timestamp
+\set date '\'2011-07-22\''::timestamp
  */
 WITH Person_interested_in_Tag AS (
     SELECT Person.id AS PersonId

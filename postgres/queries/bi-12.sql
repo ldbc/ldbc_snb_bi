@@ -1,5 +1,5 @@
 /* Q12. How many persons have a given number of messages
-\set date '\'2010-07-22T00:00:00.000+00:00\''::timestamp
+\set date '\'2010-07-22\''::timestamp
 \set lengthThreshold '20'
 \set languages '\'{"ar", "hu"}\''::varchar[]
  */

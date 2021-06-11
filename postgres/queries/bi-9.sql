@@ -1,6 +1,6 @@
 /* Q9. Top thread initiators
-\set startDate '\'2011-10-01T00:00:00.000+00:00\''::timestamp
-\set endDate '\'2011-10-15T00:00:00.000+00:00\''::timestamp
+\set startDate '\'2011-10-01\''::timestamp
+\set endDate '\'2011-10-15\''::timestamp
  */
 WITH RECURSIVE message_all(PostId
                       , ThreadCreatorPersonId

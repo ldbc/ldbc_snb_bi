@@ -1,8 +1,8 @@
 /* Q15. Trusted connection paths through forums created in a given timeframe
 \set person1id 21990232564808
 \set person2id 26388279076936
-\set startDate '\'2010-11-01T00:00:00.000+00:00\''::timestamp
-\set endDate '\'2010-12-01T00:00:00.000+00:00\''::timestamp
+\set startDate '\'2010-11-01\''::timestamp
+\set endDate '\'2010-12-01\''::timestamp
  */
 
 WITH RECURSIVE reply_scores(r_threadid

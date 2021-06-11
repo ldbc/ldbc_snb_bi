@@ -1,6 +1,6 @@
 /* Q13. Zombies in a country
 \set country '\'France\''
-\set endDate '\'2013-01-01T00:00:00.000+00:00\''::timestamp
+\set endDate '\'2013-01-01\''::timestamp
  */
 WITH Zombies AS (
     SELECT Person.id AS zombieid

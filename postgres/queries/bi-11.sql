@@ -1,6 +1,6 @@
 /* Q11. Friend triangles
 \set country '\'Belarus\''
-\set startDate '\'2010-06-01T00:00:00.000+00:00\''::timestamp
+\set startDate '\'2010-06-01\''::timestamp
  */
 WITH Persons_of_country_w_friends AS (
     SELECT Person.id AS PersonId

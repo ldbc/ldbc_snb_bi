@@ -1,5 +1,5 @@
 /* Q2. Tag evolution
-\set date '\'2012-06-01T00:00:00.000+00:00\''::timestamp
+\set date '\'2012-06-01\''::timestamp
 \set tagClass '\'MusicalArtist\''
  */
 WITH detail AS (
