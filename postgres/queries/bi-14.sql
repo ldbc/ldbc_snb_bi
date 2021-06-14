@@ -7,26 +7,20 @@ WITH Person1Candidates AS (
     SELECT Person.id AS id
          , City.id AS LocationCityId
       FROM Country
-         , City
-         , Person
-     WHERE
-        -- join
-           Country.id = City.PartOfCountryId
-       AND City.id = Person.LocationCityId
-        -- filter
-       AND Country.name = :country1
+      JOIN City
+        ON City.PartOfCountryId = Country.id
+      JOIN Person
+        ON Person.LocationCityId = City.id
+     WHERE Country.name = :country1
 )
 ,  Person2Candidates AS (
     SELECT Person.id AS id
       FROM Country
-         , City
-         , Person
-     WHERE
-        -- join
-           Country.id = City.PartOfCountryId
-       AND City.id = Person.LocationCityId
-        -- filter
-       AND Country.name = :country2
+      JOIN City
+        ON City.PartOfCountryId = Country.id
+      JOIN Person
+        ON Person.LocationCityId = City.id     
+     WHERE Country.name = :country2
 )
 ,  case1 AS (
     SELECT DISTINCT

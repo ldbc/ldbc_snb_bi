@@ -5,17 +5,14 @@
 WITH Zombies AS (
     SELECT Person.id AS zombieid
       FROM Country
-         , City
-         , Person
-           LEFT JOIN Message
-             ON Person.id = Message.CreatorPersonId
-            AND Message.creationDate BETWEEN Person.creationDate AND :endDate -- the lower bound is an optmization to prune messages
-     WHERE
-        -- join
-           Country.id = City.PartOfCountryId
-       AND City.id = Person.LocationCityId
-        -- filter
-       AND Country.name = :country
+      JOIN City
+        ON City.PartOfCountryId = Country.id
+      JOIN Person
+        ON Person.LocationCityId = City.id
+      LEFT JOIN Message
+         ON Person.id = Message.CreatorPersonId
+        AND Message.creationDate BETWEEN Person.creationDate AND :endDate -- the lower bound is an optmization to prune messages
+     WHERE Country.name = :country
        AND Person.creationDate < :endDate
      GROUP BY Person.id
         -- average of [0, 1) messages per month is equivalent with having less messages than the month span between person creationDate and parameter :endDate

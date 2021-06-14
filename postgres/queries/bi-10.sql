@@ -40,29 +40,24 @@ WITH RECURSIVE friends(startPersonId, path, friendId) AS (
     SELECT DISTINCT f.friendId
          , Message.id AS messageid
       FROM friend_list f
-         , Message
-         , Message_hasTag_Tag
-         , Tag
-         , TagClass
-     WHERE
-        -- join
-           f.friendId = Message.CreatorPersonId
-       AND Message.id = Message_hasTag_Tag.MessageId
-       AND Message_hasTag_Tag.TagId = Tag.id
-       AND Tag.TypeTagClassId = TagClass.id
-        -- filter
-       AND TagClass.name = :tagClass
+      JOIN Message
+        ON Message.CreatorPersonId = f.friendId
+      JOIN Message_hasTag_Tag
+        ON Message_hasTag_Tag.MessageId = Message.id
+      JOIN Tag
+        ON Tag.id = Message_hasTag_Tag.TagId
+      JOIN TagClass
+        ON TagClass.id = Tag.TypeTagClassId
+      WHERE TagClass.name = :tagClass
 )
 SELECT m.friendId AS "person.id"
      , Tag.name AS "tag.name"
      , count(*) AS messageCount
   FROM messages_of_tagclass_by_friends m
-     , Message_hasTag_Tag
-     , Tag
- WHERE
-    -- join
-       m.MessageId = Message_hasTag_Tag.MessageId
-   AND Message_hasTag_Tag.TagId = Tag.id
+  JOIN Message_hasTag_Tag
+    ON Message_hasTag_Tag.MessageId = m.MessageId
+  JOIN Tag
+    ON Tag.id = Message_hasTag_Tag.TagId
  GROUP BY m.friendId, Tag.name
  ORDER BY messageCount DESC, Tag.name, m.friendId
  LIMIT 100
