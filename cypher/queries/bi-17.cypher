@@ -1,6 +1,10 @@
 // Q17. Information propagation analysis
 /*
-:param [{ tag, delta }] => {RETURN 'Snowboard' AS tag, 10 AS delta}
+:param [{ tag, delta }] => {
+  RETURN
+    'Frank_Sinatra' AS tag,
+    4 AS delta
+  }
 */
 MATCH
   (tag:Tag {name: $tag}),
