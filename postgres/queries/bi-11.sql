@@ -7,26 +7,22 @@ WITH Persons_of_country_w_friends AS (
          , Person_knows_Person.Person2Id AS FriendId
          , Person_knows_Person.creationDate AS creationDate
       FROM Person
-         , City
-         , Country
-         , Person_knows_Person
-     WHERE
-        -- join
-           Person.LocationCityId = City.id
-       AND City.PartOfCountryId = Country.id
-       AND Person.id = Person_knows_Person.Person1Id
-        -- filter
+      JOIN City
+        ON City.id = Person.LocationCityId
+      JOIN Country
+        ON Country.id = City.PartOfCountryId
        AND Country.name = :country
+      JOIN Person_knows_Person
+        ON Person_knows_Person.Person1Id = Person.id
 )
 SELECT count(*)
   FROM Persons_of_country_w_friends p1
-     , Persons_of_country_w_friends p2
-     , Persons_of_country_w_friends p3
- WHERE
-    -- join
-       p1.FriendId = p2.PersonId
-   AND p2.FriendId = p3.PersonId
+  JOIN Persons_of_country_w_friends p2
+    ON p1.FriendId = p2.PersonId
+  JOIN Persons_of_country_w_friends p3
+    ON p2.FriendId = p3.PersonId
    AND p3.FriendId = p1.PersonId
+ WHERE true
     -- filter: unique triangles only
    AND p1.PersonId < p2.PersonId
    AND p2.PersonId < p3.PersonId
