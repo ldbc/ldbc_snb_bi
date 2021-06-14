@@ -16,11 +16,9 @@ WITH RECURSIVE friends(startPersonId, path, friendId) AS (
          , f.path || ROW(k.Person1id, k.Person2id)
          , CASE WHEN f.friendId = k.Person1id THEN k.Person2id ELSE k.Person1id END
       FROM friends f
-         , Person_knows_Person k
-     WHERE
-        -- join
-           f.friendId = k.Person1id -- note, that knows table have both (p1, p2) and (p2, p1)
-        -- filter
+      JOIN Person_knows_Person k
+        ON k.Person1id = f.friendId
+     WHERE true
        -- knows edge can't be traversed twice
        AND NOT ARRAY[ROW(k.Person1id, k.Person2id), ROW(k.Person2id, k.Person1id)] && f.path
         -- stop condition
@@ -29,17 +27,14 @@ WITH RECURSIVE friends(startPersonId, path, friendId) AS (
    , friend_list AS (
     SELECT DISTINCT f.friendId AS friendId
       FROM Friends f
-         , Person tf -- the friend's preson record
-         , City
-         , Country
-     WHERE
-        -- join
-           f.friendId = tf.id
-       AND tf.LocationCityId = City.id
-       AND City.PartOfCountryId = Country.id
-        -- filter
-       AND coalesce(array_length(f.path, 1), 0) BETWEEN :minPathDistance AND :maxPathDistance
+      JOIN Person tf -- the friend's preson record
+        ON tf.id = f.friendId
+      JOIN City
+        ON City.id = tf.LocationCityId
+      JOIN Country
+        ON Country.id = City.PartOfCountryId
        AND Country.name = :country
+     WHERE coalesce(array_length(f.path, 1), 0) BETWEEN :minPathDistance AND :maxPathDistance
 )
    , messages_of_tagclass_by_friends AS (
     SELECT DISTINCT f.friendId

@@ -5,30 +5,24 @@
 WITH Person_interested_in_Tag AS (
     SELECT Person.id AS PersonId
       FROM Person
-         , Person_hasInterest_Tag
-         , Tag
-     WHERE
-        -- join
-           Person.id = Person_hasInterest_Tag.PersonId
-       AND Person_hasInterest_Tag.TagId = Tag.id
-        -- filter
+      JOIN Person_hasInterest_Tag
+        ON Person_hasInterest_Tag.PersonId = Person.id
+      JOIN Tag
+        ON Tag.id = Person_hasInterest_Tag.TagId
        AND Tag.name = :tag
 )
    , Person_Message_score AS (
     SELECT Person.id AS PersonId
          , count(*) AS message_score
       FROM Message
-         , Person
-         , Message_hasTag_Tag
-         , Tag
-     WHERE
-        -- join
-           Message.CreatorPersonId = Person.id
-       AND Message.id = Message_hasTag_Tag.MessageId
-       AND Message_hasTag_Tag.TagId = Tag.id
-        -- filter
-       AND Message.creationDate > :date
+      JOIN Person
+        ON Person.id = Message.CreatorPersonId
+      JOIN Message_hasTag_Tag
+        ON Message_hasTag_Tag.MessageId = Message.id
+      JOIN Tag
+        ON Tag.id = Message_hasTag_Tag.TagId
        AND Tag.name = :tag
+     WHERE Message.creationDate > :date
      GROUP BY Person.id
 )
    , Person_score AS (
@@ -43,12 +37,10 @@ SELECT p.PersonId AS "person.id"
      , p.score AS score
      , sum(f.score) AS friendsScore
   FROM Person_score p
-     , Person_knows_Person
-     , Person_score f -- the friend
- WHERE
-    -- join
-       p.PersonId = Person_knows_Person.Person1Id
-   AND Person_knows_Person.Person2Id = f.PersonId
+  JOIN Person_knows_Person
+    ON Person_knows_Person.Person1Id = p.PersonId
+  JOIN Person_score f -- the friend
+    ON f.PersonId = Person_knows_Person.Person2Id
  GROUP BY p.PersonId, p.score
  ORDER BY p.score + sum(f.score) DESC, p.PersonId
  LIMIT 100

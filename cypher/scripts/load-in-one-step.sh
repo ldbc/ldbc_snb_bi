@@ -25,6 +25,6 @@ echo ===========================================================================
 
 ./stop.sh
 ./delete-database.sh
-./import-to.sh
+./import.sh
 ./start.sh
 ./create-indices.sh
