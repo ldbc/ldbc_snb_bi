@@ -23,8 +23,8 @@ echo ===========================================================================
 : ${NEO4J_CONTAINER_NAME:?"Environment variable NEO4J_CONTAINER_NAME is unset or empty"}
 # ${NEO4J_ENV_VARS} can be empty, hence no check is required
 
-./stop-neo4j.sh
-./delete-neo4j-database.sh
-./import-to-neo4j.sh
-./start-neo4j.sh
+./stop.sh
+./delete-database.sh
+./import-to.sh
+./start.sh
 ./create-indices.sh
