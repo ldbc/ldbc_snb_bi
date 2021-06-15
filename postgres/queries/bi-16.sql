@@ -22,13 +22,13 @@ WITH
     SELECT
         subgraphA1.PersonId,
         count(DISTINCT subgraphA1.MessageId) AS cm,
-        count(DISTINCT Person_knows_person.Person2Id) AS cp2
+        count(DISTINCT Person_knows_Person.Person2Id) AS cp2
     FROM subgraphA subgraphA1
     LEFT JOIN Person_knows_Person
     ON Person_knows_Person.Person1Id = subgraphA1.PersonId
-    AND Person_knows_person.Person2Id IN (SELECT PersonId FROM subgraphA)
+    AND Person_knows_Person.Person2Id IN (SELECT PersonId FROM subgraphA)
     GROUP BY subgraphA1.PersonId
-    HAVING count(DISTINCT Person_knows_person.Person2Id) <= :maxKnowsLimit
+    HAVING count(DISTINCT Person_knows_Person.Person2Id) <= :maxKnowsLimit
     ORDER BY subgraphA1.PersonId ASC
   ),
   subgraphB AS (
@@ -47,13 +47,13 @@ WITH
     SELECT
         subgraphB1.PersonId,
         count(DISTINCT subgraphB1.MessageId) AS cm,
-        count(DISTINCT Person_knows_person.Person2Id) AS cp2
+        count(DISTINCT Person_knows_Person.Person2Id) AS cp2
     FROM subgraphB subgraphB1
     LEFT JOIN Person_knows_Person
     ON Person_knows_Person.Person1Id = subgraphB1.PersonId
-    AND Person_knows_person.Person2Id IN (SELECT PersonId FROM subgraphB)
+    AND Person_knows_Person.Person2Id IN (SELECT PersonId FROM subgraphB)
     GROUP BY subgraphB1.PersonId
-    HAVING count(DISTINCT Person_knows_person.Person2Id) <= :maxKnowsLimit
+    HAVING count(DISTINCT Person_knows_Person.Person2Id) <= :maxKnowsLimit
     ORDER BY subgraphB1.PersonId ASC
   )
 SELECT
