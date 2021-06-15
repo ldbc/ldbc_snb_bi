@@ -19,6 +19,8 @@ echo "POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}"
 echo "POSTGRES_DATABASE: ${POSTGRES_DATABASE}"
 echo "POSTGRES_SHARED_MEMORY: ${POSTGRES_SHARED_MEMORY}"
 echo "POSTGRES_USER: ${POSTGRES_USER}"
+echo "POSTGRES_DATABASE_DIR (on the host machine):"
+echo "  ${POSTGRES_DATABASE_DIR}"
 echo "POSTGRES_CSV_DIR (on the host machine):"
 echo "  ${POSTGRES_CSV_DIR}"
 echo "==============================================================================="
@@ -33,6 +35,7 @@ docker run --rm \
     --name ${POSTGRES_CONTAINER_NAME} \
     --env POSTGRES_PASSWORD=${POSTGRES_PASSWORD} \
     --volume=${POSTGRES_CSV_DIR}:/data \
+    --volume=${POSTGRES_DATABASE_DIR}:/var/lib/postgresql/data \
     --detach \
     --shm-size=${POSTGRES_SHARED_MEMORY} \
     postgres:${POSTGRES_VERSION}
