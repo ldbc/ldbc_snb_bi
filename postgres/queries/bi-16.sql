@@ -60,9 +60,9 @@ SELECT
     personA.PersonId AS PersonId,
     personA.cm AS messageCountA,
     personB.cm AS messageCountB
-  FROM personA
-  JOIN personB
-    ON personB.PersonId = personA.PersonId
+FROM personA
+JOIN personB
+  ON personB.PersonId = personA.PersonId
 ORDER BY personA.cm + personB.cm DESC, PersonId ASC
 LIMIT 20
 ;
