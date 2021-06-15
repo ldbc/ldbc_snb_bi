@@ -48,5 +48,6 @@ JOIN Forum_hasMember_Person Forum_hasMember_Person3
 WHERE Tag.name = :tag
   AND Forum_hasMember_Person1.ForumId IS NULL
 GROUP BY Message1.CreatorPersonId
-ORDER BY Message1.CreatorPersonId
+ORDER BY messageCount, Message1.CreatorPersonId
+LIMIT 10
 ;
