@@ -27,7 +27,7 @@ WITH RECURSIVE KnowsWeight AS (
          , max(CASE WHEN Person2Id = :person2Id THEN 1 ELSE 0 END) OVER () AS person2Reached
       FROM KnowsWeight
      --WHERE Person1Id = :person1id
-  UNION ALL
+    UNION ALL
     SELECT paths.startPerson AS startPerson
          , KnowsWeight.Person2Id AS endPerson
          , array_append(path, Person2Id) AS path
@@ -39,7 +39,7 @@ WITH RECURSIVE KnowsWeight AS (
      WHERE NOT paths.path && ARRAY[KnowsWeight.Person2Id] -- person2Id is not in the path yet
         -- stop condition
        AND paths.person2Reached = 0
-)
+    )
 SELECT paths.startPerson AS Person1Id, min(paths.weight) AS totalWeight
   FROM Company
   JOIN Person_workAt_Company
