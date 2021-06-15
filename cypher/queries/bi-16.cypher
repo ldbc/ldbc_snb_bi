@@ -4,8 +4,8 @@
 :param [{ tagA, dateA, tagB, dateB, maxKnowsLimit }] => { RETURN
   'Augustine_of_Hippo' AS tagA,
   date('2011-10-10') AS dateA,
-  'Augustine_of_Hippo' AS tagB,
-  date('2012-03-04') AS dateB,
+  'Manuel_Noriega' AS tagB,
+  date('2012-06-02') AS dateB,
   5 AS maxKnowsLimit
 }
 */
