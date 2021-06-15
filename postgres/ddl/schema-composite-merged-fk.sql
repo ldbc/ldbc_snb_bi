@@ -91,5 +91,5 @@ CREATE TABLE Person_hasInterest_Tag    (creationDate timestamp without time zone
 CREATE TABLE Person_likes_Comment      (creationDate timestamp without time zone not null, PersonId bigint not null,  CommentId bigint not null);
 CREATE TABLE Person_likes_Post         (creationDate timestamp without time zone not null, PersonId bigint not null,  PostId bigint not null);
 CREATE TABLE Person_studyAt_University (creationDate timestamp without time zone not null, PersonId bigint not null,  UniversityId bigint not null, classYear int not null);
-CREATE TABLE Person_workAt_Company     (creationDate timestamp without time zone not null, PersonId bigint not null,  CompanyId bigint not null, workFrom  int not null);
+CREATE TABLE Person_workAt_Company     (creationDate timestamp without time zone not null, PersonId bigint not null,  CompanyId bigint not null, workFrom int not null);
 CREATE TABLE Person_knows_Person       (creationDate timestamp without time zone not null, Person1id bigint not null, Person2id bigint not null);

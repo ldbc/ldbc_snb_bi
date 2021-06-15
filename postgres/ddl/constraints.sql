@@ -108,6 +108,18 @@ CREATE VIEW City AS
     WHERE type = 'City'
 ;
 
+CREATE VIEW Company AS
+    SELECT id, name, url, LocationPlaceId AS LocatedInCountryId
+    FROM Organisation
+    WHERE type = 'Company'
+;
+
+CREATE VIEW University AS
+    SELECT id, name, url, LocationPlaceId AS LocatedInCityId
+    FROM Organisation
+    WHERE type = 'University'
+;
+
 -- Indexes for FKs
 
 -- merged FKs / static nodes
