@@ -45,5 +45,5 @@ python3 batches.py ${NEO4J_CSV_DIR}
 To start a database that has already been loaded, run:
 
 ```bash
-./start.sh
+scripts/start.sh
 ```
