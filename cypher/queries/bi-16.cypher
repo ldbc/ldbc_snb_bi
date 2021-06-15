@@ -2,9 +2,9 @@
 // These parameters return a 'false positive' as the maxKnowsLimit is set too high.
 /*
 :param [{ tagA, dateA, tagB, dateB, maxKnowsLimit }] => { RETURN
-  'Pyrenees' AS tagA,
+  'Augustine_of_Hippo' AS tagA,
   date('2011-10-10') AS dateA,
-  'Snowboard' AS tagB,
+  'Augustine_of_Hippo' AS tagB,
   date('2012-03-04') AS dateB,
   5 AS maxKnowsLimit
 }

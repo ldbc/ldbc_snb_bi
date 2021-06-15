@@ -2,7 +2,7 @@
 /*
 :param [{ tag, delta }] => {
   RETURN
-    'Frank_Sinatra' AS tag,
+    'Slavoj_Žižek' AS tag,
     4 AS delta
   }
 */

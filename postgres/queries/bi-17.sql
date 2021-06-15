@@ -1,5 +1,5 @@
 /* Q17. Information propagation analysis
-\set tag '\'Frank_Sinatra\''
+\set tag '\'Slavoj_Žižek\''
 \set delta '4'
  */
 SELECT Message1.CreatorPersonId AS "person1.id", count(message2) AS messageCount
