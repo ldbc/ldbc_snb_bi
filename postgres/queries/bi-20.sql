@@ -49,4 +49,5 @@ SELECT paths.startPerson AS Person1Id, min(paths.weight) AS totalWeight
    AND paths.endPerson = :person2Id
  WHERE name = :company
 GROUP BY paths.startPerson, paths.endPerson, paths.path
+ORDER BY totalWeight ASC, person1Id ASC
 ;

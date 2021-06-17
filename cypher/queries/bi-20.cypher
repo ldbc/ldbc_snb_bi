@@ -27,5 +27,5 @@ CALL gds.shortestPath.dijkstra.stream({
 YIELD totalCost
 WHERE person1.id <> $person2Id
 RETURN person1.id, totalCost AS totalWeight
-ORDER BY totalWeight DESC, person1.id ASC
+ORDER BY totalWeight ASC, person1.id ASC
 LIMIT 20
