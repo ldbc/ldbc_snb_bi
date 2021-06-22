@@ -5,7 +5,7 @@ CREATE TABLE Organisation (
     type varchar(12) not null,
     name varchar(256) not null,
     url varchar(256) not null,
-    LocationPlaceId bigint
+    LocationPlaceId bigint not null
 );
 
 CREATE TABLE Place (
@@ -13,7 +13,7 @@ CREATE TABLE Place (
     name varchar(256) not null,
     url varchar(256) not null,
     type varchar(12) not null,
-    PartOfPlaceId bigint
+    PartOfPlaceId bigint -- null for continents
 );
 
 CREATE TABLE Tag (
@@ -27,7 +27,7 @@ CREATE TABLE TagClass (
     id bigint not null,
     name varchar(256) not null,
     url varchar(256) not null,
-    SubclassOfTagClassId bigint
+    SubclassOfTagClassId bigint -- null for the root TagClass (Thing)
 );
 
 -- static tables / separate table per individual subtype
@@ -51,7 +51,7 @@ CREATE TABLE Forum (
     creationDate timestamp without time zone not null,
     id bigint not null,
     title varchar(256) not null,
-    ModeratorPersonId bigint
+    ModeratorPersonId bigint -- can be null as its cardinality is 0..1
 );
 
 CREATE TABLE Post (
