@@ -14,7 +14,9 @@ if len(sys.argv) < 2:
     print("Usage: batches.py <DATA_DIRECTORY>")
     exit(1)
 
-insert_entities = ["Comment", "Comment_hasTag_Tag", "Forum", "Forum_hasMember_Person", "Forum_hasTag_Tag", "Person", "Person_hasInterest_Tag", "Person_knows_Person", "Person_likes_Comment", "Person_likes_Post", "Person_studyAt_University", "Person_workAt_Company", "Post", "Post_hasTag_Tag"]
+insert_nodes = ["Comment", "Forum", "Person", "Post"]
+insert_edges = ["Comment_hasTag_Tag", "Forum_hasMember_Person", "Forum_hasTag_Tag", "Person_hasInterest_Tag", "Person_knows_Person", "Person_likes_Comment", "Person_likes_Post", "Person_studyAt_University", "Person_workAt_Company",  "Post_hasTag_Tag"]
+insert_entities = insert_nodes + insert_edges
 
 delete_nodes = ["Comment", "Forum", "Person", "Post"]
 delete_edges = ["Forum_hasMember_Person", "Person_knows_Person", "Person_likes_Comment", "Person_likes_Post"]
