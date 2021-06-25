@@ -42,6 +42,9 @@ To load the microbatches, run:
 python3 batches.py ${NEO4J_CSV_DIR}
 ```
 
+:warning: Note that this script uses the data sets in the `$NEO4J_CSV_DIR` directory on the host machine but maps the paths relative to the `/import` directory in the Docker container (Neo4j's dedicated import directory which it uses as the basis of the import paths in the `LOAD CSV` Cypher commands).
+For example, the `$NEO4J_CSV_DIR/deletes/dynamic/Post/batch_id=2012-09-13/part-x.csv` path is translated to the `deletes/dynamic/Post/batch_id=2012-09-13/part-x.csv` relative path.
+
 To start a database that has already been loaded, run:
 
 ```bash
