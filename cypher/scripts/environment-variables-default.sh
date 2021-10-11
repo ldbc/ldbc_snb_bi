@@ -6,7 +6,7 @@ cd ..
 export NEO4J_CONTAINER_ROOT=`pwd`/scratch
 export NEO4J_DATA_DIR=`pwd`/scratch/data
 export NEO4J_HEADER_DIR=`pwd`/headers
-export NEO4J_VERSION=4.3.2
+export NEO4J_VERSION=4.3.5
 export NEO4J_ENV_VARS=""
 export NEO4J_CONTAINER_NAME=snb-bi-neo
 
