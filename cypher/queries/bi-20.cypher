@@ -17,9 +17,9 @@ CALL gds.shortestPath.dijkstra.stream({
        (personA:Person)-[:KNOWS]-(personB:Person),
        (personA)-[saA:STUDY_AT]->(u:University)<-[saB:STUDY_AT]-(personB)
      RETURN
-        id(personA) AS source,
-        id(personB) AS target,
-        abs(saA.classYear - saB.classYear) + 1 AS weight',
+       id(personA) AS source,
+       id(personB) AS target,
+       abs(saA.classYear - saB.classYear) + 1 AS weight',
   sourceNode: person1,
   targetNode: person2,
   relationshipWeightProperty: 'weight'
