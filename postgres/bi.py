@@ -33,7 +33,7 @@ def run_query(con, query_id, query_spec, query_parameters):
         query_spec = query_spec.replace(f":{key}", query_parameters[key])
 
     try:
-        print(query_spec)
+        #print(query_spec)
         with timeout(300):
             cur.execute(query_spec)
     except TimeoutError:
@@ -54,18 +54,16 @@ def run_query(con, query_id, query_spec, query_parameters):
     # return (duration, result)
 
 def convert_to_datetime(timestamp):
-    # \set datetime '\'2011-07-21T22:00:00.000+00:00\''::timestamp
-
     dt = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%f+00:00")
     return f"'{dt}'::timestamp"
 
 def convert_to_date(timestamp):
     dt = datetime.strptime(timestamp, '%Y-%m-%d')
-    return Date(dt.year, dt.month, dt.day)
+    return f"'{dt}'::date"
 
 con = psycopg2.connect(host="localhost", port=5432, user="postgres", password="mysecretpassword", dbname="ldbcsnb")
 
-for query_variant in ["1"]: #, "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14a", "14b", "15", "16", "17", "18", "19", "20"]:  
+for query_variant in ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14a", "14b", "15", "16", "17", "18", "19", "20"]:
     query_num = re.sub("[^0-9]", "", query_variant)
     query_file = open(f'queries/bi-{query_num}.sql', 'r')
     query_spec = query_file.read()
@@ -75,10 +73,15 @@ for query_variant in ["1"]: #, "2", "3", "4", "5", "6", "7", "8", "9", "10", "11
     k = 0
     for query_parameters in parameters_csv:
         # convert fields based on type designators
-        query_parameters = {k: int(v)                 if re.match('.*:(ID|LONG)', k) else v for k, v in query_parameters.items()}
-        query_parameters = {k: convert_to_date(v)     if re.match('.*:DATE$', k)     else v for k, v in query_parameters.items()}
-        query_parameters = {k: convert_to_datetime(v) if re.match('.*:DATETIME', k)  else v for k, v in query_parameters.items()}
-        query_parameters = {k: v.split(';')           if re.findall('\[\]$', k)      else v for k, v in query_parameters.items()}
+        query_parameters = {k: f"{v}::bigint"         if re.match('.*:(ID|LONG)', k)       else v for k, v in query_parameters.items()}
+        query_parameters = {k: convert_to_date(v)     if re.match('.*:DATE$', k)           else v for k, v in query_parameters.items()}
+        query_parameters = {k: convert_to_datetime(v) if re.match('.*:DATETIME', k)        else v for k, v in query_parameters.items()}
+        query_parameters = {k: f"'{v}'"               if re.match('.*:STRING([^[]|$)', k)  else v for k, v in query_parameters.items()}
+        query_parameters = {k:
+            "ARRAY["
+            + ', '.join([f"'{e}'" for e in v.split(';') ])
+            + "]::varchar[]"
+            if re.findall('\[\]$', k) else v for k, v in query_parameters.items()}
         # drop type designators
         type_pattern = re.compile(':.*')
         query_parameters = {type_pattern.sub('', k): v for k, v in query_parameters.items()}

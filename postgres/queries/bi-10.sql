@@ -27,7 +27,7 @@ WITH RECURSIVE friends(startPersonId, path, friendId) AS (
    , friend_list AS (
     SELECT DISTINCT f.friendId AS friendId
       FROM Friends f
-      JOIN Person tf -- the friend's preson record
+      JOIN Person tf -- the friend's person record
         ON tf.id = f.friendId
       JOIN City
         ON City.id = tf.LocationCityId
