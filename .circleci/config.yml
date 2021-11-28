@@ -47,8 +47,8 @@ jobs:
             . scripts/environment-variables-default.sh
             scripts/load-in-one-step.sh
             python3 batches.py ${NEO4J_CSV_DIR}
-            cd ..
             python3 bi.py
+            cd ..
       - run:
           name: Test Postgres toolchain
           command: |
@@ -58,6 +58,6 @@ jobs:
             scripts/create-db.sh
             python3 load.py ${POSTGRES_CSV_DIR}
             python3 batches.py ${POSTGRES_CSV_DIR}
-            cd ..
             python3 bi.py
+            cd ..
       - slack/status
