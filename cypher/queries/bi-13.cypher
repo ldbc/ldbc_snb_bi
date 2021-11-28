@@ -1,15 +1,16 @@
 // Q13. Zombies in a country
 /*
 :param [{ country, endDate }] => {
-  RETURN 'France' AS country,
-  datetime('2013-01-01') AS endDate
+  RETURN
+    'France' AS country,
+    date('2013-01-01') AS endDate
 }
 */
 MATCH (country:Country {name: $country})<-[:IS_PART_OF]-(:City)<-[:IS_LOCATED_IN]-(zombie:Person)
-WHERE zombie.creationDate < datetime($endDate)
+WHERE date(zombie.creationDate) < $endDate
 WITH country, zombie
 OPTIONAL MATCH (zombie)<-[:HAS_CREATOR]-(message:Message)
-WHERE message.creationDate < datetime($endDate)
+WHERE date(message.creationDate) < $endDate
 WITH
   country,
   zombie,
