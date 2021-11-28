@@ -63,7 +63,7 @@ def convert_to_date(timestamp):
     dt = datetime.strptime(timestamp, '%Y-%m-%d')
     return Date(dt.year, dt.month, dt.day)
 
-con = psycopg2.connect(host="localhost", user="postgres", password="mysecretpassword", port=5432)
+con = psycopg2.connect(host="localhost", port=5432, user="postgres", password="mysecretpassword", dbname="ldbcsnb")
 
 for query_variant in ["1"]: #, "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14a", "14b", "15", "16", "17", "18", "19", "20"]:  
     query_num = re.sub("[^0-9]", "", query_variant)
