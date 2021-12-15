@@ -42,6 +42,11 @@ docker run --rm \
 
 echo -n "Waiting for the database to start ."
 until python3 scripts/test-db-connection.py > /dev/null 2>&1; do
+    docker ps | grep ${POSTGRES_CONTAINER_NAME} 1>/dev/null 2>&1 || (
+        echo
+        echo "Container lost."
+        exit 1
+    )
     echo -n " ."
     sleep 1
 done
