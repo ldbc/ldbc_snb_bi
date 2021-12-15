@@ -35,8 +35,8 @@ jobs:
             wget -q https://ldbc.github.io/ldbc_snb_datagen_spark/social-network-sf0.003-bi-composite-projected-fk-neo4j.zip
             unzip -q social-network-sf0.003-bi-composite-projected-fk-neo4j.zip
             # Postgres
-            wget -q https://ldbc.github.io/ldbc_snb_datagen_spark/social-network-sf0.003-bi-composite-merged-fk-postgres.zip
-            unzip -q social-network-sf0.003-bi-composite-merged-fk-postgres.zip
+            wget -q https://ldbc.github.io/ldbc_snb_datagen_spark/social-network-sf0.003-bi-composite-merged-fk.zip
+            unzip -q social-network-sf0.003-bi-composite-merged-fk.zip
             cd ..
       - run:
           name: Test Cypher toolchain
@@ -51,7 +51,7 @@ jobs:
       - run:
           name: Test Postgres toolchain
           command: |
-            export POSTGRES_CSV_DIR=`pwd`/test-data/social-network-sf0.003-bi-composite-merged-fk-postgres/graphs/csv/bi/composite-merged-fk/
+            export POSTGRES_CSV_DIR=`pwd`/test-data/social-network-sf0.003-bi-composite-merged-fk/graphs/csv/bi/composite-merged-fk/
             cd postgres
             scripts/start.sh
             scripts/create-db.sh
