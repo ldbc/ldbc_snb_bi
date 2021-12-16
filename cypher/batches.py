@@ -26,6 +26,14 @@ if len(sys.argv) < 2:
     print("Usage: batches.py <NEO4J_DATA_DIRECTORY> [--compressed]")
     exit(1)
 
+data_dir = sys.argv[1]
+compressed = len(sys.argv) == 3 and sys.argv[2] == "--compressed"
+
+if compressed:
+    csv_extension = ".csv.gz"
+else:
+    csv_extension = ".csv"
+
 # to ensure that all inserted edges have their endpoints at the time of their insertion, we insert nodes first and edges second
 insert_nodes = ["Comment", "Forum", "Person", "Post"]
 insert_edges = ["Comment_hasCreator_Person", "Comment_hasTag_Tag", "Comment_isLocatedIn_Country", "Comment_replyOf_Comment", "Comment_replyOf_Post", "Forum_containerOf_Post", "Forum_hasMember_Person", "Forum_hasModerator_Person", "Forum_hasTag_Tag", "Person_hasInterest_Tag", "Person_isLocatedIn_City", "Person_knows_Person", "Person_likes_Comment", "Person_likes_Post", "Person_studyAt_University", "Person_workAt_Company", "Post_hasCreator_Person", "Post_hasTag_Tag", "Post_isLocatedIn_Country"]
@@ -48,16 +56,6 @@ for entity in delete_entities:
 
 driver = GraphDatabase.driver("bolt://localhost:7687")
 session = driver.session()
-
-data_dir = sys.argv[1]
-compressed = len(sys.argv) == 3 and sys.argv[2] == "--compressed"
-
-print(f"c: {compressed}")
-
-if compressed:
-    csv_extension = ".csv.gz"
-else:
-    csv_extension = ".csv"
 
 network_start_date = date(2012, 9, 13)
 network_end_date = date(2012, 12, 31)
