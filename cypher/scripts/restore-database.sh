@@ -8,8 +8,8 @@ cd ..
 
 . scripts/vars.sh
 
-scripts/stop-neo4j.sh
+scripts/stop.sh
 rm -rf scratch/data/
 cp -r scratch/backup-data/ scratch/data/
 cp -r scratch/backup-plugins/ scratch/plugins/
-scripts/start-neo4j.sh
+scripts/start.sh

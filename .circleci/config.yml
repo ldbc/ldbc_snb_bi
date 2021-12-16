@@ -70,4 +70,14 @@ jobs:
             export POSTGRES_CSV_FLAGS="--compressed"
             postgres/scripts/load-in-one-step.sh
             postgres/scripts/batches.sh
+      - run:
+          name: Test Cypher backup and restore scripts
+          command: |
+            cypher/scripts/backup-database.sh
+            cypher/scripts/restore-database.sh
+      - run:
+          name: Test Postgres backup and restore scripts
+          command: |
+            postgres/scripts/backup-database.sh
+            postgres/scripts/restore-database.sh
       - slack/status
