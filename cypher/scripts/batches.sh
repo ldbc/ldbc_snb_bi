@@ -13,4 +13,4 @@ if [ ! -d "${NEO4J_CSV_DIR}" ]; then
     exit 1
 fi
 
-python3 load.py ${NEO4J_CSV_DIR}
+python3 batches.py ${NEO4J_CSV_DIR}
