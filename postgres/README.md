@@ -27,6 +27,12 @@ Set the `POSTGRES_CSV_DIR` environment variable.
 export POSTGRES_CSV_DIR=${DATAGEN_DIRECTORY}/sf${SF}/graphs/csv/bi/composite-merged-fk/
 ```
 
+If the data is compressed, set:
+
+```bash
+export POSTGRES_CSV_FLAGS="--compressed"
+```
+
 Load the data:
 
 ```bash

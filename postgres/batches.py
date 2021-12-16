@@ -11,8 +11,19 @@ import os
 print("Datagen / apply batches using SQL")
 
 if len(sys.argv) < 2:
-    print("Usage: batches.py <DATA_DIRECTORY>")
+    print("Usage: batches.py <POSTGRES_DATA_DIRECTORY> [--compressed]")
     exit(1)
+
+data_dir = sys.argv[1]
+compressed = len(sys.argv) == 3 and sys.argv[2] == "--compressed"
+
+if compressed:
+    csv_extension = ".csv.gz"
+    csv_from_clause_prefix="PROGRAM 'gzip -dc "
+else:
+    csv_extension = ".csv"
+    csv_from_clause_prefix="'"
+csv_from_clause_postfix="'"
 
 insert_nodes = ["Comment", "Forum", "Person", "Post"]
 insert_edges = ["Comment_hasTag_Tag", "Forum_hasMember_Person", "Forum_hasTag_Tag", "Person_hasInterest_Tag", "Person_knows_Person", "Person_likes_Comment", "Person_likes_Post", "Person_studyAt_University", "Person_workAt_Company",  "Post_hasTag_Tag"]
@@ -22,8 +33,6 @@ insert_entities = insert_nodes + insert_edges
 delete_nodes = ["Comment", "Post", "Forum", "Person"]
 delete_edges = ["Forum_hasMember_Person", "Person_knows_Person", "Person_likes_Comment", "Person_likes_Post"]
 delete_entities = delete_nodes + delete_edges
-
-data_dir = sys.argv[1]
 
 with open(f"ddl/schema-delete-candidates.sql", "r") as schema_delete_candidates_script_file:
     schema_delete_candidates_script = schema_delete_candidates_script_file.read()
@@ -55,10 +64,10 @@ while batch_start_date < network_end_date:
             continue
 
         print(f"{entity}:")
-        for csv_file in [f for f in os.listdir(batch_path) if f.endswith(".csv")]:
+        for csv_file in [f for f in os.listdir(batch_path) if f.endswith(csv_extension)]:
             csv_path = f"{batch_path}/{csv_file}"
             print(f"- {csv_path}")
-            con.execute(f"COPY {entity} FROM '/data/inserts/dynamic/{entity}/{batch_dir}/{csv_file}' (DELIMITER '|', HEADER, FORMAT csv)")
+            con.execute(f"COPY {entity} FROM {csv_from_clause_prefix}/data/inserts/dynamic/{entity}/{batch_dir}/{csv_file}{csv_from_clause_postfix} (DELIMITER '|', HEADER, FORMAT csv)")
             pg_con.commit()
 
     print("## Deletes")
@@ -73,10 +82,10 @@ while batch_start_date < network_end_date:
             continue
 
         print(f"{entity}:")
-        for csv_file in [f for f in os.listdir(batch_path) if f.endswith(".csv")]:
+        for csv_file in [f for f in os.listdir(batch_path) if f.endswith(csv_extension)]:
             csv_path = f"{batch_path}/{csv_file}"
             print(f"- {csv_path}")
-            con.execute(f"COPY {entity}_Delete_candidates FROM '/data/deletes/dynamic/{entity}/{batch_dir}/{csv_file}' (DELIMITER '|', HEADER, FORMAT csv)")
+            con.execute(f"COPY {entity}_Delete_candidates FROM {csv_from_clause_prefix}/data/deletes/dynamic/{entity}/{batch_dir}/{csv_file}{csv_from_clause_postfix} (DELIMITER '|', HEADER, FORMAT csv)")
             pg_con.commit()
 
     print("<running delete script>")

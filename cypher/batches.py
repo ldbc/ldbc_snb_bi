@@ -23,8 +23,16 @@ def run_update(session, query_spec, batch, csv_file):
 
 
 if len(sys.argv) < 2:
-    print("Usage: batches.py <DATA_DIRECTORY>")
+    print("Usage: batches.py <NEO4J_DATA_DIRECTORY> [--compressed]")
     exit(1)
+
+data_dir = sys.argv[1]
+compressed = len(sys.argv) == 3 and sys.argv[2] == "--compressed"
+
+if compressed:
+    csv_extension = ".csv.gz"
+else:
+    csv_extension = ".csv"
 
 # to ensure that all inserted edges have their endpoints at the time of their insertion, we insert nodes first and edges second
 insert_nodes = ["Comment", "Forum", "Person", "Post"]
@@ -49,8 +57,6 @@ for entity in delete_entities:
 driver = GraphDatabase.driver("bolt://localhost:7687")
 session = driver.session()
 
-data_dir = sys.argv[1]
-
 network_start_date = date(2012, 9, 13)
 network_end_date = date(2012, 12, 31)
 batch_size = relativedelta(days=1)
@@ -69,7 +75,7 @@ while batch_start_date < network_end_date:
             continue
 
         print(f"{entity}:")
-        for csv_file in [f for f in os.listdir(batch_path) if f.endswith(".csv")]:
+        for csv_file in [f for f in os.listdir(batch_path) if f.endswith(csv_extension)]:
             print(f"- inserts/dynamic/{entity}/{batch_dir}/{csv_file}")
             num_changes = run_update(session, insert_queries[entity], batch_dir, csv_file)
             if num_changes == 0:
@@ -85,7 +91,7 @@ while batch_start_date < network_end_date:
             continue
 
         print(f"{entity}:")
-        for csv_file in [f for f in os.listdir(batch_path) if f.endswith(".csv")]:
+        for csv_file in [f for f in os.listdir(batch_path) if f.endswith(csv_extension)]:
             print(f"- deletes/dynamic/{entity}/{batch_dir}/{csv_file}")
             num_changes = run_update(session, delete_queries[entity], batch_dir, csv_file)
             if num_changes == 0:
