@@ -23,7 +23,7 @@ def run_query(session, query_id, query_spec, query_parameters):
 
 def convert_to_datetime(timestamp):
     dt = datetime.strptime(timestamp, '%Y-%m-%dT%H:%M:%S.%f+00:00')
-    return DateTime(dt.year, dt.month, dt.day, 0, 0, 0, pytz.timezone('GMT'))
+    return DateTime(dt.year, dt.month, dt.day, 0, 0, 0) # also passing pytz.timezone('GMT') causes an exception
 
 def convert_to_date(timestamp):
     dt = datetime.strptime(timestamp, '%Y-%m-%d')
