@@ -28,17 +28,12 @@ export NEO4J_CSV_DIR=`pwd`/sf${SF}/graphs/csv/bi/composite-projected-fk/
 To load the data and start the database, issue the following commands in this directory:
 
 ```bash
-# initialize variables
-. scripts/environment-variables-default.sh
-
-# load
 scripts/load-in-one-step.sh
 ```
 
 To load the microbatches, run:
 
 ```bash
-# perform microbatch loading
 python3 batches.py ${NEO4J_CSV_DIR}
 ```
 

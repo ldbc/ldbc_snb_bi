@@ -8,4 +8,7 @@ cd ..
 
 . scripts/vars.sh
 
-docker rm -f ${POSTGRES_CONTAINER_NAME} || echo "No container ${POSTGRES_CONTAINER_NAME} found"
+scripts/stop.sh
+rm -rf scratch/data/
+cp -r scratch/backup/ scratch/data/
+scripts/start.sh

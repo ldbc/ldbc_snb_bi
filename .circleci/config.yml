@@ -42,21 +42,11 @@ jobs:
           name: Test Cypher toolchain
           command: |
             export NEO4J_CSV_DIR=`pwd`/test-data/social-network-sf0.003-bi-composite-projected-fk-neo4j/graphs/csv/bi/composite-projected-fk/
-            cd cypher
-            . scripts/environment-variables-default.sh
-            scripts/load-in-one-step.sh
-            python3 batches.py ${NEO4J_CSV_DIR}
-            python3 bi.py
+            cypher/scripts/load-in-one-step.sh
             cd ..
       - run:
           name: Test Postgres toolchain
           command: |
             export POSTGRES_CSV_DIR=`pwd`/test-data/social-network-sf0.003-bi-composite-merged-fk/graphs/csv/bi/composite-merged-fk/
-            cd postgres
-            scripts/start.sh
-            scripts/create-db.sh
-            python3 load.py ${POSTGRES_CSV_DIR}
-            python3 batches.py ${POSTGRES_CSV_DIR}
-            python3 bi.py
-            cd ..
+            postgres/scripts/load-in-one-step.sh
       - slack/status

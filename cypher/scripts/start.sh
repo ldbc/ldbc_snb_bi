@@ -6,6 +6,8 @@ set -o pipefail
 cd "$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 cd ..
 
+. scripts/vars.sh
+
 : ${NEO4J_CONTAINER_ROOT:?"Environment variable NEO4J_CONTAINER_ROOT is unset or empty"}
 : ${NEO4J_DATA_DIR:?"Environment variable NEO4J_DATA_DIR is unset or empty"}
 : ${NEO4J_VERSION:?"Environment variable NEO4J_VERSION is unset or empty"}
@@ -22,13 +24,11 @@ docker run --rm \
     --publish=7687:7687 \
     --detach \
     ${NEO4J_ENV_VARS} \
-    --volume=${NEO4J_DATA_DIR}:/data \
-    --volume=${NEO4J_CONTAINER_ROOT}/logs:/logs \
-    --volume=${NEO4J_CSV_DIR}:/var/lib/neo4j/import \
-    --volume=${NEO4J_CONTAINER_ROOT}/plugins:/plugins \
+    --volume=${NEO4J_DATA_DIR}:/data:z \
+    --volume=${NEO4J_CONTAINER_ROOT}/logs:/logs:z \
+    --volume=${NEO4J_CONTAINER_ROOT}/plugins:/plugins:z \
     --env NEO4JLABS_PLUGINS='["apoc", "graph-data-science"]' \
     --env NEO4J_AUTH=none \
-    --env NEO4J_apoc_import_file_enabled=true \
     --name ${NEO4J_CONTAINER_NAME} \
     neo4j:${NEO4J_VERSION}
 

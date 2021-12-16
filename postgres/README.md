@@ -25,11 +25,11 @@ export POSTGRES_CSV_DIR=`pwd`/sf${SF}/graphs/csv/bi/composite-merged-fk/
 To load the data, issue the following commands in this directory:
 
 ```
-# initialize the database
 scripts/start.sh
 scripts/create-db.sh
+```
 
-# load and apply the microbatches
+```
 python3 load.py ${POSTGRES_CSV_DIR}
 ```
 

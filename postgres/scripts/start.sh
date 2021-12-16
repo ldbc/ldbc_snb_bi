@@ -10,35 +10,62 @@ cd ..
 
 scripts/stop.sh
 
+if [ -v POSTGRES_CSV_DIR ]; then
+    if [ ! -d "${POSTGRES_CSV_DIR}" ]; then
+        echo "Directory ${POSTGRES_CSV_DIR} does not exist."
+        exit 1
+    fi
+    export MOUNT_CSV_DIR="--volume=${POSTGRES_CSV_DIR}:/data:z"
+else
+    export POSTGRES_CSV_DIR="<unspecified>"
+    export MOUNT_CSV_DIR=""
+fi
+
+if [ -v POSTGRES_CUSTOM_CONFIGURATION ]; then
+    if [ ! -f "${POSTGRES_CUSTOM_CONFIGURATION}" ]; then
+        echo "Configuration file ${POSTGRES_CUSTOM_CONFIGURATION} does not exist."
+        exit 1
+    fi
+    export POSTGRES_CUSTOM_MOUNTS="--volume=${POSTGRES_CUSTOM_CONFIGURATION}:/etc/postgresql.conf:z"
+    export POSTGRES_CUSTOM_ARGS="--config_file=/etc/postgresql.conf"
+else
+    export POSTGRES_CUSTOM_CONFIGURATION="<unspecified>"
+    export POSTGRES_CUSTOM_MOUNTS=""
+    export POSTGRES_CUSTOM_ARGS=""
+fi
+
+# ensure that ${POSTGRES_DATABASE_DIR} exists
+mkdir -p "${POSTGRES_DATABASE_DIR}"
+
 echo "==============================================================================="
-echo "Starting Postgres container with the following parameters"
+echo "Starting Postgres container"
 echo "-------------------------------------------------------------------------------"
 echo "POSTGRES_VERSION: ${POSTGRES_VERSION}"
 echo "POSTGRES_CONTAINER_NAME: ${POSTGRES_CONTAINER_NAME}"
 echo "POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}"
 echo "POSTGRES_DATABASE: ${POSTGRES_DATABASE}"
-echo "POSTGRES_SHARED_MEMORY: ${POSTGRES_SHARED_MEMORY}"
 echo "POSTGRES_USER: ${POSTGRES_USER}"
+echo "POSTGRES_PORT: ${POSTGRES_PORT}"
+echo "POSTGRES_CUSTOM_CONFIGURATION: ${POSTGRES_CUSTOM_CONFIGURATION}"
 echo "POSTGRES_DATABASE_DIR (on the host machine):"
 echo "  ${POSTGRES_DATABASE_DIR}"
 echo "POSTGRES_CSV_DIR (on the host machine):"
 echo "  ${POSTGRES_CSV_DIR}"
 echo "==============================================================================="
 
-if [ ! -d ${POSTGRES_CSV_DIR} ]; then
-    echo "Directory ${POSTGRES_CSV_DIR} does not exist."
-    exit 1
-fi
-
 docker run --rm \
-    --publish=5432:5432 \
+    --user "$(id -u):$(id -g)" \
+    --publish=${POSTGRES_PORT}:5432 \
     --name ${POSTGRES_CONTAINER_NAME} \
+    --env POSTGRES_DATABASE=${POSTGRES_DATABASE} \
+    --env POSTGRES_USER=${POSTGRES_USER} \
     --env POSTGRES_PASSWORD=${POSTGRES_PASSWORD} \
-    --volume=${POSTGRES_CSV_DIR}:/data \
-    --volume=${POSTGRES_DATABASE_DIR}:/var/lib/postgresql/data \
+    ${MOUNT_CSV_DIR} \
+    --volume=${POSTGRES_DATABASE_DIR}:/var/lib/postgresql/data:z \
+    ${POSTGRES_CUSTOM_MOUNTS} \
     --detach \
-    --shm-size=${POSTGRES_SHARED_MEMORY} \
-    postgres:${POSTGRES_VERSION}
+    postgres:${POSTGRES_VERSION} \
+    ${POSTGRES_CUSTOM_ARGS}
 
 echo -n "Waiting for the database to start ."
 until python3 scripts/test-db-connection.py > /dev/null 2>&1; do
