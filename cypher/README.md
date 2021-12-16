@@ -32,7 +32,7 @@ export NEO4J_CSV_DIR=`pwd`/sf${SF}/graphs/csv/bi/composite-projected-fk/
 
 If the data is compressed, set:
 
-```
+```bash
 export NEO4J_CSV_FLAGS="--compressed"
 ```
 
