@@ -17,24 +17,24 @@ export SF=0.003
 rm -rf sf${SF}/
 tools/run.py ./target/ldbc_snb_datagen_${PLATFORM_VERSION}-${DATAGEN_VERSION}.jar -- \
     --format csv --scale-factor ${SF} --mode bi --output-dir sf${SF}
-export POSTGRES_CSV_DIR=`pwd`/sf${SF}/graphs/csv/bi/composite-merged-fk/
 ```
 
 ## Loading the data
 
-To load the data, issue the following commands in this directory:
-
-```
-# initialize the database
-scripts/start.sh
-scripts/create-db.sh
-
-# load and apply the microbatches
-python3 load.py ${POSTGRES_CSV_DIR}
-```
-
-To load the microbatches, run:
+Set the `POSTGRES_CSV_DIR` environment variable.
 
 ```bash
-python3 batches.py ${POSTGRES_CSV_DIR}
+export POSTGRES_CSV_DIR=${DATAGEN_DIRECTORY}/sf${SF}/graphs/csv/bi/composite-merged-fk/
+```
+
+Load the data:
+
+```bash
+scripts/load-in-one-step.sh
+```
+
+Test loading the microbatches:
+
+```bash
+scripts/batches.sh
 ```

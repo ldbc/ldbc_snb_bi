@@ -8,4 +8,4 @@ cd ..
 
 . scripts/vars.sh
 
-docker rm -f ${POSTGRES_CONTAINER_NAME} || echo "No container ${POSTGRES_CONTAINER_NAME} found"
+docker exec -it ${POSTGRES_CONTAINER_NAME} psql --username=${POSTGRES_USER} --dbname=${POSTGRES_DATABASE}
