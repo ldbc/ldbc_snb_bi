@@ -13,4 +13,8 @@ if [ ! -d "${NEO4J_CSV_DIR}" ]; then
     exit 1
 fi
 
-python3 batches.py ${NEO4J_CSV_DIR}
+if [ ! -v NEO4J_CSV_FLAGS ]; then
+    NEO4J_CSV_FLAGS=""
+fi
+
+python3 batches.py ${NEO4J_CSV_DIR} ${NEO4J_CSV_FLAGS}
