@@ -8,9 +8,9 @@ cd ..
 
 . scripts/vars.sh
 
-if [ ! -d "${NEO4J_CSV_DIR}" ]; then
-    echo "Directory ${NEO4J_CSV_DIR} does not exist."
+if [ ! -d "${POSTGRES_CSV_DIR}" ]; then
+    echo "Directory ${POSTGRES_CSV_DIR} does not exist."
     exit 1
 fi
 
-python3 load.py ${NEO4J_CSV_DIR}
+python3 load.py ${POSTGRES_CSV_DIR}
