@@ -1,6 +1,7 @@
 /* Q8. Central person for a tag
 \set tag '\'Che_Guevara\''
-\set date '\'2011-07-22\''::timestamp
+\set startDate '\'2011-07-20\''::timestamp
+\set endDate '\'2011-07-25\''::timestamp
  */
 WITH Person_interested_in_Tag AS (
     SELECT Person.id AS PersonId
@@ -22,7 +23,8 @@ WITH Person_interested_in_Tag AS (
       JOIN Tag
         ON Tag.id = Message_hasTag_Tag.TagId
        AND Tag.name = :tag
-     WHERE Message.creationDate > :date
+     WHERE :startDate < Message.creationDate
+       AND Message.creationDate < :endDate
      GROUP BY Person.id
 )
    , Person_score AS (

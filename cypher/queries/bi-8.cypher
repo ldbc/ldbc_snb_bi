@@ -1,20 +1,26 @@
 // Q8. Central Person for a Tag
 /*
-:param [{ tag, date }] => { RETURN 'Che_Guevara' AS tag, datetime('2011-07-22') AS date }
+:param [{ tag, startDate, endDate }] => {
+  RETURN
+    'Che_Guevara' AS tag,
+    datetime('2011-07-20') AS startDate,
+    datetime('2011-07-25') AS endDate
+  }
 */
 MATCH (tag:Tag {name: $tag})
 // score
 OPTIONAL MATCH (tag)<-[interest:HAS_INTEREST]-(person:Person)
 WITH tag, collect(person) AS interestedPersons
 OPTIONAL MATCH (tag)<-[:HAS_TAG]-(message:Message)-[:HAS_CREATOR]->(person:Person)
-         WHERE message.creationDate > $date
+         WHERE $startDate < message.creationDate
+           AND message.creationDate < $endDate
 WITH tag, interestedPersons + collect(person) AS persons
 UNWIND persons AS person
 WITH DISTINCT tag, person
 WITH
   tag,
   person,
-  100 * size([(tag)<-[interest:HAS_INTEREST]-(person) | interest]) + size([(tag)<-[:HAS_TAG]-(message:Message)-[:HAS_CREATOR]->(person) WHERE message.creationDate > $date | message])
+  100 * size([(tag)<-[interest:HAS_INTEREST]-(person) | interest]) + size([(tag)<-[:HAS_TAG]-(message:Message)-[:HAS_CREATOR]->(person) WHERE $startDate < message.creationDate AND message.creationDate < $endDate | message])
   AS score
 OPTIONAL MATCH (person)-[:KNOWS]-(friend)
 // We need to use a redundant computation due to the lack of composable graph queries in the currently supported Cypher version.
@@ -22,7 +28,7 @@ OPTIONAL MATCH (person)-[:KNOWS]-(friend)
 WITH
   person,
   score,
-  100 * size([(tag)<-[interest:HAS_INTEREST]-(friend) | interest]) + size([(tag)<-[:HAS_TAG]-(message:Message)-[:HAS_CREATOR]->(friend) WHERE message.creationDate > $date | message])
+  100 * size([(tag)<-[interest:HAS_INTEREST]-(friend) | interest]) + size([(tag)<-[:HAS_TAG]-(message:Message)-[:HAS_CREATOR]->(friend) WHERE $startDate < message.creationDate AND message.creationDate < $endDate | message])
   AS friendScore
 RETURN
   person.id,
