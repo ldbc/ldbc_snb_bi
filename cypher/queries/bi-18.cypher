@@ -1,14 +1,10 @@
 // Q18. Friend recommendation
 /*
-:param [{ person1Id, tag }] => {
-  RETURN
-    26388279076936 AS person1Id,
-    'Frank_Sinatra' AS tag
-}
+:param [{ person1Id, tag }] => { RETURN 'Frank_Sinatra' AS tag }
 */
-MATCH (person1:Person {id: $person1Id})-[:KNOWS]-(mutualFriend:Person)-[:KNOWS]-(person2:Person)-[:HAS_INTEREST]->(:Tag {name: $tag})
+MATCH (tag:Tag {name: $tag})<-[:HAS_INTEREST]-(person1:Person)-[:KNOWS]-(mutualFriend:Person)-[:KNOWS]-(person2:Person)-[:HAS_INTEREST]->(tag)
 WHERE person1 <> person2
   AND NOT (person1)-[:KNOWS]-(person2)
-RETURN person2.id AS person2Id, count(DISTINCT mutualFriend) AS mutualFriendCount
-ORDER BY mutualFriendCount DESC, person2Id ASC
+RETURN person1.id AS person1Id, person2.id AS person2Id, count(DISTINCT mutualFriend) AS mutualFriendCount
+ORDER BY mutualFriendCount DESC, person1Id ASC, person2Id ASC
 LIMIT 20
