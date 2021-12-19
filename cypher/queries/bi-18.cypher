@@ -1,6 +1,6 @@
 // Q18. Friend recommendation
 /*
-:param [{ person1Id, tag }] => { RETURN 'Frank_Sinatra' AS tag }
+:param tag => 'Frank_Sinatra'
 */
 MATCH (tag:Tag {name: $tag})<-[:HAS_INTEREST]-(person1:Person)-[:KNOWS]-(mutualFriend:Person)-[:KNOWS]-(person2:Person)-[:HAS_INTEREST]->(tag)
 WHERE person1 <> person2
