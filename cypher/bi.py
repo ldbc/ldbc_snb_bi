@@ -93,7 +93,7 @@ def run_query(session, query_num, query_id, query_spec, query_parameters):
 driver = GraphDatabase.driver("bolt://localhost:7687")
 
 with driver.session() as session:
-    for query_variant in ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14a", "14b", "15", "16", "17", "18", "19", "20"]:
+    for query_variant in ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "15a", "15b", "16a", "16b", "17", "18", "19a", "19b", "20"]:
     #for query_variant in ["14a"]:
         print(f"========================= Q{query_variant} =========================")
         query_num = int(re.sub("[^0-9]", "", query_variant))
