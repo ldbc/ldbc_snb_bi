@@ -70,7 +70,6 @@ for query_variant in ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "
 
     parameters_csv = csv.DictReader(open(f'../parameters/bi-{query_variant}.csv'), delimiter='|')
 
-    k = 0
     for query_parameters in parameters_csv:
         # convert fields based on type designators
         query_parameters = {k: f"{v}::bigint"         if re.match('.*:(ID|LONG)', k)       else v for k, v in query_parameters.items()}
@@ -86,8 +85,5 @@ for query_variant in ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "
         type_pattern = re.compile(':.*')
         query_parameters = {type_pattern.sub('', k): v for k, v in query_parameters.items()}
         run_query(con, query_variant, query_spec, query_parameters)
-        k += 1
-        if k == 5:
-            break
 
 con.close()
