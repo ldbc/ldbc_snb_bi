@@ -1,10 +1,13 @@
-from neo4j import GraphDatabase, time
-from datetime import datetime
+from neo4j import GraphDatabase
 from neo4j.time import DateTime, Date
+from datetime import datetime
 import time
-import pytz
 import csv
 import re
+
+# TODO: provide two modes of operation: validation and benchmark
+# validation CSV header: Query ID|Query variant|Parameters|Results
+# benchmark CSV header:  Query ID|Query variant|Response time
 
 result_mapping = {
      1: ["INT32", "BOOL", "INT32", "INT32", "FLOAT32", "INT32", "FLOAT32"],
@@ -29,29 +32,27 @@ result_mapping = {
     20: ["ID", "INT64"],
 }
 
-def convert_result(value, type):
+def convert_value_to_string(value, type):
     if type == "ID[]" or type == "INT[]" or type == "INT32[]" or type == "INT64[]":
-        return value.split(";") # todo parse list
-    elif type == "BOOL":
-        return bool(value)
-    elif type == "FLOAT" or type == "FLOAT32" or type == "FLOAT64":
-        return float(value)
+        return ";".join([str(int(x)) for x in value])
     elif type == "ID" or type == "INT" or type == "INT32" or type == "INT64":
-        return int(value)
+        return str(int(value))
+    elif type == "FLOAT" or type == "FLOAT32" or type == "FLOAT64":
+        return str(float(value))
     elif type == "STRING[]":
-        return value.split(";")
+        return "[" + ";".join([f'"{v}"' for v in value]) + "]"
     elif type == "STRING":
-        return value
+        return f'"{value}"'
     elif type == "DATETIME":
         return f"{datetime.strftime(value.to_native(), '%Y-%m-%dT%H:%M:%S.%f')[:-3]}+00:00"
     elif type == "DATE":
         return datetime.strftime(value.to_native(), '%Y-%m-%d')
+    elif type == "BOOL":
+        return str(bool(value))
     else:
-        raise ValueError("type not found")
+        raise ValueError(f"Result type {type} not found")
 
-def convert_parameter(value, type):
-    #print(f"converting {value} to type {type}")
-
+def cast_parameter_to_driver_input(value, type):
     if type == "ID[]" or type == "INT[]" or type == "INT32[]" or type == "INT64[]":
         return [int(x) for x in value.split(";")]
     elif type == "ID" or type == "INT" or type == "INT32" or type == "INT64":
@@ -67,19 +68,16 @@ def convert_parameter(value, type):
         dt = datetime.strptime(value, '%Y-%m-%d')
         return Date(dt.year, dt.month, dt.day)
     else:
-        raise ValueError("type not found")
+        raise ValueError(f"Parameter type {type} not found")
 
-#@unit_of_work(timeout=300)
 def query_fun(tx, query_num, query_spec, query_parameters):
     results = tx.run(query_spec, query_parameters)
     mapping = result_mapping[query_num]
-    result_tuples = [
-        [convert_result(result[i], type) for i, type in enumerate(mapping)]
-        for result in results
-    ]
-    print(f"{len(result_tuples)} results:")
-    for result_tuple in result_tuples:
-        print(f"- {result_tuple}")
+    result_tuples = "[" + ";".join([
+            f'<{",".join([convert_value_to_string(result[i], type) for i, type in enumerate(mapping)])}>'
+            for result in results
+        ]) + "]"
+    return result_tuples
 
 def run_query(session, query_num, query_id, query_spec, query_parameters):
     print(f'Q{query_id}: {query_parameters}')
@@ -88,31 +86,33 @@ def run_query(session, query_num, query_id, query_spec, query_parameters):
     end = time.time()
     duration = end - start
     #print("Q{}: {:.4f} seconds, {} tuples".format(query_id, duration, results[0]))
+    return results
 
 
 driver = GraphDatabase.driver("bolt://localhost:7687")
 
-with driver.session() as session:
-    for query_variant in ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "15a", "15b", "16a", "16b", "17", "18", "19a", "19b", "20"]:
-    #for query_variant in ["14a"]:
-        print(f"========================= Q{query_variant} =========================")
-        query_num = int(re.sub("[^0-9]", "", query_variant))
-        query_file = open(f'queries/bi-{query_num}.cypher', 'r')
-        query_spec = query_file.read()
+result_file = open(f'output/validation_params.csv', 'w')
 
-        parameters_csv = csv.DictReader(open(f'../parameters/bi-{query_variant}.csv'), delimiter='|')
-        parameter_types = {t[0]: t[1] for t in [f.split(":") for f in parameters_csv.fieldnames]}
-        parameter_names = [k.split(":")[0] for k in parameters_csv.fieldnames]
+session = driver.session()
+for query_variant in ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "15a", "15b", "16a", "16b", "17", "18", "19a", "19b", "20"]:
+#for query_variant in ["14a"]:
+    print(f"========================= Q{query_variant} =========================")
+    query_num = int(re.sub("[^0-9]", "", query_variant))
+    query_file = open(f'queries/bi-{query_num}.cypher', 'r')
+    query_spec = query_file.read()
 
-        for query_parameters in parameters_csv:
-            # convert parameter values based on type designators
-            #print(f"raw parameters: {query_parameters}")
-            query_parameters = {k: convert_parameter(v, k.split(":")[1]) for k, v in query_parameters.items()}
+    parameters_csv = csv.DictReader(open(f'../parameters/bi-{query_variant}.csv'), delimiter='|')
+    parameters = [{"name": t[0], "type": t[1]} for t in [f.split(":") for f in parameters_csv.fieldnames]]
+    #parameter_names = [k.split(":")[0] for k in parameters_csv.fieldnames]
 
-            query_parameters = {k.split(":")[0]: v for k, v in query_parameters.items()}
-            #print(f"converted parameters: {query_parameters}")
+    for query_parameters in parameters_csv:
+        query_parameters = {k.split(":")[0]: cast_parameter_to_driver_input(v, k.split(":")[1]) for k, v in query_parameters.items()}
+        query_parameters_in_order = f'<{";".join([convert_value_to_string(query_parameters[parameter["name"]], parameter["type"]) for parameter in parameters])}>'
 
-            run_query(session, query_num, query_variant, query_spec, query_parameters)
+        results = run_query(session, query_num, query_variant, query_spec, query_parameters)
+        print(f"{query_num}|{query_variant}|{query_parameters_in_order}|{results}")
 
+    query_file.close()
 
+session.close()
 driver.close()
