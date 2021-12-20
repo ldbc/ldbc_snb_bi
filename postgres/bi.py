@@ -63,7 +63,7 @@ def convert_to_date(timestamp):
 
 con = psycopg2.connect(host="localhost", port=5432, user="postgres", password="mysecretpassword", dbname="ldbcsnb")
 
-for query_variant in ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14a", "14b", "15", "16", "17", "18", "19", "20"]:
+for query_variant in ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "15a", "15b", "16a", "16b", "17", "18", "19a", "19b", "20"]:
     query_num = re.sub("[^0-9]", "", query_variant)
     query_file = open(f'queries/bi-{query_num}.sql', 'r')
     query_spec = query_file.read()
