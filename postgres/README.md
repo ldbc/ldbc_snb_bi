@@ -39,8 +39,18 @@ Load the data:
 scripts/load-in-one-step.sh
 ```
 
+## Microbatches
+
 Test loading the microbatches:
 
 ```bash
 scripts/batches.sh
+```
+
+## Queries
+
+To run the queries, issue:
+
+```bash
+scripts/bi.sh
 ```
