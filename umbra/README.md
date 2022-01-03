@@ -42,3 +42,11 @@ To run the queries, issue:
 ```bash
 scripts/bi.sh
 ```
+
+## Running queries interactively
+
+To use Umbra's SQL console, use:
+
+```bash
+docker exec -it snb-bi-umbra /umbra/bin/sql
+```
