@@ -2,7 +2,7 @@
 \set tag '\'Slavoj_Žižek\''
 \set delta '4'
  */
-SELECT Message1.CreatorPersonId AS "person1.id", count(message2) AS messageCount
+SELECT Message1.CreatorPersonId AS "person1.id", count(Message2.id) AS messageCount
 FROM Tag
 -- (tag)<-[:HAS_TAG]-(message1)
 JOIN Message_hasTag_Tag Message1_hasTag_Tag
