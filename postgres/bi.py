@@ -1,12 +1,8 @@
 from datetime import datetime
-import pytz
 import csv
 import re
-from neo4j.time import DateTime, Date
-
 import psycopg2
 import time
-import sys
 import signal
 from contextlib import contextmanager
 
