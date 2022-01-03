@@ -1,4 +1,4 @@
-# LDBC SNB PostgreSQL implementation
+# LDBC SNB BI PostgreSQL implementation
 
 [PostgreSQL](https://www.postgresql.org/) implementation of the [LDBC SNB BI benchmark](https://github.com/ldbc/ldbc_snb_docs).
 
