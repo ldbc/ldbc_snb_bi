@@ -15,3 +15,5 @@ results-*/
 *.report
 test-data/
 *.log
+
+/social-network-*
