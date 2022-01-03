@@ -24,6 +24,7 @@ jobs:
             sudo apt update
             # install dependencies
             sudo apt install -y wget unzip
+            paramgen/scripts/install-dependencies.sh
             cypher/scripts/install-dependencies.sh
             postgres/scripts/install-dependencies.sh
       - run:
@@ -41,7 +42,15 @@ jobs:
             unzip -q social-network-sf0.003-bi-composite-merged-fk.zip
             wget -q https://ldbcouncil.org/ldbc_snb_datagen_spark/social-network-sf0.003-bi-composite-merged-fk-postgres-compressed.zip
             unzip -q social-network-sf0.003-bi-composite-merged-fk-postgres-compressed.zip
+            # factors for parameter generation
+            wget -q https://ldbcouncil.org/ldbc_snb_datagen_spark/social-network-sf0.003-bi-factors.zip
+            unzip social-network-sf0.003-bi-factors.zip -d .
+            mv social-network-sf0.003-bi-factors/csv/raw/composite-merged-fk/* factors/
             cd ..
+      - run:
+          name: Generate parameters
+          command: |
+            scripts/paramgen.sh
       - run:
           name: Test Cypher toolchain with uncompressed CSVs
           command: |
