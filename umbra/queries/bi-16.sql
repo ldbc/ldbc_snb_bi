@@ -11,7 +11,7 @@ WITH
     FROM Person
     JOIN Message
       ON Message.CreatorPersonId = Person.id
-     AND date(Message.creationDate) = :dateA
+     AND Message.creationDate::date = :dateA
     JOIN Message_hasTag_Tag
       ON Message_hasTag_Tag.MessageId = Message.Id
     JOIN Tag
@@ -36,7 +36,7 @@ WITH
     FROM Person
     JOIN Message
       ON Message.CreatorPersonId = Person.id
-     AND date(Message.creationDate) = :dateB
+     AND Message.creationDate::date = :dateB
     JOIN Message_hasTag_Tag
       ON Message_hasTag_Tag.MessageId = Message.Id
     JOIN Tag

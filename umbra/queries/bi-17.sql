@@ -20,7 +20,7 @@ JOIN Message_hasTag_Tag Message2_hasTag_Tag
 -- (message2 <date filtering>})
 JOIN Message Message2
   ON Message2.id = Message2_hasTag_Tag.MessageId
- AND Message1.creationDate + :delta * INTERVAL '1 hour' < Message2.creationDate
+ AND (Message1.creationDate + ':delta hour'::interval) < Message2.creationDate
 JOIN Comment_hasTag_Tag
   ON Comment_hasTag_Tag.TagId = Tag.id
 -- (comment)-[:REPLY_OF]->(message)

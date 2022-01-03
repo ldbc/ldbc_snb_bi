@@ -11,7 +11,7 @@ WITH person_w_posts AS (
        AND MessageThread.content IS NOT NULL
        AND MessageThread.length < :lengthThreshold
        AND MessageThread.creationDate > :date
-       AND MessageThread.RootPostLanguage = ANY(:languages)
+       AND MessageThread.RootPostLanguage IN :languages
      GROUP BY Person.id
 )
 , message_count_distribution AS (

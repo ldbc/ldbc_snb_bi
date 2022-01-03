@@ -57,12 +57,14 @@ def convert_to_date(timestamp):
     dt = datetime.strptime(timestamp, '%Y-%m-%d')
     return f"'{dt}'::date"
 
-con = psycopg2.connect(host="localhost", port=5432, user="postgres", password="mysecretpassword", dbname="ldbcsnb")
+con = psycopg2.connect(host="localhost", port=5432, user="postgres", password="mysecretpassword")
 
-for query_variant in ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "15a", "15b", "16a", "16b", "17", "18", "19a", "19b", "20"]:
+for query_variant in ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "15a", "15b", "16a", "16b", "17", "18"]: #, "19a", "19b", "20"
     query_num = re.sub("[^0-9]", "", query_variant)
     query_file = open(f'queries/bi-{query_num}.sql', 'r')
     query_spec = query_file.read()
+
+    #print(query_variant)
 
     parameters_csv = csv.DictReader(open(f'../parameters/bi-{query_variant}.csv'), delimiter='|')
 
@@ -73,9 +75,9 @@ for query_variant in ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9",
         query_parameters = {k: convert_to_datetime(v) if re.match('.*:DATETIME', k)        else v for k, v in query_parameters.items()}
         query_parameters = {k: f"'{v}'"               if re.match('.*:STRING([^[]|$)', k)  else v for k, v in query_parameters.items()}
         query_parameters = {k:
-            "ARRAY["
+            "("
             + ', '.join([f"'{e}'" for e in v.split(';') ])
-            + "]::varchar[]"
+            + ")"
             if re.findall('\[\]$', k) else v for k, v in query_parameters.items()}
         # drop type designators
         type_pattern = re.compile(':.*')

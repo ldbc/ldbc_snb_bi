@@ -87,7 +87,7 @@ WITH RECURSIVE ReplyScores(ThreadId
       FROM paths p
       JOIN wknows k
         ON p.endPerson = k.person1Id
-     WHERE NOT p.path && ARRAY[k.person2Id] -- person2Id is not in the path yet
+     WHERE NOT ARRAY[k.person2Id] <@ p.path -- person2Id is not in the path yet
         -- stop condition
        AND p.person2Reached = 0
 )

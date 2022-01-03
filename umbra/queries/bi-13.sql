@@ -14,7 +14,7 @@ WITH Zombies AS (
         AND Message.creationDate BETWEEN Person.creationDate AND :endDate -- the lower bound is an optmization to prune messages
      WHERE Country.name = :country
        AND Person.creationDate < :endDate
-     GROUP BY Person.id
+     GROUP BY Person.id, Person.creationDate
         -- average of [0, 1) messages per month is equivalent with having less messages than the month span between person creationDate and parameter :endDate
     HAVING count(Message.id) < 12*extract(YEAR FROM :endDate)            + extract(MONTH FROM :endDate)
                             - (12*extract(YEAR FROM Person.creationDate) + extract(MONTH FROM Person.creationDate))

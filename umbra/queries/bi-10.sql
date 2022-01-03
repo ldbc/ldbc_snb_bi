@@ -10,17 +10,17 @@ Above that, I also encountered the following error because of the explosion in t
   ERROR:  could not write to tuplestore temporary file: No space left on device
  */
 WITH RECURSIVE friends(startPersonId, path, friendId) AS (
-    SELECT :personId AS startPersonId, ARRAY[]::record[], :personId AS friendId
+    SELECT :personId AS startPersonId, ARRAY[[-1::bigint, -1::bigint]]::bigint[][], :personId AS friendId
   UNION ALL
     SELECT f.startPersonId
-         , f.path || ROW(k.Person1id, k.Person2id)
+         , array_append(f.path, ARRAY[k.Person1id, k.Person2id])
          , CASE WHEN f.friendId = k.Person1id THEN k.Person2id ELSE k.Person1id END
       FROM friends f
       JOIN Person_knows_Person k
         ON k.Person1id = f.friendId
      WHERE true
        -- knows edge can't be traversed twice
-       AND NOT ARRAY[ROW(k.Person1id, k.Person2id), ROW(k.Person2id, k.Person1id)] && f.path
+       AND NOT ARRAY[ ARRAY[k.Person1id, k.Person2id], ARRAY[k.Person2id, k.Person1id] ] <@ f.path
         -- stop condition
        AND coalesce(array_length(f.path, 1), 0) < :maxPathDistance
 )
