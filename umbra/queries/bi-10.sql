@@ -10,7 +10,7 @@ Above that, I also encountered the following error because of the explosion in t
   ERROR:  could not write to tuplestore temporary file: No space left on device
  */
 WITH RECURSIVE friends(startPersonId, path, friendId) AS (
-    SELECT :personId AS startPersonId, ARRAY[[-1::bigint, -1::bigint]]::bigint[][], :personId AS friendId
+    SELECT :personId AS startPersonId, '{}'::bigint[][], :personId AS friendId
   UNION ALL
     SELECT f.startPersonId
          , array_append(f.path, ARRAY[k.Person1id, k.Person2id])
