@@ -44,11 +44,12 @@ jobs:
             wget -q https://ldbcouncil.org/ldbc_snb_datagen_spark/social-network-sf0.003-bi-composite-merged-fk-postgres-compressed.zip
             unzip -q social-network-sf0.003-bi-composite-merged-fk-postgres-compressed.zip
             cd ..
-            ## factors for parameter generation
+      - run:
+          name: Download factors
+          command: |
             wget -q https://ldbcouncil.org/ldbc_snb_datagen_spark/social-network-sf0.003-bi-factors.zip
             unzip social-network-sf0.003-bi-factors.zip -d .
             mv social-network-sf0.003-bi-factors/csv/raw/composite-merged-fk/* paramgen/factors/
-            cd ..
       - run:
           name: Generate parameters
           command: |
