@@ -15,13 +15,21 @@ scripts/build.sh
 
 Umbra uses the same format as [Postgres](../postgres/README.md#generating-the-data-set), however, it currently does not support loading from compressed files (`.csv.gz`).
 
+1. Grab the data set. In the repository root, run:
+
+    ```bash
+    wget -q https://ldbcouncil.org/ldbc_snb_datagen_spark/social-network-sf0.003-bi-composite-merged-fk.zip
+    unzip -q social-network-sf0.003-bi-composite-merged-fk.zip
+    ```
+
 1. Set the `${UMBRA_CSV_DIR}` environment variable to point to the data set, e.g.:
 
     ```bash
-    export UMBRA_CSV_DIR=`pwd`/../postgres/test-data/
+    cd umbra
+    export UMBRA_CSV_DIR=`pwd`/../test-data/social-network-sf0.003-bi-composite-merged-fk/graphs/csv/bi/composite-merged-fk/
     ```
 
-2. To start the DBMS, create a database and load the data, run:
+1. To start the DBMS, create a database and load the data, run:
 
     ```bash
     scripts/load-in-one-step.sh
@@ -47,8 +55,8 @@ scripts/bi.sh
 
 ## Running queries interactively
 
-To use Umbra's SQL console, use:
+To connect to the database through the SQL console, use:
 
 ```bash
-docker exec -it snb-bi-umbra /umbra/bin/sql
+scripts/connect.sh
 ```
