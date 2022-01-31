@@ -1,0 +1,16 @@
+# there are bugs preventing me to combine insert_vertex and insert_edge into one loading job
+CREATE LOADING JOB insert_vertex FOR GRAPH ldbc_snb {
+  DEFINE FILENAME file_Comment;
+  DEFINE FILENAME file_Forum;
+  DEFINE FILENAME file_Person;
+  DEFINE FILENAME file_Post;
+  // load vertex
+  LOAD file_Comment 
+    TO VERTEX Comment VALUES ($1, $0, $2, $3, $4, $5) USING separator="|";
+  LOAD file_Post
+    TO VERTEX Post VALUES ($1, $2, $0, $3, $4, $5, $6, $7) USING separator="|";
+  LOAD file_Forum
+    TO VERTEX Forum VALUES ($1, $2, $0) USING separator="|";
+  LOAD file_Person
+    TO VERTEX Person VALUES ($1, $2, $3, $4, $5, $0, $6, $7, SPLIT($8,";"), SPLIT($9,";")) USING separator="|";
+}
