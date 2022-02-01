@@ -40,5 +40,5 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi2(DATETIME date, STRING tagClass) {
     WHERE t.@countWindow1 == 0 AND t.@countWindow2 == 0 
     ACCUM @@result += RESULT(t.name, 0,0,0);
 
-  PRINT @@result;
+  PRINT @@result as result;
 }

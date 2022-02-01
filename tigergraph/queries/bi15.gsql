@@ -108,7 +108,7 @@ CREATE OR REPLACE /*DISTRIBUTED*/ QUERY bi15(VERTEX<Person> person1Id, VERTEX<Pe
     jsonStr = jsonStr + bigint_to_string(path.get(path.size()-1).id) + "]";
     @@result += RESULT(parse_json_array(jsonStr), @@weight);
   END;
-  PRINT @@result; 
+  PRINT @@result as result; 
 }
 #INSTALL QUERY bi15
 #RUN QUERY bi15(2199023259725,24189255821493,"2011-07-22T00:00:00","2012-07-31T00:00:00")

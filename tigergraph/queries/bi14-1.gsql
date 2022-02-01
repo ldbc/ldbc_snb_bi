@@ -89,7 +89,7 @@ TYPEDEF TUPLE<UINT person1Id, UINT person2Id, STRING city1Name, INT score> pairS
       POST-ACCUM 
         @@result += pairScore(c.@min_pid1, @@min_pid2, c.name, 0);
   END;
-  PRINT @@result;
+  PRINT @@result as result;
 }
 
 // INSTALL QUERY bi14

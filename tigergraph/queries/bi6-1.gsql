@@ -30,7 +30,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi6(STRING tag) {
       END, 
       @@result += RESULT(p1.id, p1.@authorityScore);
   
-  PRINT @@result;
+  PRINT @@result as result;
 }
 
 #INTERPRET QUERY bi6("Augustine_of_Hippo")

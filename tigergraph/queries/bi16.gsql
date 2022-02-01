@@ -50,7 +50,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi16(STRING tagA, DATETIME dateA, STRING tag
     FROM persons:p
     POST-ACCUM @@result += RESULT(p.id, p.@messageCountA, p.@messageCountB, p.@messageCountA+p.@messageCountB);
 
-  PRINT @@result;
+  PRINT @@result as result;
 }
 
 #INTERPRET QUERY bi16 ("Imelda_Marcos", "2012-05-08T13:59:11", "Imelda_Marcos", "2012-05-08T13:59:11", 5) 

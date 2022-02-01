@@ -8,4 +8,4 @@ cd ..
 
 . scripts/vars.sh
 
-docker stop ${NEO4J_CONTAINER_NAME} || echo "No container ${NEO4J_CONTAINER_NAME} found"
+docker stop ${TG_CONTAINER_NAME} || echo "No container ${TG_CONTAINER_NAME} found"

@@ -21,7 +21,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi18(VERTEX<Person> person1Id, STRING tag) {
     ACCUM p.@mutualFriendCount += 1
     POST-ACCUM @@result += RESULT(p.id, p.@mutualFriendCount);
 
-  PRINT @@result;
+  PRINT @@result as result;
 }
 
 # INTERPRET QUERY bi18(13194139538816, "Muammar_Gaddafi")

@@ -26,5 +26,5 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi3(STRING tagClass, STRING country) {
     ACCUM f.@messageCount += 1
     POST-ACCUM @@result += RESULT(f.id, f.title, f.creationDate, f.@personId, f.@messageCount);
 
-  PRINT @@result;
+  PRINT @@result as result;
 }

@@ -28,5 +28,5 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi5(STRING tag) {
       @@result += RESULT(p.id, p.@replyCount, p.@likeCount, p.@messageCount,
         p.@messageCount + 2*p.@replyCount + 10*p.@likeCount);
 
-  PRINT @@result;
+  PRINT @@result as result;
 }

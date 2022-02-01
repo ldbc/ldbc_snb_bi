@@ -70,7 +70,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi20(STRING company, VERTEX<Person> person2I
   FOREACH (p,dist) IN @@paths DO
     @@result += RESULT(p,dist);
   END;
-  PRINT @@result;
+  PRINT @@result as result;
 }
 
 CREATE OR REPLACE DISTRIBUTED QUERY bi20_delete_weighted_edges() {

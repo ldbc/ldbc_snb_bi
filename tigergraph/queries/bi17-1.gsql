@@ -76,7 +76,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi17(STRING tag, INT delta) {
     @@result += RESULT(num, personId);
   END;
 
-  PRINT @@result;
+  PRINT @@result as result;
 }
 
 #INSTALL QUERY bi17

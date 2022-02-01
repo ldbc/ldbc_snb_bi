@@ -31,5 +31,5 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi8(STRING tag, DATETIME date) {
     ACCUM p.@friendsScore += f.@score
     POST-ACCUM @@result += RESULT(p.id, p.@score, p.@friendsScore, p.@score + p.@friendsScore);
 
-  PRINT @@result;
+  PRINT @@result as result;
 }

@@ -40,6 +40,6 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi1(DATETIME date) {
       (m.sumMessageLength * 1.0 / m.messageCount), m.sumMessageLength, (m.messageCount * 1.0 / total));
   END;
 
-  PRINT @@result;
+  PRINT @@result as result;
 
 }

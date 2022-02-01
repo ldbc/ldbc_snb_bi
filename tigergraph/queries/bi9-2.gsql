@@ -25,7 +25,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi9(DATETIME startDate, DATETIME endDate) {
       p.@messageCount += t.@messageCount
     POST-ACCUM @@result += RESULT(p.id, p.firstName, p.lastName, p.@threadCount, p.@messageCount);
 
-  PRINT @@result;
+  PRINT @@result as result;
 
   /*
   # Below does not work in 3.1.0. Fixed in 3.1.1.

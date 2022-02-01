@@ -21,5 +21,5 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi11(STRING country, DATETIME startDate) {
         END
       END; 
   
-  PRINT @@result;
+  PRINT @@result as result;
 }

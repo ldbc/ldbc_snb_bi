@@ -16,5 +16,5 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi11(STRING country, DATETIME startDate) {
     PER (p1, p2, p3)
     ACCUM @@count += 1;
 
-  PRINT @@count;
+  PRINT @@count as result;
 }

@@ -26,5 +26,5 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi7(STRING tag) {
     ACCUM t.@count += 1
     POST-ACCUM @@result += RESULT(t.name, t.@count);
 
-  PRINT @@result;
+  PRINT @@result as result;
 }

@@ -82,7 +82,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi14(STRING country1, STRING country2) {
   @@result.resize(City1.size());
   City1 = SELECT c1 FROM City1:c1
     ACCUM @@result += c1.@cityresults.top();
-  PRINT @@result;
+  PRINT @@result as result;
 }
 
 // INSTALL QUERY bi14

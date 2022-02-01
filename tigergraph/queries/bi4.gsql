@@ -52,7 +52,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi4 (DATETIME date) {
     SELECT p FROM P:p WHERE p.@messageCount == 0
     POST-ACCUM @@result += RESULT(p.id, p.firstName, p.lastName, p.creationDate, p.@messageCount);
 
-  PRINT @@result;
+  PRINT @@result as result;
 }
 
 #INTERPRET QUERY bi4("2012-09-01T00:00:00")

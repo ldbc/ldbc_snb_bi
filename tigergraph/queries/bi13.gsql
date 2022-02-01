@@ -50,5 +50,5 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi13(STRING country, DATETIME endDate) {
         @@result += RESULT(z.id, 0, 0, 0.0)
       END;
 
-  PRINT @@result;
+  PRINT @@result as result;
 }

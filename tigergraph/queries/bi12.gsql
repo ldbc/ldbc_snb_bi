@@ -34,5 +34,5 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi12(DATETIME date, INT lengthThreshold, SET
     @@result += RESULT(messageCount, personCount);
   END;
 
-  PRINT @@result;
+  PRINT @@result as result;
 }

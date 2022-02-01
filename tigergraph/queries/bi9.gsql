@@ -30,5 +30,5 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi9(DATETIME startDate, DATETIME endDate) {
     SELECT p FROM persons:p
     ACCUM @@result += RESULT(p.id, p.firstName, p.lastName, p.@threadCount, p.@messageCount);
 
-  PRINT @@result;
+  PRINT @@result as result;
 }

@@ -21,38 +21,38 @@ tools/run.py ./target/ldbc_snb_datagen_${PLATFORM_VERSION}-${DATAGEN_VERSION}.ja
 
 ## Loading the data
 
-Set the `$NEO4J_CSV_DIR` environment variable.
-
+Set the `$TG_DATA_DIR` environment variable.
 ```bash
-export NEO4J_CSV_DIR=`pwd`/sf${SF}/graphs/csv/bi/composite-projected-fk/
+export TG_DATA_DIR=`pwd`/sf${SF}/csv/bi/composite-projected-fk/
 ```
 
-If the data is compressed, set:
-
+If the data has header, set:
 ```bash
-export NEO4J_CSV_FLAGS="--compressed"
+export TG_HEADER=true
+```
+
+Start TigerGraph docker container. For data larger than 50G, you can need license and work on a cluster. You need to install TigerGraph manually and skip this step.
+```
+scripts/start-docker.sh
 ```
 
 Load the data:
-
 ```bash
-scripts/load-in-one-step.sh
+scripts/setup.sh
 ```
+
+This step may take a while (several minutes), as it is responsible for defining the queries, loading jobs, loading the data and installing (optimizing and compiling on the server) the queries.
 
 ## Microbatches
 
 Test loading the microbatches:
-
 ```bash
 scripts/batches.sh
 ```
 
-:warning: Note that this script uses the data sets in the `$NEO4J_CSV_DIR` directory on the host machine but maps the paths relative to the `/import` directory in the Docker container (Neo4j's dedicated import directory which it uses as the basis of the import paths in the `LOAD CSV` Cypher commands).
-For example, the `$NEO4J_CSV_DIR/deletes/dynamic/Post/batch_id=2012-09-13/part-x.csv` path is translated to the `deletes/dynamic/Post/batch_id=2012-09-13/part-x.csv` relative path.
-
 ## Queries
 
-To run the queries, issue:
+To run the queries:
 
 ```bash
 scripts/bi.sh

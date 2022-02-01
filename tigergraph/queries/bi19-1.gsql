@@ -79,7 +79,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi19(VERTEX<City> city1Id, VERTEX<City> city
   FOREACH (p1,p2,dist) IN @@paths DO
     @@result += RESULT(p1,p2,dist);
   END;
-  PRINT @@result;
+  PRINT @@result as result;
 }
 
 #INSTALL QUERY bi19
