@@ -9,6 +9,6 @@ export POSTGRES_USER=postgres
 export POSTGRES_DATA_DIR=`pwd`/scratch/data
 export POSTGRES_PORT=5432
 
-if [ ! -v POSTGRES_CSV_FLAGS ]; then
+if [ ! -n "${POSTGRES_CSV_FLAGS-}" ]; then
     export POSTGRES_CSV_FLAGS=""
 fi
