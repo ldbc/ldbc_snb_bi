@@ -26,6 +26,8 @@ approximate queries are less likely to be incorrect
 // approximate query "bi19_add_edges_2hop" from bi19-AddEdge.gsql
 // Include all paths of lengths <= 2
 // source -(KNOWS)- mid -(KNOWS)- target
+USE GRAPH ldbc_snb
+SET syntax_version = "v2"
 CREATE OR REPLACE DISTRIBUTED QUERY bi19_add_weighted_edges(VERTEX<City> city1Id, VERTEX<City> city2Id) {
   OrAccum<BOOL> @source, @target, @selected;
   MinAccum<VERTEX<Person>> @creator, @replyto;

@@ -1,7 +1,5 @@
-USE GRAPH ldbc_snb
-SET syntax_version = "v2"
 # datetime is a reserved keyword so we use date here.
-CREATE OR REPLACE DISTRIBUTED QUERY bi1(DATETIME date) {
+CREATE OR REPLACE DISTRIBUTED QUERY bi1(DATETIME date) SYNTAX v2 {
 
   TYPEDEF TUPLE <INT year, BOOL isComment, INT lengthCategory, INT messageCount,
     FLOAT averageMessageLength, INT sumMessageLength, FLOAT percentageOfMessages> RESULT;

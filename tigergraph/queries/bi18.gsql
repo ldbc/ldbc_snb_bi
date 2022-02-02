@@ -1,7 +1,4 @@
-USE GRAPH ldbc_snb
-SET syntax_version = "v2"
-
-CREATE OR REPLACE DISTRIBUTED QUERY bi18(VERTEX<Person> person1Id, STRING tag) {
+CREATE OR REPLACE DISTRIBUTED QUERY bi18(VERTEX<Person> person1Id, VERTEX<Tag> tag) SYNTAX v2 {
   TYPEDEF TUPLE <UINT person2Id, UINT mutualFriendCount> RESULT;
   HeapAccum<RESULT>(20, mutualFriendCount DESC, person2Id ASC) @@result;
   SumAccum<UINT> @mutualFriendCount;
@@ -10,7 +7,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi18(VERTEX<Person> person1Id, STRING tag) {
   tmp = SELECT t FROM person1:s -(KNOWS)- Person:t
     ACCUM t.@known += true;
 
-  tagWithName = SELECT t FROM Tag:t WHERE t.name == tag;
+  tagWithName = {tag};
   person2s =
     SELECT p
     FROM tagWithName -(<HAS_INTEREST)- Person:p

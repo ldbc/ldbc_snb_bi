@@ -1,13 +1,21 @@
-from neo4j import GraphDatabase
-from neo4j.time import DateTime, Date
-from datetime import datetime
+import argparse
+import json
+import os
+import subprocess
+import sys
+from pathlib import Path
 import time
 import csv
+import requests
 import re
+from datetime import datetime, timedelta
+from random import randrange, choice
+from glob import glob
 
-# TODO: provide two modes of operation: validation and benchmark
-# validation CSV header: Query ID|Query variant|Parameters|Results
-# benchmark CSV header:  Query ID|Query variant|Response time
+parser = argparse.ArgumentParser(description='BI query driver')
+parser.add_argument('mode', type=str, choices=['benchmark', 'validate'], help='mode of the driver')
+parser.add_argument('--nrun', type=int, help='number of runs')
+args = parser.parse_args()
 
 result_mapping = {
      1: ["INT32", "BOOL", "INT32", "INT32", "FLOAT32", "INT32", "FLOAT32"],
@@ -41,12 +49,8 @@ def convert_value_to_string(value, type):
         return str(float(value))
     elif type == "STRING[]":
         return "[" + ";".join([f'"{v}"' for v in value]) + "]"
-    elif type == "STRING":
+    elif type in ["STRING", "DATETIME", "DATE"]:
         return f'"{value}"'
-    elif type == "DATETIME":
-        return f"{datetime.strftime(value.to_native(), '%Y-%m-%dT%H:%M:%S.%f')[:-3]}+00:00"
-    elif type == "DATE":
-        return datetime.strftime(value.to_native(), '%Y-%m-%d')
     elif type == "BOOL":
         return str(bool(value))
     else:
@@ -59,14 +63,8 @@ def cast_parameter_to_driver_input(value, type):
         return int(value)
     elif type == "STRING[]":
         return value.split(";")
-    elif type == "STRING":
+    elif type in ["STRING", "DATETIME", "DATE"]:
         return value
-    elif type == "DATETIME":
-        dt = datetime.strptime(value, '%Y-%m-%dT%H:%M:%S.%f+00:00')
-        return DateTime(dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second, dt.microsecond*1000)
-    elif type == "DATE":
-        dt = datetime.strptime(value, '%Y-%m-%d')
-        return Date(dt.year, dt.month, dt.day)
     else:
         raise ValueError(f"Parameter type {type} not found")
 
@@ -79,40 +77,33 @@ def query_fun(tx, query_num, query_spec, query_parameters):
         ]) + "]"
     return result_tuples
 
-def run_query(session, query_num, query_id, query_spec, query_parameters):
-    print(f'Q{query_id}: {query_parameters}')
+def run_query(name, parameters):
+    ENDPOINT = 'http://127.0.0.1:9000/query/ldbc_snb/'
+    HEADERS = {'GSQL-TIMEOUT': '36000000'}
     start = time.time()
-    results = session.read_transaction(query_fun, query_num, query_spec, query_parameters)
+    response = requests.get(ENDPOINT + name, headers=HEADERS, params=parameters).json()
     end = time.time()
     duration = end - start
-    #print("Q{}: {:.4f} seconds, {} tuples".format(query_id, duration, results[0]))
-    return results
+    print(response)
+    return response['results'][0]['result'], duration
 
+os.makedirs('output', exist_ok = True)
+if args.mode == 'validate':
+    result = open(f'output/validation_params.csv', 'w')
+elif args.mode == 'benchmark':
+    result = open(f'output/results.csv', 'w')
 
-driver = GraphDatabase.driver("bolt://localhost:7687")
-
-result_file = open(f'output/validation_params.csv', 'w')
-
-session = driver.session()
-for query_variant in ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "15a", "15b", "16a", "16b", "17", "18", "19a", "19b", "20"]:
-#for query_variant in ["14a"]:
+for query_variant in ["1", "2a", "3", "4", "5", "6", "7", "8a", "9", "10a", "11", "12", "13", "14a", "15a", "16a", "17", "18", "19a", "20"]:
     print(f"========================= Q{query_variant} =========================")
     query_num = int(re.sub("[^0-9]", "", query_variant))
-    query_file = open(f'queries/bi-{query_num}.cypher', 'r')
-    query_spec = query_file.read()
-
     parameters_csv = csv.DictReader(open(f'../parameters/bi-{query_variant}.csv'), delimiter='|')
     parameters = [{"name": t[0], "type": t[1]} for t in [f.split(":") for f in parameters_csv.fieldnames]]
-    #parameter_names = [k.split(":")[0] for k in parameters_csv.fieldnames]
-
+    
     for query_parameters in parameters_csv:
         query_parameters = {k.split(":")[0]: cast_parameter_to_driver_input(v, k.split(":")[1]) for k, v in query_parameters.items()}
         query_parameters_in_order = f'<{";".join([convert_value_to_string(query_parameters[parameter["name"]], parameter["type"]) for parameter in parameters])}>'
-
-        results = run_query(session, query_num, query_variant, query_spec, query_parameters)
+        if query_num == 1: query_parameters = {'date': query_parameters['datetime']}
+        print(query_parameters)
+        results, duration = run_query(f'bi{query_num}', query_parameters)
         print(f"{query_num}|{query_variant}|{query_parameters_in_order}|{results}")
-
-    query_file.close()
-
-session.close()
-driver.close()
+        #print(f"{query_num}|{query_variant}|{query_parameters_in_order}|{results}")

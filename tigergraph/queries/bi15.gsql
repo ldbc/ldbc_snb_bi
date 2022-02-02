@@ -1,8 +1,5 @@
-USE GRAPH ldbc_snb
-SET syntax_version = "v2"
-
-# DISTRIBUTED QUERY NOT SUPPORTED
-CREATE OR REPLACE /*DISTRIBUTED*/ QUERY bi15(VERTEX<Person> person1Id, VERTEX<Person> person2Id, DATETIME startDate, DATETIME endDate) {
+CREATE OR REPLACE DISTRIBUTED QUERY bi15(VERTEX<Person> person1Id, VERTEX<Person> person2Id, 
+    DATETIME startDate, DATETIME endDate) SYNTAX v2 {
 
   TYPEDEF TUPLE <JSONARRAY personId, DOUBLE weight> RESULT;
   HeapAccum<RESULT>(0, weight DESC, personId ASC) @@result;
@@ -14,8 +11,8 @@ CREATE OR REPLACE /*DISTRIBUTED*/ QUERY bi15(VERTEX<Person> person1Id, VERTEX<Pe
   SetAccum<VERTEX<Person>> @@PersonInShortestPath;
   SumAccum<UINT> @creatorId;
   #bug in GroupAccum: semantic check error
-  #GroupByAccum<UINT p1, UINT p2, SumAccum<DOUBLE> weight> @@KnowWeight; 
-  MapAccum<UINT, MapAccum<UINT, SumAccum<DOUBLE>>> @@KnowWeight;
+  GroupByAccum<UINT p1, UINT p2, SumAccum<DOUBLE> weight> @@KnowWeight; 
+  #MapAccum<UINT, MapAccum<UINT, SumAccum<DOUBLE>>> @@KnowWeight;
   STRING jsonStr;
   SumAccum<DOUBLE> @@weight;
 
@@ -91,10 +88,10 @@ CREATE OR REPLACE /*DISTRIBUTED*/ QUERY bi15(VERTEX<Person> person1Id, VERTEX<Pe
     ACCUM p.@creatorId = c.id;
   tmp = SELECT m2
     FROM comments:m1 -(REPLY_OF>)- postsInForum:m2
-    ACCUM @@KnowWeight += (m1.@creatorId-> (m2.@creatorId ->1.0));
+    ACCUM @@KnowWeight += (m1.@creatorId, m2.@creatorId -> 1.0);
   tmp = SELECT m2
     FROM comments:m1 -(REPLY_OF>)- commentsInForum:m2
-    ACCUM @@KnowWeight += (m1.@creatorId-> (m2.@creatorId ->0.5));
+    ACCUM @@KnowWeight += (m1.@creatorId, m2.@creatorId -> 0.5);
   
   @@result.resize(@@shortestPaths.size());
   FOREACH path IN @@shortestPaths DO
@@ -102,8 +99,8 @@ CREATE OR REPLACE /*DISTRIBUTED*/ QUERY bi15(VERTEX<Person> person1Id, VERTEX<Pe
     jsonStr = "[";
     FOREACH i in range[0,path.size()-2] DO 
        jsonStr = jsonStr + bigint_to_string(path.get(i).id) + ",";
-       @@weight += @@KnowWeight.get(path.get(i).id).get(path.get(i+1).id)
-        + @@KnowWeight.get(path.get(i+1).id).get(path.get(i).id);
+       @@weight += @@KnowWeight.get(path.get(i).id, path.get(i+1).id).weight
+          + @@KnowWeight.get(path.get(i+1).id, path.get(i).id).weight;
     END;
     jsonStr = jsonStr + bigint_to_string(path.get(path.size()-1).id) + "]";
     @@result += RESULT(parse_json_array(jsonStr), @@weight);

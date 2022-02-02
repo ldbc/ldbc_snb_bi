@@ -1,10 +1,7 @@
-USE GRAPH ldbc_snb
-SET syntax_version = "v2"
-
-CREATE OR REPLACE DISTRIBUTED QUERY bi16(STRING tagA, DATETIME dateA, STRING tagB, DATETIME dateB, UINT maxKnowsLimit) {
+CREATE OR REPLACE DISTRIBUTED QUERY bi16(VERTEX<Tag> tagA, DATETIME dateA, 
+    VERTEX<Tag> tagB, DATETIME dateB, UINT maxKnowsLimit) SYNTAX v2 {
 
   TYPEDEF TUPLE <UINT personId, UINT messageCountA, UINT messageCountB, UINT totalMessageCount> RESULT;
-
   HeapAccum<RESULT>(20, totalMessageCount DESC, personId ASC) @@result;
 
   SumAccum<UINT> @knowsCountA, @messageCountA;
@@ -14,7 +11,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi16(STRING tagA, DATETIME dateA, STRING tag
   yearA = year(dateA); monthA = month(dateA); dayA = day(dateA);
   yearB = year(dateB); monthB = month(dateB); dayB = day(dateB);
 
-  tagWithNameA = SELECT t FROM Tag:t WHERE t.name == tagA;
+  tagWithNameA = {tagA};
   personsA =
     SELECT p
     FROM tagWithNameA -(<HAS_TAG)- (Comment|Post):m -(HAS_CREATOR>)- Person:p
@@ -29,7 +26,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi16(STRING tagA, DATETIME dateA, STRING tag
   # need to include person without any friends
   personsA = SELECT p FROM personsA:p WHERE p.@knowsCountA <= maxKnowsLimit;
 
-  tagWithNameB = SELECT t FROM Tag:t WHERE t.name == tagB;
+  tagWithNameB = {tagB};
   personsB =
     SELECT p
     FROM tagWithNameB -(<HAS_TAG)- (Comment|Post):m -(HAS_CREATOR>)- Person:p

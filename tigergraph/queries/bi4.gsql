@@ -1,7 +1,4 @@
-USE GRAPH ldbc_snb
-SET syntax_version = "v2"
-
-CREATE OR REPLACE DISTRIBUTED QUERY bi4 (DATETIME date) {
+CREATE OR REPLACE DISTRIBUTED QUERY bi4 (DATETIME date) SYNTAX v2 {
   TYPEDEF TUPLE <UINT personId, STRING personFirstName, STRING personLastName,
     DATETIME personCreationDate, UINT messageCount> RESULT;
   HeapAccum<RESULT>(100, messageCount DESC, personId ASC) @@result;

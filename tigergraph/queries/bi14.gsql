@@ -1,6 +1,4 @@
-USE GRAPH ldbc_snb
-SET syntax_version = "v2"
-CREATE OR REPLACE DISTRIBUTED QUERY bi14(STRING country1, STRING country2) {
+CREATE OR REPLACE DISTRIBUTED QUERY bi14(VERTEX<Country> country1, VERTEX<Country> country2) SYNTAX v2 {
   TYPEDEF TUPLE<UINT person1Id, UINT person2Id, STRING city1Name, INT score> pairScore;
   TYPEDEF TUPLE <UINT pid, UINT score> ps;
 
@@ -10,16 +8,16 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi14(STRING country1, STRING country2) {
   OrAccum @valid;
   HeapAccum<pairScore>(1, score DESC, person1Id ASC, person2Id ASC) @cityresults, @@result;
   MinAccum<UINT> @@min_pid2;
-  // select city1, person1 and person2
+  
+  C1 = {country1};
+  C2 = {country2};
   P1 = SELECT p 
-    FROM Country:s -(<IS_PART_OF.<IS_LOCATED_IN)-Person:p 
-    WHERE s.name == country1
+    FROM C1 -(<IS_PART_OF.<IS_LOCATED_IN)-Person:p 
     ACCUM p.@valid += True;
 
   P2 = 
     SELECT p
-    FROM Country:s -(<IS_PART_OF.<IS_LOCATED_IN)-Person:p
-    WHERE s.name == country2
+    FROM C2 -(<IS_PART_OF.<IS_LOCATED_IN)-Person:p
     POST-ACCUM @@min_pid2 += p.id;
   
   M1 = 

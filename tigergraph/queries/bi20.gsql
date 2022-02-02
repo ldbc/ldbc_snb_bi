@@ -1,8 +1,7 @@
-/*
-But this one support distributed thus works well for larger data size on multiple machines.
-*/
+
 USE GRAPH ldbc_snb
 SET syntax_version = "v2"
+// this query is slower for SF-1 but support distributed and works well for larger data size on multiple machines.
 CREATE OR REPLACE DISTRIBUTED QUERY bi20(STRING company, VERTEX<Person> person2Id) {
   TYPEDEF TUPLE<UINT person1Id, UINT totalWeight> RESULT;
   HeapAccum<RESULT>(20, totalWeight ASC, person1Id ASC) @@result;  
@@ -65,10 +64,8 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi20(STRING company, VERTEX<Person> person2I
 # INSTALL QUERY bi20
 # RUN QUERY bi20("Air_India_Express", 26388279068799)
 # RUN QUERY bi20("Pamir_Airways", 15393162792760)
-
-
 /*
-This one works faster on SF-1 
+This one is faster on SF-1 
 but is not distributed
 CREATE OR REPLACE QUERY bi20(STRING company, VERTEX<Person> person2Id) {
   TYPEDEF TUPLE<UINT person1Id, UINT totalWeight> RESULT;

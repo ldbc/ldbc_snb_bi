@@ -17,7 +17,7 @@ parser = argparse.ArgumentParser(description='Batch updates for TigerGraph BI wo
 parser.add_argument('data_dir', type=Path, help='The machine (default:ANY) and directory to load data from, e.g. "/home/tigergraph/data" or "ALL:/home/tigergraph/data"')
 parser.add_argument('--header', action='store_true', help='whether data has the header')
 parser.add_argument('--machine', '-m', type=str, default = 'ANY', help='which machine to load the data')
-args = parser().parse_args()
+args = parser.parse_args()
 
 STATIC_NAMES = [
     'Organisation',

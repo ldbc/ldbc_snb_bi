@@ -1,6 +1,4 @@
-SET syntax_version = "v2"
-USE GRAPH ldbc_snb
-CREATE OR REPLACE DISTRIBUTED QUERY bi17(STRING tag, INT delta) {
+CREATE OR REPLACE DISTRIBUTED QUERY bi17(VERTEX<Tag> tag, INT delta) SYNTAX v2 {
   TYPEDEF TUPLE <UINT messageCount, UINT person1Id> RESULT;
   HeapAccum<RESULT>(10, messageCount DESC, person1Id ASC) @@result;
   OrAccum<BOOL> @hasTag, @isCreator;
@@ -18,8 +16,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi17(STRING tag, INT delta) {
   # person1 id in message2
   SetAccum<UINT> @person1Id;
   MapAccum<UINT, SumAccum<UINT>> @@messageCount;
-  T = {Tag.*};
-  T = SELECT t FROM Tag:t WHERE t.name == tag;
+  T = {tag};
   messagesWithTag =
     SELECT m
     FROM T -(<HAS_TAG)- (Comment|Post):m

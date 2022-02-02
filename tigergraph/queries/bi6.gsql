@@ -1,6 +1,4 @@
-USE GRAPH ldbc_snb
-SET syntax_version = "v2"
-CREATE OR REPLACE DISTRIBUTED QUERY bi6(STRING tag) {
+CREATE OR REPLACE DISTRIBUTED QUERY bi6(STRING tag) SYNTAX v2 {
   TYPEDEF TUPLE <UINT personId, UINT authorityScore> RESULT;
   HeapAccum<RESULT>(100, authorityScore DESC, personId ASC) @@result;
   MapAccum<VERTEX<Person>, UINT> @@popularityScore;

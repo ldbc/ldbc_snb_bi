@@ -1,7 +1,4 @@
-USE GRAPH ldbc_snb
-SET syntax_version = "v2"
-
-CREATE OR REPLACE DISTRIBUTED QUERY bi9(DATETIME startDate, DATETIME endDate) {
+CREATE OR REPLACE DISTRIBUTED QUERY bi9(DATETIME startDate, DATETIME endDate) SYNTAX v2 {
 
   TYPEDEF TUPLE <UINT personId, STRING personFirstName, STRING personLastName, UINT threadCount, UINT messageCount> RESULT;
 

@@ -1,7 +1,4 @@
-USE GRAPH ldbc_snb
-SET syntax_version = "v2"
-
-CREATE OR REPLACE DISTRIBUTED QUERY bi7(STRING tag) {
+CREATE OR REPLACE DISTRIBUTED QUERY bi7(STRING tag) SYNTAX v2 {
 
   # count is a reserved keyword.
   TYPEDEF TUPLE <STRING relatedTagName, UINT replyCount> RESULT;

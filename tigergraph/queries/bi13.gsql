@@ -1,18 +1,13 @@
-USE GRAPH ldbc_snb
-SET syntax_version = "v2"
-CREATE OR REPLACE DISTRIBUTED QUERY bi13(STRING country, DATETIME endDate) {
+CREATE OR REPLACE DISTRIBUTED QUERY bi13(VERTEX<Country> country, DATETIME endDate) SYNTAX v2 {
 
   TYPEDEF TUPLE <UINT zombieId, UINT zombieLikeCount, UINT totalLikeCount, DOUBLE zombieScore> RESULT;
-
   HeapAccum<RESULT>(100, zombieScore DESC, zombieId ASC) @@result;
   SetAccum<VERTEX<Person>> @@zombies;
-
   SumAccum<UINT> @messageCount;
   SumAccum<UINT> @totalLikeCount;
   SumAccum<UINT> @zombieLikeCount;
 
-  countryWithName = SELECT c FROM Country:c WHERE c.name == country;
-
+  countryWithName = {country};
   zombieCandidates =
     SELECT p
     FROM countryWithName -(<IS_PART_OF.<IS_LOCATED_IN)- Person:p
