@@ -14,7 +14,7 @@ To get started with the LDBC SNB benchmarks, check out our introductory presenta
 
 ## Implementations
 
-The repository contains two reference implementations:
+The repository contains three implementations:
 
 * [`cypher`](cypher/): queries are expressed in the Cypher language and run in the Neo4j graph database management system (version 4) using its stored procedure libraries (e.g. Graph Data Science)
 * [`postgres`](postgres/): queries are implemented in SQL and run in PostgreSQL relational database management system (version 13)
