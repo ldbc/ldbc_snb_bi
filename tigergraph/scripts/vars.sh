@@ -3,7 +3,7 @@ cd ..
 
 export TG_VERSION=latest
 export TG_CONTAINER_NAME=tigergraph
-export TG_SCRIPTS_DIR=`pwd`/ddl
+export TG_DDL_DIR=`pwd`/ddl
 export TG_QUERIES_DIR=`pwd`/queries
 export TG_DML_DIR=`pwd`/dml
 export TG_REST_PORT=9000
@@ -12,11 +12,3 @@ export TG_WEB_PORT=14240
 export TG_ENDPOINT=http://127.0.0.1:$TG_REST_PORT
 export TG_HEADER=false
 export TG_REFRESH_HEADER=false
-
-if $TG_HEADER ; then
-  TG_LOAD_HEADER_STR="_with_header"
-  TG_REFRESH_HEADER_STR="_with_header"
-else
-  TG_LOAD_HEADER_STR=""
-  TG_REFRESH_HEADER_STR=""
-fi

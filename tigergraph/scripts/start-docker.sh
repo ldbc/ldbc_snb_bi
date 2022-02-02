@@ -13,7 +13,7 @@ echo "Loading the TIGERGRAPH database"
 echo "-------------------------------------------------------------------------------"
 echo "TG_CONTAINER_NAME: ${TG_CONTAINER_NAME}"
 echo "TG_VERSION: ${TG_VERSION}"
-echo "TG_SCRIPTS_DIR: ${TG_SCRIPTS_DIR}"
+echo "TG_DDL_DIR: ${TG_DDL_DIR}"
 echo "TG_DATA_DIR (on the host machine): ${TG_DATA_DIR}"
 echo "TG_QUERIES_DIR: ${TG_QUERIES_DIR}"
 echo "TG_DML_DIR: ${TG_DML_DIR}"
@@ -30,14 +30,10 @@ if [ ! -d ${TG_QUERIES_DIR} ]; then
   exit 1
 fi
 
-if [ ! -d ${TG_SCRIPTS_DIR} ]; then
+if [ ! -d ${TG_DDL_DIR} ]; then
   echo "TigerGraph scripts directory does not exist!"
   exit 1
 fi
-
-
-find $TG_DATA_DIR -name _SUCCESS -delete
-find $TG_DATA_DIR -name *.crc -delete
 
 docker run --rm \
   --ulimit nofile=1000000:1000000 \
@@ -46,7 +42,7 @@ docker run --rm \
   --publish=$TG_WEB_PORT:14240 \
   --detach \
   --volume=${TG_DATA_DIR}:/data:z \
-  --volume=${TG_SCRIPTS_DIR}:/scripts:z \
+  --volume=${TG_DDL_DIR}:/scripts:z \
   --volume=${TG_QUERIES_DIR}:/queries:z \
   --volume=${TG_DML_DIR}:/dml:z \
   --name ${TG_CONTAINER_NAME} \

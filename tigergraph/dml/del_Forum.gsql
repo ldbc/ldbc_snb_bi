@@ -1,9 +1,9 @@
 USE GRAPH ldbc_snb
 SET syntax_version = "v2"
-CREATE OR REPLACE QUERY del_Forum(STRING file) {
+CREATE OR REPLACE QUERY del_Forum(STRING file, BOOL header) {
   SetAccum<VERTEX<Forum>> @@forum;
   UINT result;
-  @@forum = { LoadAccum(file, $1, "|", true)}; 
+  @@forum = { LoadAccum(file, $1, "|", header)};
   forum = {@@forum};
   # del 6
   replies2 = SELECT c FROM forum -(CONTAINER_OF>)- Post:p -(<REPLY_OF*)- (Post|Comment):c;

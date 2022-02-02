@@ -1,9 +1,9 @@
 USE GRAPH ldbc_snb
 SET syntax_version = "v2"
-CREATE OR REPLACE QUERY del_Post(STRING file) {
+CREATE OR REPLACE QUERY del_Post(STRING file, BOOL header) {
   SetAccum<VERTEX<Post>> @@posts;
   UINT result;
-  @@posts = { LoadAccum(file, $1, "|", true)}; 
+  @@posts = { LoadAccum(file, $1, "|", header)}; 
   posts = {@@posts};
   # del 6 7
   replies = SELECT c FROM posts -(<REPLY_OF*)- (Post|Comment):c;

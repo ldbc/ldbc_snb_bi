@@ -18,8 +18,7 @@ echo "==========================================================================
 gsql drop all
 gsql create_schema.gsql
 
-gsql --graph ldbc_snb load_static$TG_LOAD_HEADER_STR.gsql
-gsql --graph ldbc_snb load_dynamic$TG_LOAD_HEADER_STR.gsql
+gsql --graph ldbc_snb tmp.gsql
 
 STATIC_PATH=$DATA_PATH/initial_snapshot/static
 DYNAMIC_PATH=$DATA_PATH/initial_snapshot/dynamic
@@ -83,13 +82,9 @@ gsql --graph ldbc_snb $QUERY_PATH/bi19.gsql
 gsql --graph ldbc_snb $QUERY_PATH/bi20.gsql
 gsql --graph ldbc_snb $QUERY_PATH/stat.gsql
 
-gsql --graph ldbc_snb $DML_PATH/ins_Vertex$TG_REFRESH_HEADER_STR.gsql
-gsql --graph ldbc_snb $DML_PATH/ins_Edge$TG_REFRESH_HEADER_STR.gsql
-
 gsql --graph ldbc_snb $DML_PATH/del_Comment.gsql
 gsql --graph ldbc_snb $DML_PATH/del_Forum.gsql
 gsql --graph ldbc_snb $DML_PATH/del_Person.gsql
 gsql --graph ldbc_snb $DML_PATH/del_Post.gsql
-gsql --graph ldbc_snb $DML_PATH/del_Edge.gsql
 
 gsql --graph ldbc_snb 'INSTALL QUERY *'
