@@ -1,16 +1,10 @@
 import argparse
-import json
-import os
-import subprocess
-import sys
 from pathlib import Path
 import time
 import csv
 import requests
 import re
 from datetime import datetime, timedelta
-from random import randrange, choice
-from glob import glob
 
 parser = argparse.ArgumentParser(description='BI query driver')
 parser.add_argument('mode', type=str, choices=['benchmark', 'validate'], help='mode of the driver')
@@ -68,15 +62,6 @@ def cast_parameter_to_driver_input(value, type):
     else:
         raise ValueError(f"Parameter type {type} not found")
 
-def query_fun(tx, query_num, query_spec, query_parameters):
-    results = tx.run(query_spec, query_parameters)
-    mapping = result_mapping[query_num]
-    result_tuples = "[" + ";".join([
-            f'<{",".join([convert_value_to_string(result[i], type) for i, type in enumerate(mapping)])}>'
-            for result in results
-        ]) + "]"
-    return result_tuples
-
 def run_query(name, parameters):
     ENDPOINT = 'http://127.0.0.1:9000/query/ldbc_snb/'
     HEADERS = {'GSQL-TIMEOUT': '36000000'}
@@ -84,17 +69,26 @@ def run_query(name, parameters):
     response = requests.get(ENDPOINT + name, headers=HEADERS, params=parameters).json()
     end = time.time()
     duration = end - start
-    print(response)
     return response['results'][0]['result'], duration
-'''
-os.makedirs('output', exist_ok = True)
+    
+# reformat results = [{'name':value}] -> results = [[value]] 
+def serialize_results(results):
+    if isinstance(results, int): 
+        return results
+    output = [] 
+    for r in results:
+        output.append([v for k,v in r.items()])
+    return output
+
+res = Path('results')
+res.mkdir(exist_ok = True)
 if args.mode == 'validate':
-    res_file = 'output/validation_params.csv'
+    res_file = res / 'validation_params.csv'
 elif args.mode == 'benchmark':
-    res_file = 'output/results.csv'
-Path(res_file).unlink()
+    res_file = res / 'results.csv'
+if res_file.exists(): res_file.unlink()
 fout = open(res_file, 'a')
-'''
+
 for query_variant in ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20"]:
     print(f"========================= Q{query_variant} =========================")
     query_num = int(re.sub("[^0-9]", "", query_variant))
@@ -106,6 +100,6 @@ for query_variant in ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "
         query_parameters_in_order = f'<{";".join([convert_value_to_string(query_parameters[parameter["name"]], parameter["type"]) for parameter in parameters])}>'
         if query_num == 1: query_parameters = {'date': query_parameters['datetime']}
         results, duration = run_query(f'bi{query_num}', query_parameters)
-        print(results)
-        #print(f"{query_num}|{query_variant}|{query_parameters_in_order}|{results}")
-        
+        results = serialize_results(results)
+        fout.write(f"{query_num}|{query_variant}|{query_parameters_in_order}|{results}\n")
+        fout.flush()

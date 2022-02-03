@@ -1,11 +1,11 @@
-CREATE OR REPLACE DISTRIBUTED QUERY bi10(VERTEX<Person> personId, VERTEX<Country> country, 
+CREATE OR REPLACE DISTRIBUTED QUERY bi10(VERTEX<Person> personId, STRING country, 
     STRING tagClass, UINT minPathDistance, UINT maxPathDistance) SYNTAX v2 {
 
   SumAccum<UINT> @@pathLength;
   OrAccum @visited;
 
-  C0 = {country};
-  candidates = SELECT p FROM C0 -(<IS_PART_OF.<IS_LOCATED_IN)- Person:p;
+  candidates = SELECT p FROM Country:cn -(<IS_PART_OF.<IS_LOCATED_IN)- Person:p
+    WHERE cn.name == country;
 
   sources = {personId};
   targets (Person) = {};

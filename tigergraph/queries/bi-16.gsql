@@ -26,7 +26,6 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi16(STRING tagA, DATETIME dateA,
   # need to include person without any friends
   personsA = SELECT p FROM personsA:p WHERE p.@knowsCountA <= maxKnowsLimit;
 
-  tagWithNameB = {tagB};
   personsB =
     SELECT p
     FROM Tag:t -(<HAS_TAG)- (Comment|Post):m -(HAS_CREATOR>)- Person:p
