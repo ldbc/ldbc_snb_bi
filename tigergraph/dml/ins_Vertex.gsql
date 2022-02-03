@@ -1,5 +1,5 @@
 # there are bugs preventing me to combine insert_vertex and insert_edge into one loading job
-CREATE LOADING JOB insert_vertex_with_header FOR GRAPH ldbc_snb {
+CREATE LOADING JOB insert_vertex FOR GRAPH ldbc_snb {
   DEFINE FILENAME file_Comment;
   DEFINE FILENAME file_Forum;
   DEFINE FILENAME file_Person;

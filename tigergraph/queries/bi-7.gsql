@@ -8,9 +8,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi7(STRING tag) SYNTAX v2 {
   SumAccum<UINT> @count;
 
   tagWithName = SELECT t FROM Tag:t WHERE t.name == tag;
-
   replies = SELECT c FROM tagWithName -(<HAS_TAG.<REPLY_OF)- Comment:c;
-
   repliesWithTag =
     SELECT r
     FROM tagWithName -(<HAS_TAG)- replies:r;

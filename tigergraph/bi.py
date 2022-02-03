@@ -86,14 +86,16 @@ def run_query(name, parameters):
     duration = end - start
     print(response)
     return response['results'][0]['result'], duration
-
+'''
 os.makedirs('output', exist_ok = True)
 if args.mode == 'validate':
-    result = open(f'output/validation_params.csv', 'w')
+    res_file = 'output/validation_params.csv'
 elif args.mode == 'benchmark':
-    result = open(f'output/results.csv', 'w')
-
-for query_variant in ["1", "2a", "3", "4", "5", "6", "7", "8a", "9", "10a", "11", "12", "13", "14a", "15a", "16a", "17", "18", "19a", "20"]:
+    res_file = 'output/results.csv'
+Path(res_file).unlink()
+fout = open(res_file, 'a')
+'''
+for query_variant in ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20"]:
     print(f"========================= Q{query_variant} =========================")
     query_num = int(re.sub("[^0-9]", "", query_variant))
     parameters_csv = csv.DictReader(open(f'../parameters/bi-{query_variant}.csv'), delimiter='|')
@@ -103,7 +105,7 @@ for query_variant in ["1", "2a", "3", "4", "5", "6", "7", "8a", "9", "10a", "11"
         query_parameters = {k.split(":")[0]: cast_parameter_to_driver_input(v, k.split(":")[1]) for k, v in query_parameters.items()}
         query_parameters_in_order = f'<{";".join([convert_value_to_string(query_parameters[parameter["name"]], parameter["type"]) for parameter in parameters])}>'
         if query_num == 1: query_parameters = {'date': query_parameters['datetime']}
-        print(query_parameters)
         results, duration = run_query(f'bi{query_num}', query_parameters)
-        print(f"{query_num}|{query_variant}|{query_parameters_in_order}|{results}")
+        print(results)
         #print(f"{query_num}|{query_variant}|{query_parameters_in_order}|{results}")
+        

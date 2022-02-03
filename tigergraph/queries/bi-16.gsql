@@ -1,5 +1,5 @@
-CREATE OR REPLACE DISTRIBUTED QUERY bi16(VERTEX<Tag> tagA, DATETIME dateA, 
-    VERTEX<Tag> tagB, DATETIME dateB, UINT maxKnowsLimit) SYNTAX v2 {
+CREATE OR REPLACE DISTRIBUTED QUERY bi16(STRING tagA, DATETIME dateA, 
+    STRING tagB, DATETIME dateB, UINT maxKnowsLimit) SYNTAX v2 {
 
   TYPEDEF TUPLE <UINT personId, UINT messageCountA, UINT messageCountB, UINT totalMessageCount> RESULT;
   HeapAccum<RESULT>(20, totalMessageCount DESC, personId ASC) @@result;
@@ -11,11 +11,11 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi16(VERTEX<Tag> tagA, DATETIME dateA,
   yearA = year(dateA); monthA = month(dateA); dayA = day(dateA);
   yearB = year(dateB); monthB = month(dateB); dayB = day(dateB);
 
-  tagWithNameA = {tagA};
   personsA =
     SELECT p
-    FROM tagWithNameA -(<HAS_TAG)- (Comment|Post):m -(HAS_CREATOR>)- Person:p
+    FROM Tag:t -(<HAS_TAG)- (Comment|Post):m -(HAS_CREATOR>)- Person:p
     WHERE
+      t.name == tagA AND
       year(m.creationDate) == yearA AND
       month(m.creationDate) == monthA AND
       day(m.creationDate) == dayA
@@ -29,8 +29,9 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi16(VERTEX<Tag> tagA, DATETIME dateA,
   tagWithNameB = {tagB};
   personsB =
     SELECT p
-    FROM tagWithNameB -(<HAS_TAG)- (Comment|Post):m -(HAS_CREATOR>)- Person:p
+    FROM Tag:t -(<HAS_TAG)- (Comment|Post):m -(HAS_CREATOR>)- Person:p
     WHERE
+      t.name == tagB AND
       year(m.creationDate) == yearB AND
       month(m.creationDate) == monthB AND
       day(m.creationDate) == dayB

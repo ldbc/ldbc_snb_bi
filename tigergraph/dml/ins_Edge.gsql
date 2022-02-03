@@ -1,4 +1,4 @@
-CREATE LOADING JOB insert_edge_with_header FOR GRAPH ldbc_snb {
+CREATE LOADING JOB insert_edge FOR GRAPH ldbc_snb {
   DEFINE FILENAME file_Comment_hasCreator_Person;
   DEFINE FILENAME file_Comment_hasTag_Tag;
   DEFINE FILENAME file_Comment_isLocatedIn_Country;

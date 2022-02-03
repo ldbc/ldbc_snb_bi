@@ -1,4 +1,3 @@
-USE GRAPH ldbc_snb
 CREATE LOADING JOB delete_edge FOR GRAPH ldbc_snb {
   DEFINE FILENAME file_Person_likes_Post; // del 2
   DEFINE FILENAME file_Person_likes_Comment; // del 3

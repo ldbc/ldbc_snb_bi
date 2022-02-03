@@ -1,6 +1,4 @@
-USE GRAPH ldbc_snb
-SET syntax_version = "v2"
-CREATE OR REPLACE QUERY del_Comment(STRING file, BOOL header) {
+CREATE OR REPLACE QUERY del_Comment(STRING file, BOOL header) syntax v2 {
   SetAccum<VERTEX<Comment>> @@comments;
   UINT result;
   @@comments = { LoadAccum(file, $1, "|", header)}; 

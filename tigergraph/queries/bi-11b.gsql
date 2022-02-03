@@ -1,8 +1,9 @@
-CREATE OR REPLACE DISTRIBUTED QUERY bi11(VERTEX<Country> country, DATETIME startDate) SYNTAX v2 {
+CREATE OR REPLACE DISTRIBUTED QUERY bi11(STRING country, DATETIME startDate) SYNTAX v2 {
   OrAccum<BOOL> @selected;
   SumAccum<UINT> @@count;
-  countryWithName = {country};
-  persons = SELECT p FROM countryWithName -(<IS_PART_OF.<IS_LOCATED_IN)- Person:p ACCUM p.@selected += True;
+  persons = SELECT p FROM Country:cn -(<IS_PART_OF.<IS_LOCATED_IN)- Person:p 
+    WHERE cn.name == country
+    ACCUM p.@selected += True;
   persons =
     SELECT p1
     FROM persons:p1 -(KNOWS:k12)- Person:p2 -(KNOWS:k23)- Person:p3 -(KNOWS:k31)- Person:p1

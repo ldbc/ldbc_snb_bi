@@ -7,20 +7,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi4 (DATETIME date) SYNTAX v2 {
   MinAccum<VERTEX<Country>> @country;
   OrAccum<BOOL> @inForum, @selected;
   SumAccum<UINT> @messageCount;
-  /*
-  popularForums =
-    SELECT f
-    FROM Country:c -(<IS_PART_OF.<IS_LOCATED_IN)- Person:p -(<HAS_MEMBER)- Forum:f
-    WHERE f.creationDate > date
-    PER(c,p,f)
-    ACCUM f.@memberCount += (c -> 1)
-    POST-ACCUM
-      FOREACH (city, num) IN f.@memberCount DO
-        f.@maxMemberCount += num
-      END
-    ORDER BY f.@maxMemberCount DESC, f.id ASC
-    LIMIT 100;
-  */
+  
   F = {Forum.*};
   F = SELECT f FROM F:f WHERE f.creationDate > date;
   persons = SELECT f FROM F:f -(HAS_MEMBER>)- Person:p ACCUM p.@selected += TRUE;

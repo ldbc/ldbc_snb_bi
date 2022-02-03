@@ -42,7 +42,7 @@ docker run --rm \
   --publish=$TG_WEB_PORT:14240 \
   --detach \
   --volume=${TG_DATA_DIR}:/data:z \
-  --volume=${TG_DDL_DIR}:/scripts:z \
+  --volume=${TG_DDL_DIR}:/ddl:z \
   --volume=${TG_QUERIES_DIR}:/queries:z \
   --volume=${TG_DML_DIR}:/dml:z \
   --name ${TG_CONTAINER_NAME} \

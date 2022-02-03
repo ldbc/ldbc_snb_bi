@@ -1,18 +1,19 @@
 ## Message
-CREATE VERTEX Comment (id UINT PRIMARY KEY, creationDate DATETIME, locationIP STRING, browserUsed STRING, content STRING, length UINT)
-CREATE VERTEX Post (id UINT PRIMARY KEY, imageFile STRING, creationDate DATETIME, locationIP STRING, browserUsed STRING, language STRING, content STRING, length UINT)
+CREATE VERTEX Comment (PRIMARY_ID id UINT, creationDate DATETIME, locationIP STRING, browserUsed STRING, content STRING, length UINT) WITH primary_id_as_attribute="TRUE"
+CREATE VERTEX Post (PRIMARY_ID id UINT, imageFile STRING, creationDate DATETIME, locationIP STRING, browserUsed STRING, language STRING, content STRING, length UINT) WITH primary_id_as_attribute="TRUE"
 ## organisation
-CREATE VERTEX Company (id UINT PRIMARY KEY, name STRING, url STRING)
-CREATE VERTEX University (id UINT PRIMARY KEY, name STRING, url STRING)
+CREATE VERTEX Company (PRIMARY_ID id UINT, name STRING, url STRING) WITH primary_id_as_attribute="TRUE"
+CREATE VERTEX University (PRIMARY_ID id UINT, name STRING, url STRING) WITH primary_id_as_attribute="TRUE"
 ## place
-CREATE VERTEX City (id UINT PRIMARY KEY, name STRING, url STRING)
-CREATE VERTEX Country (id UINT, name STRING PRIMARY KEY, url STRING)
-CREATE VERTEX Continent (id UINT PRIMARY KEY, name STRING, url STRING)
+CREATE VERTEX City (PRIMARY_ID id UINT, name STRING, url STRING) WITH primary_id_as_attribute="TRUE"
+CREATE VERTEX Country (PRIMARY_ID id UINT, name STRING, url STRING) WITH primary_id_as_attribute="TRUE"
+CREATE VERTEX Continent (PRIMARY_ID id UINT, name STRING, url STRING) WITH primary_id_as_attribute="TRUE"
 ## etc
-CREATE VERTEX Forum (id UINT PRIMARY KEY, title STRING, creationDate DATETIME)
-CREATE VERTEX Person (id UINT PRIMARY KEY, firstName STRING, lastName STRING, gender STRING, birthday DATETIME, creationDate DATETIME, locationIP STRING, browserUsed STRING, speaks SET<STRING>, email SET<STRING>)
-CREATE VERTEX Tag (id UINT, name STRING PRIMARY KEY, url STRING)
-CREATE VERTEX TagClass (id UINT, name STRING PRIMARY KEY, url STRING)
+CREATE VERTEX Forum (PRIMARY_ID id UINT, title STRING, creationDate DATETIME) WITH primary_id_as_attribute="TRUE"
+CREATE VERTEX Person (PRIMARY_ID id UINT, firstName STRING, lastName STRING, gender STRING, birthday DATETIME, creationDate DATETIME, locationIP STRING, browserUsed STRING, speaks SET<STRING>, email SET<STRING>) WITH primary_id_as_attribute="TRUE"
+CREATE VERTEX Tag (PRIMARY_ID id UINT, name STRING, url STRING) WITH primary_id_as_attribute="TRUE"
+CREATE VERTEX TagClass (PRIMARY_ID id UINT, name STRING, url STRING) WITH primary_id_as_attribute="TRUE"
+
 
 # create edge
 CREATE DIRECTED EDGE CONTAINER_OF (FROM Forum, TO Post, creationDate DATETIME) WITH REVERSE_EDGE="CONTAINER_OF_REVERSE"
@@ -33,4 +34,13 @@ CREATE DIRECTED EDGE WORK_AT (FROM Person, TO Company, workFrom INT, creationDat
 # auxiliary for bi19
 CREATE UNDIRECTED EDGE WEIGHT_DOUBLE (FROM Person, TO Person, weight DOUBLE)
 
+CREATE GLOBAL SCHEMA_CHANGE JOB addIndex {
+  ALTER VERTEX Country ADD INDEX country_name ON (name);
+  ALTER VERTEX Company ADD INDEX company_name ON (name);
+  ALTER VERTEX University ADD INDEX university_name ON (name);
+  ALTER VERTEX Tag ADD INDEX tag_name ON (name);
+  ALTER VERTEX TagClass ADD INDEX tagclass_name ON (name);
+}
+
+RUN GLOBAL SCHEMA_CHANGE JOB addIndex
 CREATE GRAPH ldbc_snb (*)

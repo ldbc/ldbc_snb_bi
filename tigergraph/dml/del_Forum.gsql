@@ -1,6 +1,4 @@
-USE GRAPH ldbc_snb
-SET syntax_version = "v2"
-CREATE OR REPLACE QUERY del_Forum(STRING file, BOOL header) {
+CREATE OR REPLACE QUERY del_Forum(STRING file, BOOL header) syntax v2 {
   SetAccum<VERTEX<Forum>> @@forum;
   UINT result;
   @@forum = { LoadAccum(file, $1, "|", header)};
@@ -11,6 +9,3 @@ CREATE OR REPLACE QUERY del_Forum(STRING file, BOOL header) {
   DELETE v FROM allv:v;
   PRINT allv.size();
 }
-
-#INSTALL QUERY del4
-#RUN QUERY del4("/home/tigergraph/sf1/csv/bi/composite-projected-fk/deletes/dynamic/Forum/batch_id=2012-09-13/part-00000-3bc36dac-10e2-49eb-9373-a2d8442c2bd7.c000.csv")

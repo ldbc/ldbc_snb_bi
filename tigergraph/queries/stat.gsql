@@ -1,23 +1,22 @@
 CREATE OR REPLACE DISTRIBUTED QUERY stat() {
-    UINT nComment, nPost, nForum, nPerson;
-    UINT nCompany, nUniversity, nCity, nCountry, nConitnent, nTag, nTagClass;
-    SumAccum<UINT> @@CONTAINER_OF, @@HAS_CREATOR, @@HAS_INTEREST, @@HAS_MEMBER, @@HAS_MODERATOR,
+    SumAccum<UINT> @@Comment, @@Post, @@Forum, @@Person,
+        @@Company, @@University, @@City, @@Country, @@Conitnent, @@Tag, @@TagClass,
+        @@CONTAINER_OF, @@HAS_CREATOR, @@HAS_INTEREST, @@HAS_MEMBER, @@HAS_MODERATOR,
         @@HAS_TAG, @@HAS_TYPE, @@IS_LOCATED_IN, @@IS_PART_OF, @@IS_SUBCLASS_OF, 
         @@KNOWS, @@LIKES, @@REPLY_OF, @@STUDY_AT, @@WORK_AT;
-    tmp = {Comment.*}; nComment = tmp.size();
-    tmp = {Post.*}; nPost = tmp.size();
-    tmp = {Forum.*}; nForum = tmp.size();
-    tmp = {Person.*}; nPerson = tmp.size();
-    tmp = {Company.*}; nCompany = tmp.size();
-    tmp = {University.*}; nUniversity = tmp.size();
-    tmp = {City.*}; nCity = tmp.size();
-    tmp = {Country.*}; nCountry = tmp.size();
-    tmp = {Continent.*}; nConitnent = tmp.size();
-    tmp = {Tag.*}; nTag = tmp.size();
-    tmp = {TagClass.*}; nTagClass = tmp.size();
+    tmp = {Comment.*}; @@Comment = tmp.size();
+    tmp = {Post.*}; @@Post = tmp.size();
+    tmp = {Forum.*}; @@Forum = tmp.size();
+    tmp = {Person.*}; @@Person = tmp.size();
+    tmp = {Company.*}; @@Company = tmp.size();
+    tmp = {University.*}; @@University = tmp.size();
+    tmp = {City.*}; @@City = tmp.size();
+    tmp = {Country.*}; @@Country = tmp.size();
+    tmp = {Continent.*}; @@Conitnent = tmp.size();
+    tmp = {Tag.*}; @@Tag = tmp.size();
+    tmp = {TagClass.*}; @@TagClass = tmp.size();
     tmp = SELECT f FROM Forum:f ACCUM @@CONTAINER_OF += f.outdegree("CONTAINER_OF");
-    tmp = SELECT f FROM Person:f 
-    ACCUM 
+    tmp = SELECT f FROM Person:f ACCUM 
         @@HAS_CREATOR += f.outdegree("HAS_CREATOR_REVERSE"),
         @@HAS_INTEREST += f.outdegree("HAS_INTEREST"),
         @@HAS_MEMBER += f.outdegree("HAS_MEMBER_REVERSE"),
@@ -33,12 +32,31 @@ CREATE OR REPLACE DISTRIBUTED QUERY stat() {
     tmp = SELECT f FROM TagClass:f ACCUM @@IS_SUBCLASS_OF += f.outdegree("IS_SUBCLASS_OF");
     tmp = SELECT f FROM University:f ACCUM @@STUDY_AT += f.outdegree("STUDY_AT_REVERSE");
     tmp = SELECT f FROM Company:f ACCUM @@WORK_AT += f.outdegree("WORK_AT_REVERSE");
-    @@REPLY_OF += nComment;
+    //@@REPLY_OF += @@Comment;
     
-    PRINT nComment, nPost, nForum, nPerson,
-        nCompany, nUniversity, nCity, nCountry, nConitnent, nTag, nTagClass,
-        @@CONTAINER_OF, @@HAS_CREATOR, @@HAS_INTEREST, @@HAS_MEMBER, @@HAS_MODERATOR,
-        @@HAS_TAG, @@IS_LOCATED_IN, @@KNOWS, @@LIKES, @@REPLY_OF, 
-        @@STUDY_AT, @@WORK_AT,
-        @@HAS_TYPE, @@IS_PART_OF, @@IS_SUBCLASS_OF;
+    PRINT @@Comment as Comment, 
+        @@Post as Post, 
+        @@Forum as Forum, 
+        @@Person as Person,
+        @@Company as Company, 
+        @@University as University, 
+        @@City as City, 
+        @@Country as Country, 
+        @@Conitnent as Continent, 
+        @@Tag as Tag, 
+        @@TagClass as TagClass,
+        @@CONTAINER_OF as CONTAINER_OF, 
+        @@HAS_CREATOR as HAS_CREATOR, 
+        @@HAS_INTEREST as HAS_INTEREST, 
+        @@HAS_MEMBER as HAS_MEMBER, 
+        @@HAS_MODERATOR as HAS_MODERATOR,
+        @@HAS_TAG as HAS_TAG, 
+        @@IS_LOCATED_IN as IS_LOCATED_IN, 
+        @@KNOWS as KNOWS, 
+        @@LIKES as LIKES,
+        @@STUDY_AT as STUDY_AT,
+        @@WORK_AT as WORK_AT,
+        @@HAS_TYPE as HAS_TYPE, 
+        @@IS_PART_OF as IS_PART_OF,
+        @@IS_SUBCLASS_OF as IS_SUBCLASS_OF;
 }

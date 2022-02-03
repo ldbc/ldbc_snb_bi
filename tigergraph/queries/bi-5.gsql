@@ -1,4 +1,4 @@
-CREATE OR REPLACE DISTRIBUTED QUERY bi5(VERTEX<Tag> tag) SYNTAX v2 {
+CREATE OR REPLACE DISTRIBUTED QUERY bi5(STRING tag) SYNTAX v2 {
 
   TYPEDEF TUPLE <UINT personId, UINT replyCount, UINT likeCount, UINT messageCount, UINT score> RESULT;
 
@@ -8,9 +8,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi5(VERTEX<Tag> tag) SYNTAX v2 {
   SumAccum<UINT> @messageCount;
   SumAccum<UINT> @replyCount;
 
-  tagWithName = {tag};
-
-  messages = SELECT m FROM tagWithName -(<HAS_TAG)- (Comment|Post):m;
+  messages = SELECT m FROM Tag:t -(<HAS_TAG)- (Comment|Post):m WHERE t.name == tag;
 
   tmp = SELECT m FROM messages:m -(<LIKES)- Person:p ACCUM m.@likeCount += 1;
   tmp = SELECT m FROM messages:m -(<REPLY_OF)- Comment:c ACCUM m.@replyCount += 1;

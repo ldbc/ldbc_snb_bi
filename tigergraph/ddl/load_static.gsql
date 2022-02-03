@@ -1,5 +1,5 @@
 
-CREATE LOADING JOB load_static_with_header FOR GRAPH ldbc_snb {
+CREATE LOADING JOB load_static FOR GRAPH ldbc_snb {
   //static vertex and edge
   DEFINE FILENAME file_Organisation;
   DEFINE FILENAME file_Organisation_isLocatedIn_Place;

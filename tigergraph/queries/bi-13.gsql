@@ -1,4 +1,4 @@
-CREATE OR REPLACE DISTRIBUTED QUERY bi13(VERTEX<Country> country, DATETIME endDate) SYNTAX v2 {
+CREATE OR REPLACE DISTRIBUTED QUERY bi13(STRING country, DATETIME endDate) SYNTAX v2 {
 
   TYPEDEF TUPLE <UINT zombieId, UINT zombieLikeCount, UINT totalLikeCount, DOUBLE zombieScore> RESULT;
   HeapAccum<RESULT>(100, zombieScore DESC, zombieId ASC) @@result;
@@ -7,11 +7,10 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi13(VERTEX<Country> country, DATETIME endDa
   SumAccum<UINT> @totalLikeCount;
   SumAccum<UINT> @zombieLikeCount;
 
-  countryWithName = {country};
   zombieCandidates =
     SELECT p
-    FROM countryWithName -(<IS_PART_OF.<IS_LOCATED_IN)- Person:p
-    WHERE p.creationDate < endDate;
+    FROM Country:cn -(<IS_PART_OF.<IS_LOCATED_IN)- Person:p
+    WHERE cn.name == country AND p.creationDate < endDate;
 
   zombieMessages =
     SELECT m

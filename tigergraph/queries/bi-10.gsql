@@ -1,5 +1,5 @@
 CREATE OR REPLACE DISTRIBUTED QUERY bi10(VERTEX<Person> personId, VERTEX<Country> country, 
-    VERTEX<TagClass> tagClass, UINT minPathDistance, UINT maxPathDistance) SYNTAX v2 {
+    STRING tagClass, UINT minPathDistance, UINT maxPathDistance) SYNTAX v2 {
 
   SumAccum<UINT> @@pathLength;
   OrAccum @visited;
@@ -29,10 +29,10 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi10(VERTEX<Person> personId, VERTEX<Country
   END;
 
   expertCandidatePersons = targets INTERSECT candidates;
-  TC0 = {tagClass};
   messages =
     SELECT m
-    FROM expertCandidatePersons:p -(<HAS_CREATOR)- (Comment|Post):m -(HAS_TAG>.HAS_TYPE>)- TC0;
+    FROM expertCandidatePersons:p -(<HAS_CREATOR)- (Comment|Post):m -(HAS_TAG>.HAS_TYPE>)- TagClass:tc
+    WHERE tc.name == tagClass;
 
   SELECT
     p.id AS expertCandidatePersonId,

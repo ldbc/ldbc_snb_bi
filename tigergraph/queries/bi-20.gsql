@@ -1,8 +1,6 @@
 
-USE GRAPH ldbc_snb
-SET syntax_version = "v2"
 // this query is slower for SF-1 but support distributed and works well for larger data size on multiple machines.
-CREATE OR REPLACE DISTRIBUTED QUERY bi20(STRING company, VERTEX<Person> person2Id) {
+CREATE OR REPLACE DISTRIBUTED QUERY bi20(STRING company, VERTEX<Person> person2Id) syntax v2 {
   TYPEDEF TUPLE<UINT person1Id, UINT totalWeight> RESULT;
   HeapAccum<RESULT>(20, totalWeight ASC, person1Id ASC) @@result;  
   OrAccum @visited, @next, @inCompany;

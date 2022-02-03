@@ -26,9 +26,7 @@ approximate queries are less likely to be incorrect
 // approximate query "bi19_add_edges_2hop" from bi19-AddEdge.gsql
 // Include all paths of lengths <= 2
 // source -(KNOWS)- mid -(KNOWS)- target
-USE GRAPH ldbc_snb
-SET syntax_version = "v2"
-CREATE OR REPLACE DISTRIBUTED QUERY bi19_add_weighted_edges(VERTEX<City> city1Id, VERTEX<City> city2Id) {
+CREATE OR REPLACE DISTRIBUTED QUERY bi19_add_weighted_edges(VERTEX<City> city1Id, VERTEX<City> city2Id) syntax v2 {
   OrAccum<BOOL> @source, @target, @selected;
   MinAccum<VERTEX<Person>> @creator, @replyto;
   MapAccum<VERTEX<Person>, SumAccum<UINT>> @replyToCount;  
@@ -60,7 +58,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi19_add_weighted_edges(VERTEX<City> city1Id
       INSERT INTO WEIGHT_DOUBLE (FROM, TO, weight) VALUES (p1 Person, p2 Person, 1.0 / (p1.@replyToCount.get(p2) + p2.@replyToCount.get(p1)));
 }
 
-CREATE OR REPLACE DISTRIBUTED QUERY bi19(VERTEX<City> city1Id, VERTEX<City> city2Id) {
+CREATE OR REPLACE DISTRIBUTED QUERY bi19(VERTEX<City> city1Id, VERTEX<City> city2Id) syntax v2 {
   TYPEDEF TUPLE <UINT person1Id, UINT person2Id, DOUBLE totalWeight> RESULT;
   HeapAccum<RESULT>(20, totalWeight ASC, person1Id ASC, person2Id ASC) @@result;
   GroupByAccum<UINT p1, UINT p2, MinAccum<DOUBLE> dist> @@paths;
@@ -111,7 +109,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi19(VERTEX<City> city1Id, VERTEX<City> city
   PRINT @@result as result;
 }
 
-CREATE OR REPLACE DISTRIBUTED QUERY bi19_delete_weighted_edges() {
+CREATE OR REPLACE DISTRIBUTED QUERY bi19_delete_weighted_edges() syntax v2 {
   tmp =
     SELECT v2
     FROM :v1 -(WEIGHT_DOUBLE:e)- :v2

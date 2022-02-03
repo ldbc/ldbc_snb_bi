@@ -1,4 +1,4 @@
-CREATE LOADING JOB load_dynamic_with_header FOR GRAPH ldbc_snb {
+CREATE LOADING JOB load_dynamic FOR GRAPH ldbc_snb {
   //dynamic vertex and edge
   DEFINE FILENAME file_Comment;
   DEFINE FILENAME file_Comment_hasCreator_Person;

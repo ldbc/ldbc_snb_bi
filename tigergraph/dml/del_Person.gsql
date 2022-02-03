@@ -1,6 +1,4 @@
-USE GRAPH ldbc_snb
-SET syntax_version = "v2"
-CREATE OR REPLACE QUERY del_Person(STRING file, BOOL header) {
+CREATE OR REPLACE QUERY del_Person(STRING file, BOOL header) syntax v2 {
   SetAccum<VERTEX<Person>> @@person;
   UINT result;
   @@person = { LoadAccum(file, $1, "|", header)}; 
@@ -20,6 +18,3 @@ CREATE OR REPLACE QUERY del_Person(STRING file, BOOL header) {
   DELETE v FROM allv:v;
   PRINT allv.size();
 }
-
-#INSTALL QUERY del1
-#RUN QUERY del1("/home/tigergraph/sf1/csv/bi/composite-projected-fk/deletes/dynamic/Person/batch_id=2012-09-13/part-00000-74f44777-5358-4f3f-ac18-5893f98ee838.c000.csv")

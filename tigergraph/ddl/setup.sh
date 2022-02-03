@@ -1,5 +1,4 @@
 #!/bin/bash
-
 PARAM1=$1
 DATA_PATH=${PARAM1:="/data"}
 PARAM2=$2
@@ -60,26 +59,9 @@ gsql --graph ldbc_snb RUN LOADING JOB load_dynamic USING \
 
 gsql --graph ldbc_snb PUT ExprFunctions FROM \"$QUERY_PATH/ExprFunctions.hpp\"
 
-gsql --graph ldbc_snb $QUERY_PATH/bi1.gsql
-gsql --graph ldbc_snb $QUERY_PATH/bi2.gsql
-gsql --graph ldbc_snb $QUERY_PATH/bi3.gsql
-gsql --graph ldbc_snb $QUERY_PATH/bi4.gsql
-gsql --graph ldbc_snb $QUERY_PATH/bi5.gsql
-gsql --graph ldbc_snb $QUERY_PATH/bi6.gsql
-gsql --graph ldbc_snb $QUERY_PATH/bi7.gsql
-gsql --graph ldbc_snb $QUERY_PATH/bi8.gsql
-gsql --graph ldbc_snb $QUERY_PATH/bi9.gsql
-gsql --graph ldbc_snb $QUERY_PATH/bi10.gsql
-gsql --graph ldbc_snb $QUERY_PATH/bi11.gsql
-gsql --graph ldbc_snb $QUERY_PATH/bi12.gsql
-gsql --graph ldbc_snb $QUERY_PATH/bi13.gsql
-gsql --graph ldbc_snb $QUERY_PATH/bi14.gsql
-gsql --graph ldbc_snb $QUERY_PATH/bi15.gsql
-gsql --graph ldbc_snb $QUERY_PATH/bi16.gsql
-gsql --graph ldbc_snb $QUERY_PATH/bi17.gsql
-gsql --graph ldbc_snb $QUERY_PATH/bi18.gsql
-gsql --graph ldbc_snb $QUERY_PATH/bi19.gsql
-gsql --graph ldbc_snb $QUERY_PATH/bi20.gsql
+for i in $(seq 1 20); do
+  gsql --graph ldbc_snb $QUERY_PATH/bi-${i}.gsql
+done
 gsql --graph ldbc_snb $QUERY_PATH/stat.gsql
 
 gsql --graph ldbc_snb $DML_PATH/del_Comment.gsql
@@ -88,3 +70,6 @@ gsql --graph ldbc_snb $DML_PATH/del_Person.gsql
 gsql --graph ldbc_snb $DML_PATH/del_Post.gsql
 
 gsql --graph ldbc_snb 'INSTALL QUERY *'
+
+echo '====================== Data Statistics ============================'
+gsql --graph ldbc_snb 'RUN QUERY stat()'
