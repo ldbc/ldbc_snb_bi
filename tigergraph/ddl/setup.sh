@@ -71,5 +71,7 @@ gsql --graph ldbc_snb $DML_PATH/del_Post.gsql
 
 gsql --graph ldbc_snb 'INSTALL QUERY *'
 
-echo '====================== Data Statistics ============================'
+echo '====================== Data Statistics (optional) ============================'
+echo 'update delta ...'
+curl -s -H "GSQL-TIMEOUT:2500000" "http://127.0.0.1:9000/rebuildnow"
 gsql --graph ldbc_snb 'RUN QUERY stat()'
