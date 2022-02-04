@@ -27,5 +27,3 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi18(STRING tag) SYNTAX v2 {
 
   PRINT @@result as result;
 }
-
-# INTERPRET QUERY bi18(13194139538816, "Muammar_Gaddafi")

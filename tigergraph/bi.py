@@ -7,8 +7,8 @@ import re
 from datetime import datetime, timedelta
 
 parser = argparse.ArgumentParser(description='BI query driver')
-parser.add_argument('mode', type=str, choices=['benchmark', 'validate'], help='mode of the driver')
-parser.add_argument('--nrun', type=int, help='number of runs')
+parser_validate = parser.add_argument('mode', type=str, choices=['benchmark', 'validate'], help='mode of the driver')
+#parser_validate.add_argument('--nrun', type=int, help='number of runs')
 args = parser.parse_args()
 
 result_mapping = {
@@ -66,7 +66,9 @@ def run_query(name, parameters):
     ENDPOINT = 'http://127.0.0.1:9000/query/ldbc_snb/'
     HEADERS = {'GSQL-TIMEOUT': '36000000'}
     start = time.time()
+    if name=='bi19': requests.get(ENDPOINT + f'bi19_add_weighted_edges', headers=HEADERS, params=parameters) 
     response = requests.get(ENDPOINT + name, headers=HEADERS, params=parameters).json()
+    if name=='bi19': requests.get(ENDPOINT + f'bi19_delete_weighted_edges', headers=HEADERS) 
     end = time.time()
     duration = end - start
     return response['results'][0]['result'], duration

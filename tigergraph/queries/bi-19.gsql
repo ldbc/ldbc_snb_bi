@@ -115,7 +115,3 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi19_delete_weighted_edges() syntax v2 {
     FROM :v1 -(WEIGHT_DOUBLE:e)- :v2
     ACCUM DELETE (e);
 }
-
-
-#INSTALL QUERY bi19, bi19_add_weighted_edges, bi19_delete_weighted_edges
-#RUN QUERY bi19(669, 648)
