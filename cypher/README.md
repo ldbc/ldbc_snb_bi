@@ -36,7 +36,7 @@ If the data is compressed, set:
 export NEO4J_CSV_FLAGS="--compressed"
 ```
 
-To use a sample data set, run
+To use the sample data set, run
 
 ```bash
 wget -q https://ldbcouncil.org/ldbc_snb_datagen_spark/social-network-sf0.003-bi-composite-projected-fk-neo4j-compressed.zip
