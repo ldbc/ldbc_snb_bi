@@ -13,4 +13,10 @@ wget ${UMBRA_URL}
 tar xf umbra*.tar.xz
 rm umbra*.tar.xz
 
-docker build . --tag ${UMBRA_DOCKER_IMAGE}
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    DOCKER_BUILD_OPTIONS="x build --platform linux/amd64"
+else
+    DOCKER_BUILD_OPTIONS=""
+fi
+
+docker build${DOCKER_BUILD_OPTIONS} --tag ${UMBRA_DOCKER_IMAGE} .
