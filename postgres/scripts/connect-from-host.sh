@@ -9,5 +9,4 @@ cd ..
 . scripts/vars.sh
 
 export PGPASSWORD=mysecretpassword
-
-psql -h localhost -U postgres
+psql --host=localhost --username=${POSTGRES_USER} --dbname=${POSTGRES_DATABASE}
