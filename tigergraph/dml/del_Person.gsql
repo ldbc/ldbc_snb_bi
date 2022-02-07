@@ -1,6 +1,5 @@
 CREATE OR REPLACE QUERY del_Person(STRING file, BOOL header) syntax v2 {
   SetAccum<VERTEX<Person>> @@person;
-  UINT result;
   @@person = { LoadAccum(file, $1, "|", header)}; 
   person = {@@person};
 
@@ -16,5 +15,5 @@ CREATE OR REPLACE QUERY del_Person(STRING file, BOOL header) syntax v2 {
   replies = SELECT c FROM replies -(<REPLY_OF*)- (Post|Comment):c;
   allv = replies UNION F UNION person;
   DELETE v FROM allv:v;
-  PRINT allv.size();
+  PRINT allv.size() as result;
 }
