@@ -14,7 +14,7 @@ echo "DATA_PATH: ${DATA_PATH}"
 echo "QUERY_PATH: ${QUERY_PATH}"
 echo "==============================================================================="
 
-gsql drop all
+#gsql drop all
 gsql create_schema.gsql
 
 gsql --graph ldbc_snb tmp.gsql

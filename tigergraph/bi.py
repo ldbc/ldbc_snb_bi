@@ -11,6 +11,7 @@ parser_validate = parser.add_argument('mode', type=str, choices=['benchmark', 'v
 #parser_validate.add_argument('--nrun', type=int, help='number of runs')
 args = parser.parse_args()
 
+# ================ BEGIN: Variables and Functions from Cypher ========================
 result_mapping = {
      1: ["INT32", "BOOL", "INT32", "INT32", "FLOAT32", "INT32", "FLOAT32"],
      2: ["STRING", "INT32", "INT32", "INT32"],
@@ -61,6 +62,7 @@ def cast_parameter_to_driver_input(value, type):
         return value
     else:
         raise ValueError(f"Parameter type {type} not found")
+# ================ END: Variables and Functions from Cypher ========================
 
 def run_query(name, parameters):
     ENDPOINT = 'http://127.0.0.1:9000/query/ldbc_snb/'
@@ -73,15 +75,6 @@ def run_query(name, parameters):
     duration = end - start
     return response['results'][0]['result'], duration
     
-# reformat results = [{'name':value}] -> results = [[value]] 
-def serialize_results(results):
-    if isinstance(results, int): 
-        return results
-    output = [] 
-    for r in results:
-        output.append([v for k,v in r.items()])
-    return output
-
 res = Path('results')
 res.mkdir(exist_ok = True)
 if args.mode == 'validate':
@@ -102,6 +95,14 @@ for query_variant in ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "
         query_parameters_in_order = f'<{";".join([convert_value_to_string(query_parameters[parameter["name"]], parameter["type"]) for parameter in parameters])}>'
         if query_num == 1: query_parameters = {'date': query_parameters['datetime']}
         results, duration = run_query(f'bi{query_num}', query_parameters)
-        results = serialize_results(results)
-        fout.write(f"{query_num}|{query_variant}|{query_parameters_in_order}|{results}\n")
-        fout.flush()
+        mapping = result_mapping[query_num]
+        if query_num != 11:
+            #convert results from [dict()] to [[]] 
+            results = [[v for k,v in res.items()] for res in results]
+            #convert results to string
+            results = "[" + ";".join([
+                f'<{",".join([convert_value_to_string(result[i], type) for i, type in enumerate(mapping)])}>'
+                for result in results
+            ]) + "]"
+        print(f"{query_num}|{query_variant}|{query_parameters_in_order}|{results}")
+        

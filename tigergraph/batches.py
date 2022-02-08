@@ -74,6 +74,7 @@ def load_restpp(job, data_dir, names, batch_dir):
             print("!!! No changes occured")
             continue
         for f in folder.iterdir():
+            print(f'- {f}')
             url = f'{endpoint}?tag={job}&filename=file_{name}&sep=%7C&ack=all'
             curl = f'curl -X POST  --data-binary  @{f} "{url}"'
             res = subprocess.run(curl, shell=True, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
@@ -99,8 +100,8 @@ def load_distributed():
 
 header = '_with_header' if args.header else ''
 docker_data = Path('/data')
-network_start_date = date(2012, 11, 29)
-network_end_date = date(2012, 12, 31)
+network_start_date = date(2012, 11, 31)
+network_end_date = date(2013, 1, 1)
 batch_size = timedelta(days=1)
 batch_start_date = network_start_date
 while batch_start_date < network_end_date:
@@ -129,6 +130,7 @@ while batch_start_date < network_end_date:
             continue
         for fp in path.glob('*.csv'):
             if fp.is_file():
+                print(f'- {fp}')
                 result, duration = run_query(f'del_{vertex}', {'file':str(docker_path/fp.name), 'header':args.header})
                 print(f'> {result} changes')
         tot_del_time += duration
