@@ -74,4 +74,6 @@ gsql --graph ldbc_snb 'INSTALL QUERY *'
 echo '====================== Data Statistics (optional) ============================'
 echo 'update delta ...'
 curl -s -H "GSQL-TIMEOUT:2500000" "http://127.0.0.1:9000/rebuildnow"
-gsql --graph ldbc_snb 'RUN QUERY stat()'
+curl -X POST "http://127.0.0.1:9000/builtins/ldbc_snb" -d  '{"function":"stat_vertex_number","type":"*"}'
+curl -X POST "http://127.0.0.1:9000/builtins/ldbc_snb" -d  '{"function":"stat_edge_number","type":"*"}'
+echo
