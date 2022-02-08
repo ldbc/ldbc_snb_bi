@@ -14,6 +14,7 @@ mkdir -p ${UMBRA_DATABASE_DIR}/
 
 echo -n "Starting container . . . "
 docker run \
+    --platform linux/amd64 \
     --rm \
     --publish=5432:5432 \
     --volume=${UMBRA_CSV_DIR}:/data/:z \

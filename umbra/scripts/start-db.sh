@@ -8,6 +8,8 @@ cd ..
 
 . scripts/vars.sh
 
+python3 -c 'import psycopg2' || (echo "psycopg2 Python package is missing or broken" && exit 1)
+
 echo -n "Creating database . . ."
 docker exec \
     ${UMBRA_CONTAINER_NAME} \
@@ -17,6 +19,7 @@ docker exec \
     /ddl/schema-composite-merged-fk.sql
 echo " Database created."
 
+echo -n "Starting the database . "
 docker exec \
     --detach \
     ${UMBRA_CONTAINER_NAME} \
@@ -24,7 +27,6 @@ docker exec \
     --address 0.0.0.0 \
     /scratch/db/ldbc.db
 
-echo -n "Waiting for the database to start . "
 until python3 scripts/test-db-connection.py > /dev/null 2>&1; do
     echo -n ". "
     sleep 1

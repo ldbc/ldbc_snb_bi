@@ -8,25 +8,25 @@ Set the `UMBRA_URL` environment variable and build the container:
 
 ```bash
 export UMBRA_URL=
-scripts/build.sh
+scripts/build-container.sh
 ```
 
 ### Loading the data set
 
 Umbra uses the same format as [Postgres](../postgres/README.md#generating-the-data-set), however, it currently does not support loading from compressed files (`.csv.gz`).
 
-1. Grab the data set. In the repository root, run:
+1. Set the `${UMBRA_CSV_DIR}` environment variable to point to the data set, e.g.:
+
+    ```bash
+    export UMBRA_CSV_DIR=
+    ```
+
+    To use the test data set, run:
 
     ```bash
     wget -q https://ldbcouncil.org/ldbc_snb_datagen_spark/social-network-sf0.003-bi-composite-merged-fk.zip
     unzip -q social-network-sf0.003-bi-composite-merged-fk.zip
-    ```
-
-1. Set the `${UMBRA_CSV_DIR}` environment variable to point to the data set, e.g.:
-
-    ```bash
-    cd umbra
-    export UMBRA_CSV_DIR=`pwd`/../test-data/social-network-sf0.003-bi-composite-merged-fk/graphs/csv/bi/composite-merged-fk/
+    export UMBRA_CSV_DIR=`pwd`/social-network-sf0.003-bi-composite-merged-fk/graphs/csv/bi/composite-merged-fk/
     ```
 
 1. To start the DBMS, create a database and load the data, run:
