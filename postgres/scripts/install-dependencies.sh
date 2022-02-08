@@ -10,6 +10,8 @@ if [[ ! -z $(which yum) ]]; then
 elif [[ ! -z $(which apt) ]]; then
     sudo apt update
     sudo apt install -y python3-pip libpq-dev
+else
+    echo "Operating system not supported, please install the dependencies manually"
 fi
 
 pip3 install --user --progress-bar off psycopg2-binary python-dateutil

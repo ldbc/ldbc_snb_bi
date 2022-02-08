@@ -33,6 +33,15 @@ If the data is compressed, set:
 export POSTGRES_CSV_FLAGS="--compressed"
 ```
 
+To use the sample data set, run:
+
+```bash
+wget -q https://ldbcouncil.org/ldbc_snb_datagen_spark/social-network-sf0.003-bi-composite-merged-fk-postgres-compressed.zip
+unzip -q social-network-sf0.003-bi-composite-merged-fk-postgres-compressed.zip
+export POSTGRES_CSV_DIR=`pwd`/social-network-sf0.003-bi-composite-merged-fk-postgres-compressed/graphs/csv/bi/composite-merged-fk/
+export POSTGRES_CSV_FLAGS="--compressed"
+```
+
 Load the data:
 
 ```bash

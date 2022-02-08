@@ -16,4 +16,5 @@ results-*/
 test-data/
 *.log
 
-/social-network-*
+social-network-sf*/
+social-network-sf*.zip

@@ -13,7 +13,7 @@ if [ ! -d "${POSTGRES_CSV_DIR}" ]; then
     exit 1
 fi
 
-if [ ! -v POSTGRES_CSV_FLAGS ]; then
+if [ ! -n "${POSTGRES_CSV_FLAGS-}" ]; then
     POSTGRES_CSV_FLAGS=""
 fi
 
