@@ -18,3 +18,9 @@ test-data/
 
 social-network-sf*/
 social-network-sf*.zip
+
+tuning/graphics/*
+tuning/ssh_keys/*
+tuning/data/*
+*.Rhistory
+tuning/scripts/server.sh
