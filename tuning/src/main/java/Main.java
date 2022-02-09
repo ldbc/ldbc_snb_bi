@@ -12,6 +12,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -39,7 +40,7 @@ public class Main implements AutoCloseable
         driver.close();
     }
 
-    public QuerySummary executeQuery( String querySpec, Map<String,Object> queryParams )
+    public QuerySummary executeQuery( String querySpec, Map<String,Object> queryParams, boolean stats )
     {
         try ( Session session = driver.session( SessionConfig.forDatabase( "neo4j" ) ) )
         {
@@ -48,7 +49,10 @@ public class Main implements AutoCloseable
 
                 Result result = tx.run( querySpec, queryParams );
 
-                //System.out.println(result.list());
+                if ( stats )
+                {
+                    System.out.println( "Results: " + result.list() );
+                }
 
                 ResultSummary resultSummary = result.consume();
 
@@ -63,14 +67,7 @@ public class Main implements AutoCloseable
                     hits = hits + getHits( profiledPlan );
                 }
 
-
-//                System.out.println( "Profiled: " + resultSummary.hasProfile() );
-//                System.out.println( "Query plan: " + resultSummary.profile().toString() );
-//                System.out.println( "Records: " + records );
-//                System.out.println( "DB Hits: " + hits);
-
                 return new QuerySummary( records, hits );
-//                return new QuerySummary( 0, 0 );
             } );
         }
     }
@@ -101,15 +98,25 @@ public class Main implements AutoCloseable
 
     public static String getQuerySpec( String biDir, String queryNum ) throws IOException
     {
-        // TODO: hack
         queryNum = queryNum.replace( "a", "" );
         queryNum = queryNum.replace( "b", "" );
 
-        Path fileName = Path.of( biDir + "/cypher/queries/bi-" + queryNum + ".cypher" );
-        String actual = Files.readString( fileName );
-        List<String> split = Arrays.asList( actual.split( "\\*/", 2 ) );
+        var fileName = Path.of( biDir + "/cypher/queries/bi-" + queryNum + ".cypher" );
+        var actual = Files.readString( fileName );
+        var split = Arrays.asList( actual.split( "\\*/", 2 ) );
 
-        return "PROFILE " + split.get( 1 );
+        var nonParallelRuntime = new HashSet<>( Arrays.asList( "2", "10", "13", "16", "17", "18", "19", "20" ) );
+
+        String result;
+        if ( nonParallelRuntime.contains( queryNum ) )
+        {
+            result = "PROFILE" + split.get( 1 );
+        }
+        else
+        {
+            result = "PROFILE CYPHER runtime=parallel " + split.get( 1 );
+        }
+        return result;
     }
 
     public static List<String[]> getQueryParams( String biDir, String queryNum ) throws IOException
@@ -163,12 +170,20 @@ public class Main implements AutoCloseable
 
     public static void main( String... args ) throws Exception
     {
-//        // Queries with variants
-//        String[] queries =
-//                {"1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "15a", "15b", "16a", "16b", "17",
-//                 "18", "19a", "19b", "20"};
-        String[] queries =
-                {"7"};
+        var q = args[0];
+        var executions = Long.parseLong( args[1] );
+        var stats = Boolean.parseBoolean( args[2] );
+
+        String[] queries;
+        if ( q.equals( "all" ) )
+        {
+            queries = new String[]{"1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "15a", "15b", "16a",
+                                   "16b", "17", "18", "19a", "19b", "20"};
+        }
+        else
+        {
+            queries = new String[]{q};
+        }
 
         // Get BI directory
         var biDir = System.getenv( "LDBC_SNB_BI" );
@@ -183,7 +198,10 @@ public class Main implements AutoCloseable
 
                 // query spec
                 var querySpec = getQuerySpec( biDir, query );
-                System.out.println( "Query specification: " + querySpec );
+                if ( stats )
+                {
+                    System.out.println( "Query specification: " + querySpec );
+                }
 
                 // query params
                 var queryParams = getQueryParams( biDir, query );
@@ -213,7 +231,6 @@ public class Main implements AutoCloseable
                 {
                     Map<String,Object> params = new HashMap<>();
 
-
                     for ( int j = 0; j < param.length; j++ )
                     {
                         var paramName = names.get( j );
@@ -221,17 +238,28 @@ public class Main implements AutoCloseable
                         params.put( paramName, paramValue );
                     }
 
-                    System.out.println(params);
+                    if ( stats )
+                    {
+                        System.out.println( "Parameters: " + params );
+                    }
 
-                    var summary = conn.executeQuery( querySpec, params );
+                    var start = System.currentTimeMillis();
+                    var summary = conn.executeQuery( querySpec, params, stats );
+                    var finish = System.currentTimeMillis();
+
+                    if ( stats )
+                    {
+                        var timeElapsed = (finish - start);
+                        System.out.println( "Time elapsed (ms): " + timeElapsed );
+                        System.out.println( "DB Hits: " + summary.getHits() );
+                        System.out.println( "Records: " + summary.getRecords() );
+                    }
 
                     csvWriter.append( String.join( ",", Long.toString( summary.getHits() ), Long.toString( summary.getRecords() ) ) );
                     csvWriter.append( "\n" );
                     executed++;
 
-                    System.out.print( "executed:" + executed + "\r" );
-
-                    if ( executed == 400 )
+                    if ( executed == executions )
                     {
                         break;
                     }
