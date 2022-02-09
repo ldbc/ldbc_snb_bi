@@ -11,3 +11,4 @@ FROM
     (SELECT * FROM creationDayNumMessages LIMIT 10) creationDayNumMessagesB
 WHERE tagNumMessagesA.tagId != tagNumMessagesB.tagId
     AND creationDayNumMessagesA.creationDay != creationDayNumMessagesB.creationDay
+LIMIT 400
