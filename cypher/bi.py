@@ -1,6 +1,6 @@
 from neo4j import GraphDatabase
 from neo4j.time import DateTime, Date
-from datetime import datetime
+import datetime
 import time
 import csv
 import re
@@ -32,7 +32,7 @@ result_mapping = {
     20: ["ID", "INT64"],
 }
 
-def convert_value_to_string(value, type):
+def convert_value_to_string(value, type, input):
     if type == "ID[]" or type == "INT[]" or type == "INT32[]" or type == "INT64[]":
         return ";".join([str(int(x)) for x in value])
     elif type == "ID" or type == "INT" or type == "INT32" or type == "INT64":
@@ -44,9 +44,15 @@ def convert_value_to_string(value, type):
     elif type == "STRING":
         return f'"{value}"'
     elif type == "DATETIME":
-        return f"{datetime.strftime(value.to_native(), '%Y-%m-%dT%H:%M:%S.%f')[:-3]}+00:00"
+        if input:
+            return f"{datetime.datetime.strftime(value, '%Y-%m-%dT%H:%M:%S.%f')[:-3]}+00:00"
+        else:
+            return f"{datetime.datetime.strftime(value.to_native(), '%Y-%m-%dT%H:%M:%S.%f')[:-3]}+00:00"
     elif type == "DATE":
-        return datetime.strftime(value.to_native(), '%Y-%m-%d')
+        if input:
+            return datetime.datetime.strftime(value, '%Y-%m-%d')
+        else:
+            return datetime.datetime.strftime(value.to_native(), '%Y-%m-%d')
     elif type == "BOOL":
         return str(bool(value))
     else:
@@ -62,11 +68,11 @@ def cast_parameter_to_driver_input(value, type):
     elif type == "STRING":
         return value
     elif type == "DATETIME":
-        dt = datetime.strptime(value, '%Y-%m-%dT%H:%M:%S.%f+00:00')
-        return DateTime(dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second, dt.microsecond*1000)
+        dt = datetime.datetime.strptime(value, '%Y-%m-%dT%H:%M:%S.%f+00:00')
+        return datetime.datetime(dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second, dt.microsecond*1000, tzinfo=datetime.timezone.utc)
     elif type == "DATE":
-        dt = datetime.strptime(value, '%Y-%m-%d')
-        return Date(dt.year, dt.month, dt.day)
+        dt = datetime.datetime.strptime(value, '%Y-%m-%d')
+        return datetime.datetime(dt.year, dt.month, dt.day, tzinfo=datetime.timezone.utc)
     else:
         raise ValueError(f"Parameter type {type} not found")
 
@@ -74,7 +80,7 @@ def query_fun(tx, query_num, query_spec, query_parameters):
     results = tx.run(query_spec, query_parameters)
     mapping = result_mapping[query_num]
     result_tuples = "[" + ";".join([
-            f'<{",".join([convert_value_to_string(result[i], type) for i, type in enumerate(mapping)])}>'
+            f'<{",".join([convert_value_to_string(result[i], type, False) for i, type in enumerate(mapping)])}>'
             for result in results
         ]) + "]"
     return result_tuples
@@ -107,7 +113,7 @@ for query_variant in ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9",
 
     for query_parameters in parameters_csv:
         query_parameters = {k.split(":")[0]: cast_parameter_to_driver_input(v, k.split(":")[1]) for k, v in query_parameters.items()}
-        query_parameters_in_order = f'<{";".join([convert_value_to_string(query_parameters[parameter["name"]], parameter["type"]) for parameter in parameters])}>'
+        query_parameters_in_order = f'<{";".join([convert_value_to_string(query_parameters[parameter["name"]], parameter["type"], True) for parameter in parameters])}>'
 
         results = run_query(session, query_num, query_variant, query_spec, query_parameters)
         print(f"{query_num}|{query_variant}|{query_parameters_in_order}|{results}")
