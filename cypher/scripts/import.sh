@@ -51,7 +51,7 @@ PART_FIND_PATTERN="part-*${CSV_EXTENSION}"
 if [ "$(uname)" == "Darwin" ]; then
     FIND_COMMAND=gfind
     if ! command -v ${FIND_COMMAND}; then
-        echo "Command '${FIND_COMMAND} not found. Install it with 'brew install findutils'"
+        echo "Command '${FIND_COMMAND}' not found. Install it with 'brew install findutils'"
         exit 1
     fi
 else
