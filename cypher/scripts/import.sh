@@ -66,6 +66,7 @@ docker run --rm \
     --volume=${NEO4J_CSV_DIR}:/import \
     --volume=${NEO4J_HEADER_DIR}:/headers \
     ${NEO4J_ENV_VARS} \
+    ${NEO4J_DOCKER_PLATFORM_FLAG} \
     neo4j:${NEO4J_VERSION} \
     neo4j-admin import \
     --id-type=INTEGER \

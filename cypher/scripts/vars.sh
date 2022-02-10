@@ -11,3 +11,9 @@ export NEO4J_VERSION=${NEO4J_VERSION:-4.4.1}
 if [ ! -n "${NEO4J_CSV_FLAGS-}" ]; then
     export NEO4J_CSV_FLAGS=""
 fi
+
+if [[ `uname -m` == "arm64" ]]; then
+    export NEO4J_DOCKER_PLATFORM_FLAG="--platform linux/arm64"
+else
+    export NEO4J_DOCKER_PLATFORM_FLAG=""
+fi

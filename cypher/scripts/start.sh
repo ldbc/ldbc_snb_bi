@@ -26,6 +26,7 @@ docker run --rm \
     --env NEO4JLABS_PLUGINS='["apoc", "graph-data-science"]' \
     --env NEO4J_AUTH=none \
     --name ${NEO4J_CONTAINER_NAME} \
+    ${NEO4J_DOCKER_PLATFORM_FLAG} \
     neo4j:${NEO4J_VERSION}
 
 echo -n "Waiting for the database to start ."
