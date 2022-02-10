@@ -9,3 +9,4 @@ FROM
     (SELECT * FROM personNumFriends LIMIT 10) personNumFriends,
     (SELECT * FROM countryNumPersons LIMIT 10) countryNumPersons, -- OFFSET 2
     (SELECT * FROM tagClassNumMessages LIMIT 10) tagClassNumMessages
+    LIMIT 400
