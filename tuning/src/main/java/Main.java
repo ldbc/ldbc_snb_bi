@@ -227,7 +227,7 @@ public class Main implements AutoCloseable
                 // create output file
                 var outFileName = "./data/bi-" + query + "-summary.csv";
                 FileWriter csvWriter = new FileWriter( outFileName );
-                csvWriter.append( String.join( ",", "dbHits", "records" ) );
+                csvWriter.append( String.join( ",", "dbHits", "records", "runtime" ) );
                 csvWriter.append( "\n" );
 
                 int executed = 0;
@@ -252,16 +252,21 @@ public class Main implements AutoCloseable
                     var start = System.currentTimeMillis();
                     var summary = conn.executeQuery( querySpec, params, stats );
                     var finish = System.currentTimeMillis();
+                    var timeElapsed = (finish - start);
 
                     if ( stats )
                     {
-                        var timeElapsed = (finish - start);
                         System.out.println( "Time elapsed (ms): " + timeElapsed );
                         System.out.println( "DB Hits: " + summary.getHits() );
                         System.out.println( "Records: " + summary.getRecords() );
                     }
+                    else
+                    {
+                        System.out.print( "Executed: " + executed + "\r" );
+                    }
 
-                    csvWriter.append( String.join( ",", Long.toString( summary.getHits() ), Long.toString( summary.getRecords() ) ) );
+                    csvWriter.append(
+                            String.join( ",", Long.toString( summary.getHits() ), Long.toString( summary.getRecords() ), Long.toString( timeElapsed ) ) );
                     csvWriter.append( "\n" );
                     executed++;
 
@@ -270,7 +275,7 @@ public class Main implements AutoCloseable
                         break;
                     }
                 }
-
+                System.out.println();
                 System.out.println( "Output saved to " + outFileName );
                 csvWriter.flush();
                 csvWriter.close();
