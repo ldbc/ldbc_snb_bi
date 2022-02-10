@@ -1,7 +1,12 @@
-SELECT
-    tagClassNumMessages.tagClassName AS 'tagClass:STRING',
-    countryNumPersons.countryName AS 'country:STRING'
-FROM
-    (SELECT * FROM tagClassNumMessages LIMIT 100) tagClassNumMessages,
-    (SELECT * FROM countryNumPersons LIMIT  10) countryNumPersons
- LIMIT 400
+SELECT tagClassName AS 'tagClass:STRING',  country AS 'country:STRING' FROM (
+            SELECT
+         tagClassName,
+         abs(frequency -  (
+        SELECT percentile_disc(0.82) WITHIN GROUP (ORDER BY frequency) FROM tagClassNumMessages
+         )  ) AS diff,
+         CASE tagClassId % 2 == 0 WHEN true THEN 'China' ELSE 'India' END AS country
+         FROM
+         tagClassNumMessages
+     ORDER BY diff
+     LIMIT 40
+    )
