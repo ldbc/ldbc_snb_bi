@@ -8,6 +8,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -157,13 +159,17 @@ public class Main implements AutoCloseable
         }
         else if ( Objects.equals( type, "DATETIME" ) )
         {
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern( "yyyy-MM-dd'T'HH:mm:ss.SSS'+00:00'" );
-            result = LocalDateTime.parse( value, formatter );
+            var formatter = DateTimeFormatter.ofPattern( "yyyy-MM-dd'T'HH:mm:ss.SSS'+00:00'" );
+            var date = LocalDateTime.parse( value, formatter );
+            var zoneId = ZoneId.of( "Etc/UTC" );
+            return date.atZone( zoneId );
         }
         else if ( Objects.equals( type, "DATE" ) )
         {
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern( "yyyy-MM-dd" );
-            result = LocalDate.parse( value, formatter );
+            var formatter = DateTimeFormatter.ofPattern( "yyyy-MM-dd" );
+            var date = LocalDate.parse( value, formatter );
+            var zoneId = ZoneId.of( "Etc/UTC" );
+            return date.atStartOfDay( zoneId );
         }
         return result;
     }
