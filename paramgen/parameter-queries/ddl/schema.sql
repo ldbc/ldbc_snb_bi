@@ -7,6 +7,7 @@ DROP TABLE IF EXISTS countryPairsNumFriends;
 DROP TABLE IF EXISTS creationDayAndLengthCategoryNumMessages;
 DROP TABLE IF EXISTS creationDayAndTagClassNumMessages;
 DROP TABLE IF EXISTS creationDayNumMessages;
+DROP TABLE IF EXISTS creationDayAndTagNumMessages;
 DROP TABLE IF EXISTS languageNumPosts;
 DROP TABLE IF EXISTS lengthNumMessages;
 DROP TABLE IF EXISTS personNumFriends;
@@ -23,6 +24,7 @@ CREATE TABLE countryNumPersons(countryId bigint not null, countryName varchar no
 CREATE TABLE countryPairsNumFriends(country1Id bigint not null, country2Id bigint not null, country1Name varchar not null, country2Name varchar not null, frequency bigint not null);
 CREATE TABLE creationDayAndLengthCategoryNumMessages(creationDay date not null, lengthcategory int not null, frequency bigint not null);
 CREATE TABLE creationDayAndTagClassNumMessages(creationDay date not null, tagclassId bigint not null, tagClassName varchar not null, frequency bigint not null);
+CREATE TABLE creationDayAndTagNumMessages(creationDay date not null, tagId bigint not null, tagName varchar not null, frequency bigint not null);
 CREATE TABLE creationDayNumMessages(creationDay date not null, frequency bigint not null);
 CREATE TABLE languageNumPosts(language varchar, frequency bigint not null);
 CREATE TABLE lengthNumMessages(length int not null, frequency bigint not null);
