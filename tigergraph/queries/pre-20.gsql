@@ -1,5 +1,4 @@
 CREATE OR REPLACE DISTRIBUTED QUERY pre20() syntax v2 {
-  OrAccum<BOOL> @source, @target, @selected;
   SetAccum<VERTEX<University>> @univ;
   MapAccum<VERTEX<University>, INT> @univYear;
   P = SELECT p FROM University:u -(<STUDY_AT:e)- Person:p 

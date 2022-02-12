@@ -1,5 +1,4 @@
-CREATE OR REPLACE DISTRIBUTED QUERY pre19() syntax v2 {
-  OrAccum<BOOL> @source, @target, @selected;
+CREATE OR REPLACE QUERY pre19() syntax v2 {
   MinAccum<VERTEX<Person>> @creator, @replyto;
   SetAccum<VERTEX<Person>> @neighbor;
   MapAccum<VERTEX<Person>, SumAccum<UINT>> @replyToCount;  
@@ -19,6 +18,6 @@ CREATE OR REPLACE DISTRIBUTED QUERY pre19() syntax v2 {
   tmp =
     SELECT p2
     FROM PersonReplied:p1 -(KNOWS:e)- Person:p2
-    WHERE p1.@replyToCount.get(p2) > 0 OR p2.@replyToCount.get(p1) > 0
+    WHERE p1.id<p2.id AND (p1.@replyToCount.get(p2) > 0 OR p2.@replyToCount.get(p1) > 0)
     ACCUM e.weight1 = 1.0 / (p1.@replyToCount.get(p2) + p2.@replyToCount.get(p1));
 }

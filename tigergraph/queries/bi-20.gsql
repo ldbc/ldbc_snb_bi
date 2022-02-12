@@ -2,7 +2,6 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi20(STRING company, VERTEX<Person> person2I
   TYPEDEF TUPLE<UINT person1Id, UINT totalWeight> RESULT;
   HeapAccum<RESULT>(20, totalWeight ASC, person1Id ASC) @@result;  
   OrAccum @visited, @next, @inCompany;
-  MapAccum<VERTEX<Person>, MapAccum<VERTEX<Person>, MinAccum<UINT>>> @@weight;
   MinAccum<UINT> @dist; 
   MapAccum<UINT, MinAccum<UINT>> @@paths;
   UINT threshold;
