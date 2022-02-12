@@ -6,7 +6,6 @@ QUERY_PATH=${PARAM2:="/queries"}
 PARAM2=$3
 DML_PATH=${PARAM2:="/dml"}
 
-
 echo "==============================================================================="
 echo "Setting up the TigerGraph database"
 echo "-------------------------------------------------------------------------------"
@@ -62,7 +61,9 @@ gsql --graph ldbc_snb PUT ExprFunctions FROM \"$QUERY_PATH/ExprFunctions.hpp\"
 for i in $(seq 1 20); do
   gsql --graph ldbc_snb $QUERY_PATH/bi-${i}.gsql
 done
-gsql --graph ldbc_snb $QUERY_PATH/stat.gsql
+
+gsql --graph ldbc_snb $QUERY_PATH/pre-19.gsql
+gsql --graph ldbc_snb $QUERY_PATH/pre-20.gsql
 
 gsql --graph ldbc_snb $DML_PATH/del_Comment.gsql
 gsql --graph ldbc_snb $DML_PATH/del_Forum.gsql
@@ -70,6 +71,10 @@ gsql --graph ldbc_snb $DML_PATH/del_Person.gsql
 gsql --graph ldbc_snb $DML_PATH/del_Post.gsql
 
 gsql --graph ldbc_snb 'INSTALL QUERY *'
+
+echo '================== Pre-computation for BI 19 and 20 =========================='
+gsql -g ldbc_snb 'RUN QUERY pre19()'
+gsql -g ldbc_snb 'RUN QUERY pre20()'
 
 echo '====================== Data Statistics (optional) ============================'
 echo 'update delta ...'

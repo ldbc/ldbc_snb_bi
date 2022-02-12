@@ -3,7 +3,7 @@ TYPEDEF TUPLE<UINT person1Id, UINT person2Id, STRING city1Name, INT score> pairS
   MapAccum<VERTEX<City>, GroupByAccum<UINT person1Id, UINT person2Id, BitwiseOrAccum bits>> @@pairScoreMap;
   MinAccum<VERTEX<City>> @city;
   SetAccum<VERTEX<City>> @@CityNonzeroScore;
-  OrAccum @valid;
+  OrAccum @valid, @selected;
   SumAccum<UINT> @pid1, @pid2;
   MinAccum<UINT> @min_pid1, @@min_pid2;
   HeapAccum<pairScore>(1, score DESC, person1Id ASC, person2Id ASC) @@pairScoreGroupTop;
@@ -13,12 +13,16 @@ TYPEDEF TUPLE<UINT person1Id, UINT person2Id, STRING city1Name, INT score> pairS
   City1 = SELECT c FROM Country:cn -(<IS_PART_OF)- City:c
     WHERE cn.name == country1;
   P1 = SELECT p FROM City1:c -(<IS_LOCATED_IN)-Person:p 
-    ACCUM p.@city = c;
+    ACCUM p.@city = c, p.@selected +=true;
   P2 = 
     SELECT p
     FROM Country:cn -(<IS_PART_OF.<IS_LOCATED_IN)-Person:p
-    WHERE cn.name == country2
-    ACCUM p.@valid+=True;
+    WHERE cn.name == country2;
+  
+  P1 = SELECT p1 FROM P2:p2 -(KNOWS)- Person:p1
+    WHERE p1.@selected
+    ACCUM p2.@valid+=True;
+  P2 = SELECT p2 FROM P2:p2 WHERE p2.@valid;
   // Calculate score
   C1 = SELECT m FROM P1:p -(<HAS_CREATOR)- Comment:m;
   M1 = 

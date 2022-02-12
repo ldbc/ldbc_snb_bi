@@ -44,8 +44,10 @@ def convert_value_to_string(value, type):
         return str(float(value))
     elif type == "STRING[]":
         return "[" + ";".join([f'"{v}"' for v in value]) + "]"
-    elif type in ["STRING", "DATETIME", "DATE"]:
+    elif type in ["STRING"]:
         return f'"{value}"'
+    elif type in [ "DATETIME", "DATE"]:
+        return value.replace(" ", "T")
     elif type == "BOOL":
         return str(bool(value))
     else:
@@ -99,10 +101,13 @@ for query_variant in ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "
         if query_num != 11:
             #convert results from [dict()] to [[]] 
             results = [[v for k,v in res.items()] for res in results]
-            #convert results to string
-            results = "[" + ";".join([
-                f'<{",".join([convert_value_to_string(result[i], type) for i, type in enumerate(mapping)])}>'
-                for result in results
-            ]) + "]"
-        print(f"{query_num}|{query_variant}|{query_parameters_in_order}|{results}")
+        else:
+            results = [[results]]
+        #convert results to string
+        results = "[" + ";".join([
+            f'<{",".join([convert_value_to_string(result[i], type) for i, type in enumerate(mapping)])}>'
+            for result in results
+        ]) + "]"
+        fout.write(f"{query_num}|{query_variant}|{query_parameters_in_order}|{results}\n")
+        fout.flush()
         
