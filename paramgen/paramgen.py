@@ -22,7 +22,4 @@ for query_variant in ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9",
     print(f"--------- Q{query_variant} ---------")
     with open(f"parameter-queries/pq-{query_variant}.sql", "r") as parameter_query_file:
         parameter_query = parameter_query_file.read()
-        con.execute(f"SELECT setseed(0.42);")
-        con.execute(f"SELECT * FROM ( {parameter_query} ) LIMIT 5;")
-        print(con.fetchall())
         con.execute(f"COPY ( {parameter_query} ) TO '../parameters/bi-{query_variant}.csv' WITH (HEADER, DELIMITER '|');")

@@ -1,6 +1,14 @@
 SELECT
-      anchorDate::date + INTERVAL (- 5 + CAST(FLOOR(10*RANDOM()) AS INT)) DAY  AS 'startDate:DATE',
-      anchorDate::date + INTERVAL (80+CAST(FLOOR(20*RANDOM()) AS INT)) DAY AS 'endDate:DATE'
+      startDate AS 'startDate:DATE',
+      endDate AS 'endDate:DATE'
 FROM (
-     SELECT percentile_disc(0.89) WITHIN GROUP (ORDER BY creationDay) AS anchorDate FROM creationDayNumMessages ),
-    (SELECT unnest(generate_series(1, 10)))
+      SELECT
+            anchorDate::date + INTERVAL (-5 + salt*37 % 10) DAY AS startDate,
+            anchorDate::date + INTERVAL (80 + salt*31 % 20) DAY AS endDate
+      FROM (
+            SELECT
+                  percentile_disc(0.89) WITHIN GROUP (ORDER BY creationDay) AS anchorDate
+            FROM creationDayNumMessages
+      ),
+      (SELECT unnest(generate_series(1, 10)) AS salt)
+) ORDER BY md5(startDate), md5(endDate)
