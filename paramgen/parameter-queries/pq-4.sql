@@ -1,4 +1,5 @@
-SELECT
-    creationDay AS 'date:DATE'
-FROM creationDayNumMessages
-LIMIT 400
+SELECT creationDay AS 'date:DATE' FROM (SELECT creationDay
+  FROM creationDayNumMessages
+  ORDER BY creationDay ASC
+  LIMIT 30)
+  ORDER BY md5(creationDay)

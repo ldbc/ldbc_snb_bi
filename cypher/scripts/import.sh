@@ -51,7 +51,7 @@ PART_FIND_PATTERN="part-*${CSV_EXTENSION}"
 if [ "$(uname)" == "Darwin" ]; then
     FIND_COMMAND=gfind
     if ! command -v ${FIND_COMMAND}; then
-        echo "Command '${FIND_COMMAND} not found. Install it with 'brew install findutils'"
+        echo "Command '${FIND_COMMAND}' not found. Install it with 'brew install findutils'"
         exit 1
     fi
 else
@@ -66,6 +66,7 @@ docker run --rm \
     --volume=${NEO4J_CSV_DIR}:/import \
     --volume=${NEO4J_HEADER_DIR}:/headers \
     ${NEO4J_ENV_VARS} \
+    ${NEO4J_DOCKER_PLATFORM_FLAG} \
     neo4j:${NEO4J_VERSION} \
     neo4j-admin import \
     --id-type=INTEGER \
