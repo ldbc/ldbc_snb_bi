@@ -11,3 +11,4 @@ FROM
     WHERE country1Id <> country2Id
     ORDER BY diff, city1Id, city2Id)
 ORDER BY md5(city1Id + city2Id)
+LIMIT 400

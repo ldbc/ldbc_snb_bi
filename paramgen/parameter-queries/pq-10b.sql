@@ -25,3 +25,4 @@ FROM
     ORDER BY diff, tagClassName
     LIMIT 15)
 ORDER BY md5(concat(personId, countryName, tagClassName))
+LIMIT 400

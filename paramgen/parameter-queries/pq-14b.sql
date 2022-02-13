@@ -1,7 +1,8 @@
 SELECT
     country1Name AS 'country1:STRING',
     country2Name AS 'country2:STRING'
-FROM (SELECT
+FROM (
+    SELECT
         country1Name,
         country2Name,
         frequency AS freq,

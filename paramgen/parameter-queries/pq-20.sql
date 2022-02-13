@@ -18,3 +18,4 @@ WHERE NOT EXISTS (
           AND aj.person2Id = pers2.person2Id
     )
 ORDER BY md5(comp.companyId + pers2.person2Id)
+LIMIT 400

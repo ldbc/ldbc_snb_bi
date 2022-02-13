@@ -9,4 +9,5 @@ FROM (
         FROM creationDayNumMessages
     ),
     (SELECT unnest(generate_series(456789, 456789+200)) AS salt)
-) ORDER BY md5(endDate)
+)
+ORDER BY md5(endDate)

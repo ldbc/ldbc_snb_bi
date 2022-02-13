@@ -1,18 +1,17 @@
 SELECT
---        epoch(creationDay) as x,
-strftime(
-     creationDay::timestamp + interval ( epoch(creationDay) / 37 % 24) hour
-    + interval ( epoch(creationDay) / 37 % 60) minute
-    + interval ( epoch(creationDay) / 31 % 60) second
-    --   '02:03:04'
-,
-  '%Y-%m-%dT%H:%M:%S.%g+00:00')
-     AS 'datetime:DATETIME' FROM
-    (
-    SELECT creationDay
-   FROM creationDayNumMessages
-    ORDER BY creationDay DESC
-    LIMIT 40
-    OFFSET 15
-    )
-    ORDER BY md5(creationDay)
+    strftime(
+        creationDay::timestamp + INTERVAL ( epoch(creationDay) / 37 % 24) HOUR
+            + INTERVAL ( epoch(creationDay) / 37 % 60) MINUTE
+            + INTERVAL ( epoch(creationDay) / 31 % 60) SECOND,
+        '%Y-%m-%dT%H:%M:%S.%g+00:00'
+        ) AS 'datetime:DATETIME'
+FROM (
+    (SELECT
+        creationDay,
+        frequency AS freq,
+        abs(frequency - (SELECT percentile_disc(0.15) WITHIN GROUP (ORDER BY frequency) FROM creationDayNumMessages)) AS diff
+    FROM creationDayNumMessages
+    ORDER BY diff, creationDay
+    LIMIT 40)
+)
+ORDER BY md5(creationDay)
