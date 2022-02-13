@@ -1,5 +1,5 @@
 /* Q12. How many persons have a given number of messages
-\set date '\'2010-07-22\''::timestamp
+\set startDate '\'2010-07-22\''::timestamp
 \set lengthThreshold '20'
 \set languages '\'{"ar", "hu"}\''::varchar[]
  */
@@ -10,7 +10,7 @@ WITH person_w_posts AS (
         ON Person.id = MessageThread.CreatorPersonId
        AND MessageThread.content IS NOT NULL
        AND MessageThread.length < :lengthThreshold
-       AND MessageThread.creationDate > :date
+       AND MessageThread.creationDate > :startDate
        AND MessageThread.RootPostLanguage = ANY(:languages)
      GROUP BY Person.id
 )
