@@ -1,6 +1,13 @@
--- delta is set between 8 and 16 hours
 SELECT
-    tagNumMessages.tagName AS 'tag:STRING',
-    8 + CAST(FLOOR(9*RANDOM()) AS INT) AS 'delta:INT'
-FROM tagNumMessages
-LIMIT 400
+    tagName AS 'tag:STRING',
+    8 + (SELECT sum(x) FROM (SELECT unicode(unnest(string_split(tagName, ''))) AS x)) % 9 AS 'delta:INT'
+FROM (
+    SELECT
+        tagName,
+        frequency AS freq,
+        abs(frequency - (SELECT percentile_disc(0.52) WITHIN GROUP (ORDER BY frequency) FROM tagNumMessages)) AS diff
+    FROM tagNumMessages
+    ORDER BY diff
+    LIMIT 400
+)
+ORDER BY md5(tagName)

@@ -1,11 +1,12 @@
 SELECT
-    personNumFriends1.personId AS 'person1Id:ID',
-    personNumFriends2.personId AS 'person2Id:ID',
-    creationDayNumMessages.creationDay AS 'startDate:DATE',
-    creationDayNumMessages.creationDay + 8 + CAST(FLOOR(3*RANDOM()) AS INT) AS 'endDate:DATE'
-FROM
-    (SELECT * FROM creationDayNumMessages LIMIT 10) creationDayNumMessages,
-    (SELECT * FROM personNumFriends LIMIT 10) personNumFriends1,
-    (SELECT * FROM personNumFriends LIMIT 10) personNumFriends2
-WHERE personNumFriends1.personId != personNumFriends2.personId
+    person1Id AS 'person1Id:ID',
+    person2Id AS 'person2Id:ID',
+    (SELECT percentile_disc(0.95) WITHIN GROUP (ORDER BY creationDay) AS startAnchorDate FROM creationDayNumMessages)
+        - INTERVAL (person1Id % 7) DAY
+        AS 'startDate:DATE',
+    (SELECT percentile_disc(0.95) WITHIN GROUP (ORDER BY creationDay) AS endAnchorDate   FROM creationDayNumMessages)
+        + INTERVAL (person2Id % 7) DAY
+        AS 'endDate:DATE'
+FROM people4Hops
+ORDER BY md5(person1Id + person2Id), md5(person1Id)
 LIMIT 400
