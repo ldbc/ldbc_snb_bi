@@ -18,11 +18,13 @@ TYPEDEF TUPLE<UINT person1Id, UINT person2Id, STRING city1Name, INT score> pairS
     SELECT p
     FROM Country:cn -(<IS_PART_OF.<IS_LOCATED_IN)-Person:p
     WHERE cn.name == country2;
-  
+  print P1.size(), P1.size(); 
   P1 = SELECT p1 FROM P2:p2 -(KNOWS)- Person:p1
     WHERE p1.@selected
     ACCUM p2.@valid+=True;
   P2 = SELECT p2 FROM P2:p2 WHERE p2.@valid;
+
+  print P1.size(), P2.size();
   // Calculate score
   C1 = SELECT m FROM P1:p -(<HAS_CREATOR)- Comment:m;
   M1 = 
@@ -36,55 +38,38 @@ TYPEDEF TUPLE<UINT person1Id, UINT person2Id, STRING city1Name, INT score> pairS
     SELECT m2
     FROM C1:c1 -(REPLY_OF>)- (Comment|Post):m2
     WHERE m2.@pid2>0
-    ACCUM @@pairScoreMap += (c1.@city -> (c1.@pid1, m2.@pid2 -> 16)); // 10000
+    ACCUM @@pairScoreMap += (c1.@city -> (c1.@pid1, m2.@pid2 -> 8)); // 1000
   
   acc2 =
     SELECT c2
     FROM M1:m1 -(<REPLY_OF)- Comment:c2
     WHERE c2.@pid2>0
-    ACCUM @@pairScoreMap += (m1.@city -> (m1.@pid1, c2.@pid2 -> 8)); //01000
+    ACCUM @@pairScoreMap += (m1.@city -> (m1.@pid1, c2.@pid2 -> 4)); //0100
 
   acc3 =
-    SELECT p2
-    FROM P1:p1 -(KNOWS)- Person:p2
-    WHERE p2.@valid
-    ACCUM @@pairScoreMap += (p1.@city -> (p1.id, p2.id -> 4)); //00100
-
-  acc4 =
     SELECT m2
     FROM P1:p1 -(LIKES>)- (Comment|Post):m2
     WHERE m2.@pid2>0
-    ACCUM @@pairScoreMap += (p1.@city -> (p1.id, m2.@pid2 -> 2)); //00010
+    ACCUM @@pairScoreMap += (p1.@city -> (p1.id, m2.@pid2 -> 2)); //0010
 
-  acc5 =
+  acc4 =
     SELECT p2
     FROM M1:m1 -(<LIKES)- Person:p2
     WHERE p2.@valid
-    ACCUM @@pairScoreMap += (m1.@city -> (m1.@pid1, p2.id -> 1)); //00001
+    ACCUM @@pairScoreMap += (m1.@city -> (m1.@pid1, p2.id -> 1)); //0001
 
   @@result.resize(City1.size());
   FOREACH (city,gba) IN @@pairScoreMap DO
     @@CityNonzeroScore += city;
     @@pairScoreGroupTop.clear();
     FOREACH (p1,p2,b) IN gba DO
-      score = (b&16)/16 * 4 + (b&8)/8 + (b&4)/4 * 15  + (b&2)/2 * 10  + (b&1);  
+      score = (b&8)/8 * 4 + (b&4)/4  + (b&2)/2 * 10  + (b&1);  
       @@pairScoreGroupTop += pairScore(p1, p2, city.name, score);
     END;
     @@result += @@pairScoreGroupTop.top();
   END;
-  // add cities of zero scores (min pid1 in city1, min pid2, city name, 0)
-  IF @@result.size() < City1.size() THEN
-    P2p = SELECT p FROM P2:p ACCUM @@min_pid2 += p.id;
-    nonzeroScoreCity = {@@CityNonzeroScore};
-    zeroScoreCity = City1 MINUS nonzeroScoreCity;
-    tmp = SELECT c 
-      FROM zeroScoreCity:c -(<IS_LOCATED_IN)- Person:p
-      ACCUM c.@min_pid1 += p.id
-      POST-ACCUM 
-        @@result += pairScore(c.@min_pid1, @@min_pid2, c.name, 0);
-  END;
   PRINT @@result as result;
 }
 
-// INSTALL QUERY bi14
-// RUN QUERY bi14("Brazil", "Argentina")
+INSTALL query bi14
+run query bi14("China", "Austria")

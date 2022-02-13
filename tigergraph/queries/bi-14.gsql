@@ -83,5 +83,5 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi14(STRING country1, STRING country2) SYNTA
   PRINT @@result as result;
 }
 
-// INSTALL QUERY bi14
-// RUN QUERY bi14("Brazil", "Argentina")
+INSTALL QUERY bi14
+RUN QUERY bi14("China","Austria")
