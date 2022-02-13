@@ -117,6 +117,7 @@ for query_variant in ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9",
 
         results = run_query(session, query_num, query_variant, query_spec, query_parameters)
         print(f"{query_num}|{query_variant}|{query_parameters_in_order}|{results}")
+        break
 
     query_file.close()
 
