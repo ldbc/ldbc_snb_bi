@@ -1,12 +1,29 @@
--- potential minPathDistance and maxPathDistance values: 1..2, 1..3, 2..2, 2..3
 SELECT
-    personNumFriends.personId AS 'personId:ID',
-    countryNumPersons.countryName AS 'country:STRING',
-    tagClassNumMessages.tagClassName AS 'tagClass:STRING',
-    1+CAST(FLOOR(2*RANDOM()) AS INT) AS 'minPathDistance:INT',
-    2+CAST(FLOOR(2*RANDOM()) AS INT) AS 'maxPathDistance:INT'
+    personId AS 'personId:ID',
+    countryName AS 'country:STRING',
+    tagClassName AS 'tagClass:STRING',
+    3 AS 'minPathDistance:INT',
+    4 AS 'maxPathDistance:INT'
 FROM
-    (SELECT * FROM personNumFriends LIMIT 10) personNumFriends,
-    (SELECT * FROM countryNumPersons LIMIT 10) countryNumPersons, -- OFFSET 2
-    (SELECT * FROM tagClassNumMessages LIMIT 10) tagClassNumMessages
-    LIMIT 400
+    (SELECT
+        countryName,
+        frequency AS freq,
+        abs(frequency - (SELECT percentile_disc(0.55) WITHIN GROUP (ORDER BY frequency) FROM countryNumPersons)) AS diff
+    FROM countryNumPersons
+    ORDER BY diff, countryName
+    LIMIT 20),
+    (SELECT
+        personId,
+        frequency AS freq,
+        abs(frequency - (SELECT percentile_disc(0.55) WITHIN GROUP (ORDER BY frequency) FROM personNumFriends)) AS diff
+    FROM personNumFriends
+    ORDER BY diff, personId
+    LIMIT 50),
+    (SELECT
+        tagClassName,
+        frequency AS freq,
+        abs(frequency - (SELECT percentile_disc(0.55) WITHIN GROUP (ORDER BY frequency) FROM tagClassNumTags)) AS diff
+    FROM tagClassNumTags
+    ORDER BY diff, tagClassName
+    LIMIT 15)
+ORDER BY md5(concat(personId, countryName, tagClassName))

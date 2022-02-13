@@ -1,7 +1,12 @@
 SELECT
-    countryNumPersons.countryName AS 'country:STRING',
-    creationDay AS 'endDate:DATE'
-FROM
-    (SELECT * FROM countryNumPersons LIMIT  10) countryNumPersons,
-    (SELECT * FROM creationDayNumMessages ORDER BY creationDay DESC LIMIT 100) creationDayNumMessages
-    LIMIT 400
+    CASE extract('dayofyear' FROM endDate) % 2 == 0 WHEN true THEN 'India' ELSE 'China' END AS country,
+    endDate AS 'endDate:DATE'
+FROM (
+    SELECT DISTINCT
+        anchorDate::date + INTERVAL (-5 + salt*47 % 12) DAY AS endDate
+    FROM (
+        SELECT percentile_disc(0.94) WITHIN GROUP (ORDER BY creationDay) AS anchorDate
+        FROM creationDayNumMessages
+    ),
+    (SELECT unnest(generate_series(456789, 456789+200)) AS salt)
+) ORDER BY md5(endDate)
