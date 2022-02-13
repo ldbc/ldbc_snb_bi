@@ -76,7 +76,8 @@ def run_query(name, parameters):
     end = time.time()
     duration = end - start
     return response['results'][0]['result'], duration
-    
+
+'''
 res = Path('results')
 res.mkdir(exist_ok = True)
 if args.mode == 'validate':
@@ -85,7 +86,7 @@ elif args.mode == 'benchmark':
     res_file = res / 'results.csv'
 if res_file.exists(): res_file.unlink()
 fout = open(res_file, 'a')
-
+'''
 for query_variant in ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20"]:
     print(f"========================= Q{query_variant} =========================")
     query_num = int(re.sub("[^0-9]", "", query_variant))
@@ -108,6 +109,7 @@ for query_variant in ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "
             f'<{",".join([convert_value_to_string(result[i], type) for i, type in enumerate(mapping)])}>'
             for result in results
         ]) + "]"
-        fout.write(f"{query_num}|{query_variant}|{query_parameters_in_order}|{results}\n")
-        fout.flush()
+        print(f"{query_num}|{query_variant}|{query_parameters_in_order}|{results}")
+        #fout.write("\n")
+        #fout.flush()
         

@@ -7,7 +7,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi14(STRING country1, STRING country2) SYNTA
   SetAccum<VERTEX<Person>> @person2, @p2s1, @p2s2, @p2s3, @p2s4;
   OrAccum @valid, @selected;
   HeapAccum<pairScore>(1, score DESC, person1Id ASC, person2Id ASC) @cityresults, @@result;
-  MinAccum<UINT> @@min_pid2;
+  MinAccum<UINT> @min_pid2;
   
   P1 = SELECT p 
     FROM Country:cn -(<IS_PART_OF.<IS_LOCATED_IN)-Person:p 
@@ -23,10 +23,12 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi14(STRING country1, STRING country2) SYNTA
     SELECT p2
     FROM P1:p1 -(KNOWS)- Person:p2
     WHERE p2.@selected
-    ACCUM p1.@valid += True, @@min_pid2 += p2.id;
+    ACCUM p1.@valid += True, 
+      p1.@person2 += p2,
+      p1.@min_pid2 += p2.id;
 
   P1 = SELECT p FROM Person:p WHERE p.@valid;
-
+  # propagate person2 vertex id to P1
   M1 = 
     SELECT m FROM P1:p -(<HAS_CREATOR)- (Comment|Post):m
     ACCUM m.@valid += True;
@@ -37,19 +39,23 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi14(STRING country1, STRING country2) SYNTA
   
   P = SELECT p1 FROM M2:m2 -(<REPLY_OF)- Comment:c1 -(HAS_CREATOR>)- Person:p1 
     WHERE c1.@valid AND p1.@valid
-    ACCUM p1.@p2s1 += m2.@person2;
+    ACCUM p1.@p2s1 += m2.@person2
+    POST-ACCUM p1.@p2s1 = (p1.@p2s1 INTERSECT p1.@person2);
 
   P = SELECT p1 FROM M2:m2 -(REPLY_OF>)- _:m1 -(HAS_CREATOR>)- Person:p1 
     WHERE m1.@valid AND p1.@valid
-    ACCUM p1.@p2s2 += m2.@person2;
+    ACCUM p1.@p2s2 += m2.@person2
+    POST-ACCUM p1.@p2s2 = (p1.@p2s2 INTERSECT p1.@person2);
 
   P = SELECT p1 FROM M2:m2 -(<LIKES)- Person:p1
     WHERE p1.@valid
-    ACCUM p1.@p2s3 += m2.@person2;
+    ACCUM p1.@p2s3 += m2.@person2
+    POST-ACCUM p1.@p2s3 = (p1.@p2s3 INTERSECT p1.@person2);
 
   P = SELECT p1 FROM P2:p2 -(LIKES>)- _:m1 -(HAS_CREATOR>)- Person:p1
     WHERE m1.@valid AND p1.@valid
-    ACCUM p1.@p2s4 += p2;
+    ACCUM p1.@p2s4 += p2
+    POST-ACCUM p1.@p2s4 = (p1.@p2s4 INTERSECT p1.@person2);
 
   P1 = SELECT p1 FROM P1:p1
     ACCUM 
@@ -75,13 +81,10 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi14(STRING country1, STRING country2) SYNTA
 
   zeroCity1 = SELECT c1 FROM City1:c1 -(<IS_LOCATED_IN)- Person:p1
     WHERE c1.@cityresults.size() == 0
-    ACCUM c1.@cityresults += pairScore(p1.id, @@min_pid2, c1.name, 0);
+    ACCUM c1.@cityresults += pairScore(p1.id, p1.@min_pid2, c1.name, 0);
   
   @@result.resize(City1.size());
   City1 = SELECT c1 FROM City1:c1
     ACCUM @@result += c1.@cityresults.top();
   PRINT @@result as result;
 }
-
-INSTALL QUERY bi14
-RUN QUERY bi14("China","Austria")

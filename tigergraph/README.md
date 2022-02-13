@@ -1,6 +1,6 @@
 # LDBC SNB BI TigerGraph/GSQL implementation
 
-[TigerGraph](https://www.tigergraph.com) implementation of the [LDBC SNB benchmark](https://github.com/ldbc/ldbc_snb_docs).
+[TigerGraph](https://www.tigergraph.com) implementation of the [LDBC SNB benchmark](https://github.com/ldbc/ldbc_snb_docs). The scripts are modified from [Old version driver](https://github.com/tigergraph/ecosys/tree/ldbc/ldbc_benchmark/tigergraph/queries_v3)
 
 ## Generating the data set
 
@@ -26,23 +26,19 @@ Set the `$TG_DATA_DIR` environment variable.
 export TG_DATA_DIR=`pwd`/sf${SF}/csv/bi/composite-projected-fk/
 ```
 
-If the data has header, set:
-```bash
-export TG_HEADER=true
-```
+In the default setting, the driver consider the dataset does not have headers. If the data has header, set `export TG_HEADER=true`.
 
 Start TigerGraph docker container. For data larger than 50G, you need a license. If you work on a cluster, you can install TigerGraph manually and skip this step.
 ```
-scripts/stop-docker.sh # if there are existing container
+scripts/stop-docker.sh #if there is an existing container
 scripts/start-docker.sh
 ```
 
-Load the data:
+Load the data, This step may take a while (several minutes), as it is responsible for defining the queries, loading jobs, loading the data, installing (optimizing and compiling on the server) queries and pre-compute the edge weights for BI 19 and 20.
+
 ```bash
 scripts/setup.sh
 ```
-
-This step may take a while (several minutes), as it is responsible for defining the queries, loading jobs, loading the data, installing (optimizing and compiling on the server) queries and pre-compute the edge weights for BI 19 and 20.
 
 ## Microbatches
 
