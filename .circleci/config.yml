@@ -5,11 +5,8 @@ workflows:
   version: 2
   build:
     jobs:
-      - test:
-          filters:
-            branches:
-              ignore:
-                - stable
+      - test
+
 
 jobs:
   test:
