@@ -81,5 +81,6 @@ for query_variant in ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9",
         type_pattern = re.compile(':.*')
         query_parameters = {type_pattern.sub('', k): v for k, v in query_parameters.items()}
         run_query(con, query_variant, query_spec, query_parameters)
+        break
 
 con.close()
