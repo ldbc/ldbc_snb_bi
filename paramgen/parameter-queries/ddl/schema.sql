@@ -28,7 +28,7 @@ CREATE TABLE companyNumEmployees(companyId bigint not null, companyName varchar 
 CREATE TABLE countryNumMessages(countryId bigint not null, countryName varchar not null, frequency bigint not null);
 CREATE TABLE countryNumPersons(countryId bigint not null, countryName varchar not null, frequency bigint not null);
 CREATE TABLE countryPairsNumFriends(country1Id bigint not null, country2Id bigint not null, country1Name varchar not null, country2Name varchar not null, frequency bigint not null);
-CREATE TABLE creationDayAndLengthCategoryNumMessages(creationDay date not null, lengthcategory int not null, frequency bigint not null);
+CREATE TABLE creationDayAndLengthCategoryNumMessages(creationDay date not null, lengthCategory int not null, frequency bigint not null);
 CREATE TABLE creationDayAndTagClassNumMessages(creationDay date not null, tagclassId bigint not null, tagClassName varchar not null, frequency bigint not null);
 CREATE TABLE creationDayAndTagNumMessages(creationDay date not null, tagId bigint not null, tagName varchar not null, frequency bigint not null);
 CREATE TABLE creationDayNumMessages(creationDay date not null, frequency bigint not null);

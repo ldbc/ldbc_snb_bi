@@ -1,10 +1,39 @@
--- Q12
 SELECT
-    creationDayNumMessages.creationDay AS 'date:DATE',
-    lengthNumMessages.length AS 'lengthThreshold:INT',
-    languageNumPosts.language AS 'languages:STRING[]' -- should be multiple languages concatenated to a single string
-FROM
-    (SELECT creationDay FROM creationDayNumMessages LIMIT 10) creationDayNumMessages,
-    (SELECT length FROM lengthNumMessages LIMIT 10) lengthNumMessages, -- OFFSET count/5?
-    (SELECT language FROM languageNumPosts LIMIT 10) languageNumPosts
-    LIMIT 400
+    startDate AS 'startDate:DATE',
+    150 - salt*5 AS 'lengthThreshold:INT',
+    string_agg(lng) AS 'languages:STRING[]'
+FROM (
+    SELECT
+        salt,
+        startDate,
+        ROW_NUMBER() OVER(PARTITION BY salt ORDER BY salt DESC) rn,
+        lng
+    FROM
+    (
+        SELECT
+            salt,
+            startDate,
+            lang.language AS lng
+        FROM
+            (SELECT
+                (SELECT percentile_disc(0.79) WITHIN GROUP (ORDER BY creationDay) AS anchorDate FROM creationDayNumMessages)
+                    + INTERVAL (salt*3) DAY
+                    AS startDate,
+                    salt
+            FROM (SELECT unnest(generate_series(1, 20)) AS salt)
+            ) sd,
+
+            (SELECT
+                language,
+                frequency AS freq,
+                abs(frequency - (SELECT percentile_disc(0.98) WITHIN GROUP (ORDER BY frequency) FROM languageNumPosts)) AS diff
+            FROM languageNumPosts
+            ORDER BY diff, language
+            LIMIT 10
+            ) lang
+        ORDER BY salt, md5(concat(lang.language, salt))
+    )
+)
+WHERE rn <= 3
+GROUP BY startDate, salt
+ORDER BY md5(startDate)
