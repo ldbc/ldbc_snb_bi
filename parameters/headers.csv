@@ -9,7 +9,7 @@ bi-8 tag:STRING|date:DATE
 bi-9 startDate:DATE|endDate:DATE
 bi-10 personId:ID|country:STRING|tagClass:STRING|minPathDistance:INT|maxPathDistance:INT
 bi-11 country:STRING|startDate:DATE
-bi-12 date:DATE|lengthThreshold:INT|languages:STRING[]
+bi-12 startDate:DATE|lengthThreshold:INT|languages:STRING[]
 bi-13 country:STRING|endDate:DATE
 bi-14a country1:STRING|country2:STRING
 bi-14b country1:STRING|country2:STRING
