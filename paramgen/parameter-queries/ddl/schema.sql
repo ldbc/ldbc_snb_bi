@@ -18,7 +18,10 @@ DROP TABLE IF EXISTS tagNumMessages;
 DROP TABLE IF EXISTS tagNumPersons;
 
 CREATE TABLE cityNumPersons(cityId bigint not null, cityName varchar not null, frequency bigint not null);
-CREATE TABLE cityPairsNumFriends(city1Id bigint not null, city2Id bigint not null, city1Name varchar not null, city2Name varchar not null, frequency bigint not null);
+CREATE TABLE cityPairsNumFriends(
+    city1Id bigint not null, city2Id bigint not null, city1Name varchar not null, city2Name varchar not null,
+    country1Id bigint not null, country2Id bigint not null, country1Name varchar not null, country2Name varchar not null,
+    frequency bigint not null);
 CREATE TABLE companyNumEmployees(companyId bigint not null, companyName varchar not null, frequency bigint not null);
 CREATE TABLE countryNumMessages(countryId bigint not null, countryName varchar not null, frequency bigint not null);
 CREATE TABLE countryNumPersons(countryId bigint not null, countryName varchar not null, frequency bigint not null);
