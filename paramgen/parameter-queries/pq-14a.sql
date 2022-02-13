@@ -1,6 +1,12 @@
 SELECT
     country1Name AS 'country1:STRING',
     country2Name AS 'country2:STRING'
-FROM countryPairsNumFriends
-ORDER BY frequency DESC
-LIMIT 400
+FROM (SELECT
+        country1Name,
+        country2Name,
+        frequency AS freq,
+        abs(frequency - (SELECT percentile_disc(0.96) WITHIN GROUP (ORDER BY frequency) FROM countryPairsNumFriends)) AS diff
+    FROM countryPairsNumFriends
+    ORDER BY diff, country1Name, country2Name
+    LIMIT 200
+)

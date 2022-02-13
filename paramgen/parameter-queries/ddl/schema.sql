@@ -10,6 +10,7 @@ DROP TABLE IF EXISTS creationDayNumMessages;
 DROP TABLE IF EXISTS creationDayAndTagNumMessages;
 DROP TABLE IF EXISTS languageNumPosts;
 DROP TABLE IF EXISTS lengthNumMessages;
+DROP TABLE IF EXISTS personDisjointEmployerPairs;
 DROP TABLE IF EXISTS personNumFriends;
 DROP TABLE IF EXISTS tagClassNumMessages;
 DROP TABLE IF EXISTS tagClassNumTags;
@@ -26,8 +27,9 @@ CREATE TABLE creationDayAndLengthCategoryNumMessages(creationDay date not null, 
 CREATE TABLE creationDayAndTagClassNumMessages(creationDay date not null, tagclassId bigint not null, tagClassName varchar not null, frequency bigint not null);
 CREATE TABLE creationDayAndTagNumMessages(creationDay date not null, tagId bigint not null, tagName varchar not null, frequency bigint not null);
 CREATE TABLE creationDayNumMessages(creationDay date not null, frequency bigint not null);
-CREATE TABLE languageNumPosts(language varchar, frequency bigint not null);
+CREATE TABLE languageNumPosts(language varchar not null, frequency bigint not null);
 CREATE TABLE lengthNumMessages(length int not null, frequency bigint not null);
+CREATE TABLE personDisjointEmployerPairs(person2id bigint not null, companyName varchar not null, companyId bigint not null);
 CREATE TABLE personNumFriends(personId bigint not null, frequency bigint not null);
 CREATE TABLE tagClassNumMessages(tagclassId bigint not null, tagclassName varchar not null, frequency bigint not null);
 CREATE TABLE tagClassNumTags(tagclassId bigint not null, tagclassName varchar not null, frequency bigint not null);
