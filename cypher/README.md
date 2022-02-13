@@ -13,13 +13,10 @@ To generate data that confirms this requirement, run Datagen with the `--explode
 In Datagen's directory (`ldbc_snb_datagen_spark`), issue the following commands:
 
 ```bash
+rm -rf out-sf${SF}/
+export SF=1
 tools/build.sh
-
-# set the desired SF and generate
-export SF=0.003
-rm -rf sf${SF}/
-tools/run.py ./target/ldbc_snb_datagen_${PLATFORM_VERSION}-${DATAGEN_VERSION}.jar -- \
-    --format csv --scale-factor ${SF} --mode bi --explode-edges --format-options header=false,quoteAll=true --output-dir sf${SF}
+tools/run.py --cores 4 --memory 8G target/ldbc_snb_datagen_2.12_spark3.1-0.5.0-SNAPSHOT.jar -- --format csv --scale-factor ${SF} --explode-edges --mode bi --output-dir out-sf${SF}/ --generate-factors --format-options header=false,quoteAll=true
 ```
 
 ## Loading the data
@@ -27,10 +24,10 @@ tools/run.py ./target/ldbc_snb_datagen_${PLATFORM_VERSION}-${DATAGEN_VERSION}.ja
 Set the `${NEO4J_CSV_DIR}` environment variable.
 
 ```bash
-export NEO4J_CSV_DIR=`pwd`/sf${SF}/graphs/csv/bi/composite-projected-fk/
+export NEO4J_CSV_DIR=${LDBC_SNB_DATAGEN_DIR}/out-sf${SF}/graphs/csv/bi/composite-projected-fk/
 ```
 
-If the data is compressed, set:
+If the data is compressed, set the following flag:
 
 ```bash
 export NEO4J_CSV_FLAGS="--compressed"
