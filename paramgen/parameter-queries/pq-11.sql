@@ -1,5 +1,5 @@
 SELECT
-    CASE extract('dayofyear' FROM startDate) % 2 == 0 WHEN true THEN 'China' ELSE 'India' END AS country,
+    CASE extract('dayofyear' FROM startDate) % 2 == 0 WHEN true THEN 'China' ELSE 'India' END AS 'country:STRING',
     startDate AS 'startDate:DATE',
     endDate AS 'endDate:DATE'
 FROM (
