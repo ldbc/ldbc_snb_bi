@@ -11,12 +11,17 @@ MATCH
   (company:Company {name: $company})<-[:WORK_AT]-(person1:Person),
   (person2:Person {id: $person2Id})
 CALL gds.shortestPath.dijkstra.stream({
-  sourceNode: person1,
-  targetNode: person2,
   nodeQuery: 'MATCH (p:Person) RETURN id(p) AS id',
   relationshipQuery:
-      'MATCH (personA:Person)-[knows:KNOWS]-(personB:Person)
-       RETURN id(personA) AS source, id(personB) AS target, knows.q20weight AS weight',
+    'MATCH
+       (personA:Person)-[:KNOWS]-(personB:Person),
+       (personA)-[saA:STUDY_AT]->(u:University)<-[saB:STUDY_AT]-(personB)
+     RETURN
+       id(personA) AS source,
+       id(personB) AS target,
+       abs(saA.classYear - saB.classYear) + 1 AS weight',
+  sourceNode: person1,
+  targetNode: person2,
   relationshipWeightProperty: 'weight'
 })
 YIELD totalCost
