@@ -10,20 +10,17 @@ To generate data that confirms this requirement, run Datagen with the `--explode
 In Datagen's directory (`ldbc_snb_datagen_spark`), issue the following commands:
 
 ```bash
+rm -rf out-sf${SF}/
+export SF=1
 tools/build.sh
-
-# set the desired SF and generate
-export SF=0.003
-rm -rf sf${SF}/
-tools/run.py ./target/ldbc_snb_datagen_${PLATFORM_VERSION}-${DATAGEN_VERSION}.jar -- \
-    --format csv --scale-factor ${SF} --mode bi --explode-edges --format-options header=false,quoteAll=true --output-dir sf${SF}
+tools/run.py --cores 4 --memory 8G target/ldbc_snb_datagen_2.12_spark3.1-0.5.0-SNAPSHOT.jar -- --format csv --scale-factor ${SF} --explode-edges --mode bi --output-dir out-sf${SF}/ --generate-factors --format-options header=false
 ```
 
 ## Loading the data
 
 Set the `$TG_DATA_DIR` environment variable.
 ```bash
-export TG_DATA_DIR=`pwd`/sf${SF}/csv/bi/composite-projected-fk/
+export TG_DATA_DIR=${LDBC_SNB_DATAGEN_DIR}/out-sf${SF}/csv/bi/composite-projected-fk/
 ```
 
 In the default setting, the driver consider the dataset does not have headers. If the data has header, set `export TG_HEADER=true`.
@@ -49,8 +46,10 @@ scripts/batches.sh
 
 ## Queries
 
-To run and validate the queries:
+To run and validate the queries
 
 ```bash
 scripts/validate.sh
 ```
+
+results are written to `results/validation_param.csv`.

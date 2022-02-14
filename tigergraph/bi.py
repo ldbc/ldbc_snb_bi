@@ -7,8 +7,8 @@ import re
 from datetime import datetime, timedelta
 
 parser = argparse.ArgumentParser(description='BI query driver')
-parser_validate = parser.add_argument('mode', type=str, choices=['benchmark', 'validate'], help='mode of the driver')
-#parser_validate.add_argument('--nrun', type=int, help='number of runs')
+parser.add_argument('mode', type=str, choices=['benchmark', 'validate'], help='mode of the driver')
+parser.add_argument('--endpoint', type=str, default='http://127.0.0.1:9000',help='tigergraph endpoints')
 args = parser.parse_args()
 
 # ================ BEGIN: Variables and Functions from Cypher ========================
@@ -66,18 +66,29 @@ def cast_parameter_to_driver_input(value, type):
         raise ValueError(f"Parameter type {type} not found")
 # ================ END: Variables and Functions from Cypher ========================
 
-def run_query(name, parameters):
-    ENDPOINT = 'http://127.0.0.1:9000/query/ldbc_snb/'
-    HEADERS = {'GSQL-TIMEOUT': '36000000'}
+def run_query(query_num, parameters):
     start = time.time()
-    if name=='bi19': requests.get(ENDPOINT + f'bi19_add_weighted_edges', headers=HEADERS, params=parameters) 
-    response = requests.get(ENDPOINT + name, headers=HEADERS, params=parameters).json()
-    if name=='bi19': requests.get(ENDPOINT + f'bi19_delete_weighted_edges', headers=HEADERS) 
+    response = requests.get(f'{args.endpoint}/query/ldbc_snb/bi{query_num}', 
+        headers={'GSQL-TIMEOUT': '36000000'}, 
+        params=parameters).json()
     end = time.time()
-    duration = end - start
-    return response['results'][0]['result'], duration
+    if response['error']:
+        print(response['message'])
+        return '<>', 0    
+    results, duration = response['results'][0]['result'], end - start
+    if isinstance(results, int):
+        return results, duration
+    
+    #convert results from [dict()] to [[]] 
+    results = [[v for k,v in res.items()] for res in results]
+    #convert results to string
+    mapping = result_mapping[query_num]
+    results = "[" + ";".join([
+        f'<{",".join([convert_value_to_string(result[i], type) for i, type in enumerate(mapping)])}>'
+        for result in results
+    ]) + "]"
+    return results, duration
 
-'''
 res = Path('results')
 res.mkdir(exist_ok = True)
 if args.mode == 'validate':
@@ -86,8 +97,8 @@ elif args.mode == 'benchmark':
     res_file = res / 'results.csv'
 if res_file.exists(): res_file.unlink()
 fout = open(res_file, 'a')
-'''
-for query_variant in ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20"]:
+
+for query_variant in ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "15a", "15b", "16a", "16b", "17", "18", "19a", "19b", "20"]:
     print(f"========================= Q{query_variant} =========================")
     query_num = int(re.sub("[^0-9]", "", query_variant))
     parameters_csv = csv.DictReader(open(f'../parameters/bi-{query_variant}.csv'), delimiter='|')
@@ -97,19 +108,8 @@ for query_variant in ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "
         query_parameters = {k.split(":")[0]: cast_parameter_to_driver_input(v, k.split(":")[1]) for k, v in query_parameters.items()}
         query_parameters_in_order = f'<{";".join([convert_value_to_string(query_parameters[parameter["name"]], parameter["type"]) for parameter in parameters])}>'
         if query_num == 1: query_parameters = {'date': query_parameters['datetime']}
-        results, duration = run_query(f'bi{query_num}', query_parameters)
-        mapping = result_mapping[query_num]
-        if query_num != 11:
-            #convert results from [dict()] to [[]] 
-            results = [[v for k,v in res.items()] for res in results]
-        else:
-            results = [[results]]
-        #convert results to string
-        results = "[" + ";".join([
-            f'<{",".join([convert_value_to_string(result[i], type) for i, type in enumerate(mapping)])}>'
-            for result in results
-        ]) + "]"
-        print(f"{query_num}|{query_variant}|{query_parameters_in_order}|{results}")
-        #fout.write("\n")
-        #fout.flush()
+        results, duration = run_query(query_num, query_parameters)
+        fout.write(f"{query_num}|{query_variant}|{query_parameters_in_order}|{results}\n")
+        fout.flush()
+        break
         
