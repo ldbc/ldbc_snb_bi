@@ -13,13 +13,14 @@ if (query == "all") {
   queries = query
 }
 
-q = "2a"
+q = "2b"
 
 for (q in queries) {
   file = paste0("./data/bi-", q,"-summary.csv")
 
-  df = suppressMessages(read_csv(file = file, col_names = T))
+  df = suppressMessages(read_csv(file = file, col_names = T, delim="|"))
 
+  ?read_csv()
   # discard first 5 results
   df = df[6:nrow(df),] 
   

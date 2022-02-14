@@ -227,7 +227,7 @@ public class Main implements AutoCloseable
                 // create output file
                 var outFileName = "./data/bi-" + query + "-summary.csv";
                 FileWriter csvWriter = new FileWriter( outFileName );
-                csvWriter.append( String.join( ",", "dbHits", "records", "runtime" ) );
+                csvWriter.append( String.join( "|", "dbHits", "records", "runtime", "parameters" ) );
                 csvWriter.append( "\n" );
 
                 int executed = 0;
@@ -266,7 +266,11 @@ public class Main implements AutoCloseable
                     }
 
                     csvWriter.append(
-                            String.join( ",", Long.toString( summary.getHits() ), Long.toString( summary.getRecords() ), Long.toString( timeElapsed ) ) );
+                            String.join( "|",
+                                    Long.toString( summary.getHits() ),
+                                    Long.toString( summary.getRecords() ),
+                                    Long.toString( timeElapsed ),
+                                    params.toString()) );
                     csvWriter.append( "\n" );
                     executed++;
 
