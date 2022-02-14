@@ -10,5 +10,5 @@ FROM
     FROM cityPairsNumFriends
     WHERE country1Id = country2Id
     ORDER BY diff, city1Id, city2Id)
-ORDER BY md5(city1Id + city2Id)
+ORDER BY md5(3532569367*city1Id + 342663089*city2Id)
 LIMIT 400

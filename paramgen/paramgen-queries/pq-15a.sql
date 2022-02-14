@@ -8,5 +8,5 @@ SELECT
         + INTERVAL (-5 + person1Id % 10) DAY
         AS 'endDate:DATE'
 FROM people2Hops
-ORDER BY md5(person1Id + person2Id), md5(person1Id)
+ORDER BY md5(131*person1Id + 241*person2Id), md5(person1Id)
 LIMIT 400
