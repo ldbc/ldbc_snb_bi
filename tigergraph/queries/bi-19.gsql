@@ -1,0 +1,50 @@
+CREATE OR REPLACE DISTRIBUTED QUERY bi19(VERTEX<City> city1Id, VERTEX<City> city2Id) syntax v2 {
+  TYPEDEF TUPLE <UINT person1Id, UINT person2Id, DOUBLE totalWeight> RESULT;
+  HeapAccum<RESULT>(20, totalWeight ASC, person1Id ASC, person2Id ASC) @@result;
+  GroupByAccum<UINT p1, UINT p2, MinAccum<DOUBLE> dist> @@paths;
+  MapAccum<UINT, MinAccum<DOUBLE>> @dist1;  
+  SumAccum<UINT> @creatorId; 
+  OrAccum @next1, @isTarget;
+  DOUBLE threshold;
+  P = {Person.*};
+  threshold = P.size();
+
+  city1 = {city1Id};
+  city2 = {city2Id};
+  S = SELECT p FROM city1:c -(<IS_LOCATED_IN)- Person:p ACCUM p.@dist1 += (p.id->0);
+  S2 = SELECT p FROM city2:c -(<IS_LOCATED_IN)- Person:p ACCUM p.@isTarget += True;
+  
+  WHILE S.size()>0 DO
+    # Expand the know map, we also neglect the distances larger than threshold
+    S = SELECT t FROM S:s-(KNOWS:e)-Person:t 
+      ACCUM
+        FOREACH (p,dis) IN s.@dist1 DO
+          DOUBLE t_dis = dis + e.weight1, 
+          IF t_dis < threshold AND t_dis < t.@dist1.get(p) THEN
+            t.@dist1 += (p -> t_dis),
+            t.@next1 += true, 
+            IF t.@isTarget THEN
+              @@paths += (p, t.id->t_dis)
+            END 
+          END
+        END
+      HAVING t.@next1;
+    S = SELECT s FROM S:s ACCUM s.@next1 = false;
+
+    # Update the threshold
+    IF S.size()>0 AND @@paths.size() >= 20 THEN
+      @@result.clear();
+      FOREACH (p1,p2,dist) IN @@paths DO
+        @@result += RESULT(p1,p2,dist);
+      END;
+      FOREACH i IN RANGE[0, 19] DO
+        threshold = @@result.pop().totalWeight;
+      END; 
+    END;
+    #PRINT S.size();
+  END; # WHILE (S1.size()>0 OR S2.size()>0)
+  FOREACH (p1,p2,dist) IN @@paths DO
+    @@result += RESULT(p1,p2,dist);
+  END;
+  PRINT @@result as result;
+}

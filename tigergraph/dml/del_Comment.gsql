@@ -1,0 +1,8 @@
+CREATE OR REPLACE QUERY del_Comment(STRING file, BOOL header) syntax v2 {
+  SetAccum<VERTEX<Comment>> @@comments;
+  @@comments = { LoadAccum(file, $1, "|", header)}; 
+  comments = {@@comments};
+  replies = SELECT c FROM comments -(<REPLY_OF*)- Comment:c;
+  DELETE r FROM replies:r;
+  print replies.size() as result;
+}

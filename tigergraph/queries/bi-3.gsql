@@ -1,0 +1,24 @@
+CREATE OR REPLACE DISTRIBUTED QUERY bi3(STRING tagClass, STRING country) SYNTAX v2 {
+  TYPEDEF TUPLE <UINT forumId, STRING forumTitle, DATETIME forumCreationDate, UINT personId, UINT messageCount> RESULT;
+  HeapAccum<RESULT>(20, messageCount DESC, forumId ASC) @@result;
+  SumAccum<UINT> @messageCount;
+  MinAccum<UINT> @personId;
+  OrAccum <BOOL> @selected;
+  forums =
+    SELECT f
+    FROM Country:cn -(<IS_PART_OF.<IS_LOCATED_IN)- Person:p -(<HAS_MODERATOR)- Forum:f
+    WHERE cn.name == country
+    ACCUM f.@personId = p.id, f.@selected += true;
+  messages =
+    SELECT m
+    FROM TagClass:t -(<HAS_TYPE.<HAS_TAG)- (Comment|Post):m
+    WHERE t.name == tagClass;
+  tmp =
+    SELECT f
+    FROM messages:m -(REPLY_OF>*.<CONTAINER_OF)- Forum:f
+    WHERE f.@selected
+    ACCUM f.@messageCount += 1
+    POST-ACCUM @@result += RESULT(f.id, f.title, f.creationDate, f.@personId, f.@messageCount);
+
+  PRINT @@result as result;
+}
