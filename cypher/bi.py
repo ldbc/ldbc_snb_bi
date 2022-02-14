@@ -101,7 +101,6 @@ result_file = open(f'output/validation_params.csv', 'w')
 
 session = driver.session()
 for query_variant in ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "15a", "15b", "16a", "16b", "17", "18", "19a", "19b", "20"]:
-#for query_variant in ["14a"]:
     print(f"========================= Q{query_variant} =========================")
     query_num = int(re.sub("[^0-9]", "", query_variant))
     query_file = open(f'queries/bi-{query_num}.cypher', 'r')
