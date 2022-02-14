@@ -3,14 +3,14 @@
 :param [{ country, endDate }] => {
   RETURN
     'France' AS country,
-    date('2013-01-01') AS endDate
+    datetime('2013-01-01') AS endDate
 }
 */
 MATCH (country:Country {name: $country})<-[:IS_PART_OF]-(:City)<-[:IS_LOCATED_IN]-(zombie:Person)
-WHERE date(zombie.creationDate) < $endDate
+WHERE zombie.creationDate < $endDate
 WITH country, zombie
 OPTIONAL MATCH (zombie)<-[:HAS_CREATOR]-(message:Message)
-WHERE date(message.creationDate) < $endDate
+WHERE message.creationDate < $endDate
 WITH
   country,
   zombie,
