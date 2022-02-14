@@ -16,7 +16,7 @@ if (query == "all") {
 for (q in queries) {
   file = paste0("./data/bi-", q,"-summary.csv")
 
-  df = suppressMessages(read_csv(file = file, col_names = T, delim="|"))
+  df = suppressMessages(read_delim(file = file, col_names = T, delim="|"))
 
   # discard first 5 results
   df = df[6:nrow(df),] 
