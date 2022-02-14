@@ -3,20 +3,16 @@
 /*
 :param [{ company, person2Id }] => {
   RETURN
-    'Pamir_Airways' AS company,
-    15393162792760 AS person2Id
+    'Falcon_Air' AS company,
+    66 AS person2Id
   }
 */
 MATCH
   (company:Company {name: $company})<-[:WORK_AT]-(person1:Person),
   (person2:Person {id: $person2Id})
-CALL gds.shortestPath.dijkstra.stream({
+CALL gds.shortestPath.dijkstra.stream('bi20', {
   sourceNode: person1,
   targetNode: person2,
-  nodeQuery: 'MATCH (p:Person) RETURN id(p) AS id',
-  relationshipQuery:
-      'MATCH (personA:Person)-[knows:KNOWS]-(personB:Person)
-       RETURN id(personA) AS source, id(personB) AS target, knows.q20weight AS weight',
   relationshipWeightProperty: 'weight'
 })
 YIELD totalCost

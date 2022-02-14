@@ -3,8 +3,8 @@
 /*
 :param [{ company, person2Id }] => {
   RETURN
-    'Pamir_Airways' AS company,
-    15393162792760 AS person2Id
+    'Falcon_Air' AS company,
+    66 AS person2Id
   }
 */
 MATCH
@@ -19,7 +19,7 @@ CALL gds.shortestPath.dijkstra.stream({
      RETURN
        id(personA) AS source,
        id(personB) AS target,
-       abs(saA.classYear - saB.classYear) + 1 AS weight',
+       min(abs(saA.classYear - saB.classYear)) + 1 AS weight',
   sourceNode: person1,
   targetNode: person2,
   relationshipWeightProperty: 'weight'

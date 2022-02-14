@@ -101,13 +101,13 @@ def run_query(session, query_num, query_id, query_spec, query_parameters):
 driver = GraphDatabase.driver("bolt://localhost:7687")
 session = driver.session()
 
-print("Precomputing weights for Q19")
-q19_weights = open(f'queries/bi-19-weights.cypher', 'r').read()
-results = session.write_transaction(write_query_fun, q19_weights)
+print("Creating graph (precomputing weights) for Q19")
+session.write_transaction(write_query_fun, open(f'queries/bi-19-drop-graph.cypher', 'r').read())
+session.write_transaction(write_query_fun, open(f'queries/bi-19-create-graph.cypher', 'r').read())
 
-print("Precomputing weights for Q20")
-q20_weights = open(f'queries/bi-20-weights.cypher', 'r').read()
-results = session.write_transaction(write_query_fun, q20_weights)
+print("Creating graph (precomputing weights) for Q20")
+session.write_transaction(write_query_fun, open(f'queries/bi-20-drop-graph.cypher', 'r').read())
+session.write_transaction(write_query_fun, open(f'queries/bi-20-create-graph.cypher', 'r').read())
 
 result_file = open(f'output/validation_params.csv', 'w')
 
