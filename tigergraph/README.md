@@ -25,13 +25,14 @@ export TG_DATA_DIR=${LDBC_SNB_DATAGEN_DIR}/out-sf${SF}/csv/bi/composite-projecte
 
 In the default setting, the driver consider the dataset does not have headers. If the data has header, set `export TG_HEADER=true`.
 
-Start TigerGraph docker container. For data larger than 50G, you need a license. If you work on a cluster, you can install TigerGraph manually and skip this step.
-```
+Start TigerGraph Docker container. For data larger than 50G, you need a license. If you work on a cluster, you can install TigerGraph manually and skip this step.
+
+```bash
 scripts/stop-docker.sh #if there is an existing container
 scripts/start-docker.sh
 ```
 
-Load the data, This step may take a while (several minutes), as it is responsible for defining the queries, loading jobs, loading the data, installing (optimizing and compiling on the server) queries and pre-compute the edge weights for BI 19 and 20.
+Load the data. This step may take a while (several minutes), as it is responsible for defining the queries, loading jobs, loading the data, installing (optimizing and compiling on the server) queries and pre-compute the edge weights for BI 19 and 20.
 
 ```bash
 scripts/setup.sh
@@ -40,6 +41,7 @@ scripts/setup.sh
 ## Microbatches
 
 Test loading the microbatches:
+
 ```bash
 scripts/batches.sh
 ```
