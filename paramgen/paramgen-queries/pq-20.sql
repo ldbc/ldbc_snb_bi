@@ -17,5 +17,5 @@ WHERE NOT EXISTS (
         WHERE aj.companyId = comp.companyId
           AND aj.person2Id = pers2.person2Id
     )
-ORDER BY md5(comp.companyId + pers2.person2Id)
+ORDER BY md5(3532569367*comp.companyId + 211*pers2.person2Id)
 LIMIT 400
