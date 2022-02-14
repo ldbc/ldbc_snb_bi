@@ -13,11 +13,16 @@ if (query == "all") {
   queries = query
 }
 
+q = "2a"
+
 for (q in queries) {
   file = paste0("./data/bi-", q,"-summary.csv")
 
   df = suppressMessages(read_csv(file = file, col_names = T))
 
+  # discard first 5 results
+  df = df[6:nrow(df),] 
+  
   # histogram
   p1 = ggplot(df, aes(x=dbHits)) +
     geom_histogram(color="black", fill="white",bins=30) +
