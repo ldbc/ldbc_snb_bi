@@ -52,4 +52,4 @@ To run and validate the queries
 scripts/validate.sh
 ```
 
-results are written to `results/validation_param.csv`.
+results are written to `results/validation_params.csv`.
