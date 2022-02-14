@@ -11,3 +11,4 @@ FROM (
     ORDER BY diff, country1Name, country2Name
     LIMIT 50
 )
+ORDER BY md5(concat(country1Name, country2Name))
