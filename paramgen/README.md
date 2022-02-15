@@ -1,4 +1,8 @@
-# paramgen
+# Parameter generation
+
+The paramgen implements [parameter curation](https://research.vu.nl/en/publications/parameter-curation-for-benchmark-queries) to ensure predictable performance results that (mostly) correspond to a normal distribution.
+
+## Getting started
 
 1. Install dependencies:
 
@@ -15,7 +19,7 @@
     tools/run.py --cores 4 --memory 8G target/ldbc_snb_datagen_2.12_spark3.1-0.5.0-SNAPSHOT.jar -- --format csv --scale-factor ${SF} --explode-edges --mode bi --output-dir out-sf${SF}/ --generate-factors --format-options header=false,quoteAll=true
     ```
 
-1. Move the factor directories from `out-sf${SF}/factors/csv/raw/composite-merged-fk/` (`cityPairsNumFriends/`, `personDisjointEmployerPairs/` etc.) to the `factors/` directory in this directory.
+1. Move the factor directories from `out-sf${SF}/factors/csv/raw/composite-merged-fk/` (`cityPairsNumFriends/`, `personDisjointEmployerPairs/`, etc.) to the `factors/` directory in this directory. If your `${LDBC_SNB_DATAGEN_DIR}` and `${SF}` environment variables are set, simply run:
 
     ```bash
     mv ${LDBC_SNB_DATAGEN_DIR}/out-sf${SF}/factors/csv/raw/composite-merged-fk/* factors/

@@ -76,7 +76,7 @@ def cast_parameter_to_driver_input(value, type):
     else:
         raise ValueError(f"Parameter type {type} not found")
 
-def query_fun(tx, query_num, query_spec, query_parameters):
+def read_query_fun(tx, query_num, query_spec, query_parameters):
     results = tx.run(query_spec, query_parameters)
     mapping = result_mapping[query_num]
     result_tuples = "[" + ";".join([
@@ -85,10 +85,13 @@ def query_fun(tx, query_num, query_spec, query_parameters):
         ]) + "]"
     return result_tuples
 
+def write_query_fun(tx, query_spec):
+    tx.run(query_spec, {})
+
 def run_query(session, query_num, query_id, query_spec, query_parameters):
     print(f'Q{query_id}: {query_parameters}')
     start = time.time()
-    results = session.read_transaction(query_fun, query_num, query_spec, query_parameters)
+    results = session.write_transaction(read_query_fun, query_num, query_spec, query_parameters)
     end = time.time()
     duration = end - start
     #print("Q{}: {:.4f} seconds, {} tuples".format(query_id, duration, results[0]))
@@ -96,10 +99,18 @@ def run_query(session, query_num, query_id, query_spec, query_parameters):
 
 
 driver = GraphDatabase.driver("bolt://localhost:7687")
+session = driver.session()
+
+print("Creating graph (precomputing weights) for Q19")
+session.write_transaction(write_query_fun, open(f'queries/bi-19-drop-graph.cypher', 'r').read())
+session.write_transaction(write_query_fun, open(f'queries/bi-19-create-graph.cypher', 'r').read())
+
+print("Creating graph (precomputing weights) for Q20")
+session.write_transaction(write_query_fun, open(f'queries/bi-20-drop-graph.cypher', 'r').read())
+session.write_transaction(write_query_fun, open(f'queries/bi-20-create-graph.cypher', 'r').read())
 
 result_file = open(f'output/validation_params.csv', 'w')
 
-session = driver.session()
 for query_variant in ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "15a", "15b", "16a", "16b", "17", "18", "19a", "19b", "20"]:
     print(f"========================= Q{query_variant} =========================")
     query_num = int(re.sub("[^0-9]", "", query_variant))

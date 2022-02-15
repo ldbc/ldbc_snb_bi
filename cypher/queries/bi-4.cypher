@@ -6,22 +6,38 @@ MATCH (country:Country)<-[:IS_PART_OF]-(:City)<-[:IS_LOCATED_IN]-(person:Person)
 WHERE forum.creationDate > $date
 WITH country, forum, count(person) AS numberOfMembers
 ORDER BY numberOfMembers DESC, forum.id ASC, country.id
-WITH DISTINCT forum, max(numberOfMembers) AS maxNumberOfMembers
+WITH DISTINCT forum
 LIMIT 100
-WITH collect(forum) AS popularForums
-UNWIND popularForums AS forum
+SET forum:PopularForum
+
+WITH count(*) AS dummy
+
 MATCH
-  (forum)-[:HAS_MEMBER]->(person:Person)
+  (forum:PopularForum)-[:HAS_MEMBER]->(person:Person)
 OPTIONAL MATCH
-  (person)<-[:HAS_CREATOR]-(message:Message)-[:REPLY_OF*0..]->(post:Post)<-[:CONTAINER_OF]-(popularForum:Forum)
-WHERE popularForum IN popularForums
-RETURN
-  person.id,
-  person.firstName,
-  person.lastName,
-  person.creationDate,
+  (person)<-[:HAS_CREATOR]-(message:Message)-[:REPLY_OF*0..]->(post:Post)<-[:CONTAINER_OF]-(popularForum:PopularForum)
+WITH
+  person.id AS personId,
+  person.firstName AS personFirstName,
+  person.lastName AS personLastName,
+  person.creationDate AS personCreationDate,
   count(DISTINCT message) AS messageCount
 ORDER BY
   messageCount DESC,
   person.id ASC
 LIMIT 100
+
+WITH collect({ personId: personId, personFirstName: personFirstName, personLastName: personLastName, personCreationDate: personCreationDate, messageCount: messageCount }) AS results
+
+MATCH (forum:PopularForum)
+REMOVE forum:PopularForum
+
+WITH results
+
+UNWIND results AS r
+RETURN
+  r.personId AS personId,
+  r.personFirstName AS personFirstName,
+  r.personLastName AS personLastName,
+  r.personCreationDate AS personCreationDate,
+  r.messageCount AS messageCount

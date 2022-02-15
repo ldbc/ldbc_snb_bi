@@ -10,7 +10,16 @@
 MATCH
   (person1:Person)-[:IS_LOCATED_IN]->(city1:City {id: $city1Id}),
   (person2:Person)-[:IS_LOCATED_IN]->(city2:City {id: $city2Id})
-CALL gds.shortestPath.dijkstra.stream('bi19', {
+CALL gds.shortestPath.dijkstra.stream({
+  nodeQuery: 'MATCH (p:Person) RETURN id(p) AS id',
+  relationshipQuery:
+    'MATCH
+       (personA:Person)-[:KNOWS]-(personB:Person),
+       (personA)<-[:HAS_CREATOR]-(:Message)-[replyOf:REPLY_OF]-(:Message)-[:HAS_CREATOR]->(personB)
+     RETURN
+       id(personA) AS source,
+       id(personB) AS target,
+       1.0/count(replyOf) AS weight',
   sourceNode: person1,
   targetNode: person2,
   relationshipWeightProperty: 'weight'
