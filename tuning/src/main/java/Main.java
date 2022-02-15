@@ -107,7 +107,7 @@ public class Main implements AutoCloseable
         var actual = Files.readString( fileName );
         var split = Arrays.asList( actual.split( "\\*/", 2 ) );
 
-        var nonParallelRuntime = new HashSet<>( Arrays.asList( "2", "4", "10", "13", "16", "17", "18", "19", "20" ) );
+        var nonParallelRuntime = new HashSet<>( Arrays.asList( "2", "4", "10", "13", "15a", "15b", "16", "17", "18", "19", "20" ) );
 
         String result;
         if ( nonParallelRuntime.contains( queryNum ) )
