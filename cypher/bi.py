@@ -91,7 +91,7 @@ def write_query_fun(tx, query_spec):
 def run_query(session, query_num, query_id, query_spec, query_parameters):
     print(f'Q{query_id}: {query_parameters}')
     start = time.time()
-    results = session.read_transaction(read_query_fun, query_num, query_spec, query_parameters)
+    results = session.write_transaction(read_query_fun, query_num, query_spec, query_parameters)
     end = time.time()
     duration = end - start
     #print("Q{}: {:.4f} seconds, {} tuples".format(query_id, duration, results[0]))
