@@ -1,3 +1,12 @@
+// Q15. Weighted interaction paths
+/*
+:param [{ person1Id, person2Id, startDate, endDate }] => { RETURN
+    21990232564808 AS person1Id,
+    26388279076936 AS person2Id,
+    datetime('2010-11-01') AS startDate,
+    datetime('2010-12-01') AS endDate
+}
+*/
 MATCH path=allShortestPaths((p1:Person {id: $person1Id})-[:KNOWS*]-(p2:Person {id: $person2Id}))
 WITH relationships(path) AS edges
 // use 'KNOWS' edges both ways to cover both directions in cases 1 and 2
