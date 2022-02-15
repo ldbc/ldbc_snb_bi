@@ -27,3 +27,4 @@ tuning/data/*
 *.Rhistory
 tuning/scripts/server.sh
 tuning/scripts/get-plots.sh
+.Rproj.user
