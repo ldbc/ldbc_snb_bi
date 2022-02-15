@@ -22,7 +22,7 @@ The paramgen implements [parameter curation](https://research.vu.nl/en/publicati
 1. Move the factor directories from `out-sf${SF}/factors/csv/raw/composite-merged-fk/` (`cityPairsNumFriends/`, `personDisjointEmployerPairs/`, etc.) to the `factors/` directory in this directory. If your `${LDBC_SNB_DATAGEN_DIR}` and `${SF}` environment variables are set, simply run:
 
     ```bash
-    mv ${LDBC_SNB_DATAGEN_DIR}/out-sf${SF}/factors/csv/raw/composite-merged-fk/* factors/
+    cp -r ${LDBC_SNB_DATAGEN_DIR}/out-sf${SF}/factors/csv/raw/composite-merged-fk/* factors/
     ```
 
 1. Run:
