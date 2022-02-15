@@ -11,16 +11,12 @@ LIMIT 100
 SET forum:PopularForum
 
 WITH count(*) AS dummy
-UNWIND [] AS x
-RETURN NULL AS personId, NULL AS personFirstName, NULL AS personLastName, NULL AS personCreationDate, NULL AS messageCount
-
-  UNION ALL
 
 MATCH
   (forum:PopularForum)-[:HAS_MEMBER]->(person:Person)
 OPTIONAL MATCH
   (person)<-[:HAS_CREATOR]-(message:Message)-[:REPLY_OF*0..]->(post:Post)<-[:CONTAINER_OF]-(popularForum:PopularForum)
-RETURN
+WITH
   person.id AS personId,
   person.firstName AS personFirstName,
   person.lastName AS personLastName,
@@ -31,11 +27,17 @@ ORDER BY
   person.id ASC
 LIMIT 100
 
-  UNION ALL
+WITH collect({ personId: personId, personFirstName: personFirstName, personLastName: personLastName, personCreationDate: personCreationDate, messageCount: messageCount }) AS results
 
 MATCH (forum:PopularForum)
 REMOVE forum:PopularForum
 
-WITH count(*) AS dummy
-UNWIND [] AS x
-RETURN NULL AS personId, NULL AS personFirstName, NULL AS personLastName, NULL AS personCreationDate, NULL AS messageCount
+WITH results
+
+UNWIND results AS r
+RETURN
+  r.personId AS personId,
+  r.personFirstName AS personFirstName,
+  r.personLastName AS personLastName,
+  r.personCreationDate AS personCreationDate,
+  r.messageCount AS messageCount
