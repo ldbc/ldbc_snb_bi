@@ -13,6 +13,10 @@ To generate data that confirms this requirement, run Datagen with the `--explode
 In Datagen's directory (`ldbc_snb_datagen_spark`), issue the following commands:
 
 ```bash
+export SF=desired_scale_factor
+```
+
+```bash
 rm -rf out-sf${SF}/
 export SF=1
 tools/build.sh
@@ -64,7 +68,13 @@ For example, the `${NEO4J_CSV_DIR}/deletes/dynamic/Post/batch_id=2012-09-13/part
 To run the queries, issue:
 
 ```bash
-scripts/bi.sh
+scripts/bi.sh ${SF}
+```
+
+For a test run, use:
+
+```bash
+scripts/bi.sh ${SF} --test
 ```
 
 ## Working with the database

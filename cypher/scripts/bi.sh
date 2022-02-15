@@ -8,4 +8,4 @@ cd ..
 
 . scripts/vars.sh
 
-python3 bi.py
+python3 bi.py $@

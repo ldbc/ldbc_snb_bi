@@ -1,9 +1,10 @@
 from neo4j import GraphDatabase
-from neo4j.time import DateTime, Date
+
 import datetime
 import time
 import csv
 import re
+import sys
 
 # TODO: provide two modes of operation: validation and benchmark
 # validation CSV header: Query ID|Query variant|Parameters|Results
@@ -89,14 +90,24 @@ def write_query_fun(tx, query_spec):
     tx.run(query_spec, {})
 
 def run_query(session, query_num, query_id, query_spec, query_parameters):
-    print(f'Q{query_id}: {query_parameters}')
+    #print(f'Q{query_id}: {query_parameters}')
     start = time.time()
     results = session.write_transaction(read_query_fun, query_num, query_spec, query_parameters)
     end = time.time()
     duration = end - start
     #print("Q{}: {:.4f} seconds, {} tuples".format(query_id, duration, results[0]))
-    return results
+    return (results, duration)
 
+
+if len(sys.argv) < 2:
+    print("Usage: bi.py <sf> [--test]")
+
+sf = sys.argv[1]
+
+test = False
+if len(sys.argv) > 2:
+    if sys.argv[2] == "--test":
+        test = True
 
 driver = GraphDatabase.driver("bolt://localhost:7687")
 session = driver.session()
@@ -109,26 +120,41 @@ print("Creating graph (precomputing weights) for Q20")
 session.write_transaction(write_query_fun, open(f'queries/bi-20-drop-graph.cypher', 'r').read())
 session.write_transaction(write_query_fun, open(f'queries/bi-20-create-graph.cypher', 'r').read())
 
-result_file = open(f'output/validation_params.csv', 'w')
+results_file = open(f'output/results.csv', 'w')
+timings_file = open(f'output/timings.csv', 'w')
+timings_file.write(f"sf|q|time\n")
 
 for query_variant in ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "15a", "15b", "16a", "16b", "17", "18", "19a", "19b", "20"]:
-    print(f"========================= Q{query_variant} =========================")
     query_num = int(re.sub("[^0-9]", "", query_variant))
+    query_subvariant = re.sub("[^ab]", "", query_variant)
+
+    print(f"========================= Q {query_num:02d}{query_subvariant.rjust(1)} =========================")
+
     query_file = open(f'queries/bi-{query_num}.cypher', 'r')
     query_spec = query_file.read()
 
     parameters_csv = csv.DictReader(open(f'../parameters/bi-{query_variant}.csv'), delimiter='|')
     parameters = [{"name": t[0], "type": t[1]} for t in [f.split(":") for f in parameters_csv.fieldnames]]
 
+    i = 0
     for query_parameters in parameters_csv:
+        i = i + 1
         query_parameters = {k.split(":")[0]: cast_parameter_to_driver_input(v, k.split(":")[1]) for k, v in query_parameters.items()}
         query_parameters_in_order = f'<{";".join([convert_value_to_string(query_parameters[parameter["name"]], parameter["type"], True) for parameter in parameters])}>'
 
-        results = run_query(session, query_num, query_variant, query_spec, query_parameters)
-        print(f"{query_num}|{query_variant}|{query_parameters_in_order}|{results}")
-        break
+        (results, duration) = run_query(session, query_num, query_variant, query_spec, query_parameters)
+
+        timings_file.write(f"{sf}|{query_variant}|{duration}\n")
+        results_file.write(f"{query_num}|{query_variant}|{query_parameters_in_order}|{results}\n")
+
+        # test run: 1 query, regular run: 10 queries
+        if test or i == 10:
+            break
 
     query_file.close()
+
+results_file.close()
+timings_file.close()
 
 session.close()
 driver.close()

@@ -86,11 +86,11 @@ jobs:
           command: |
             export NEO4J_CSV_DIR=`pwd`/test-data/social-network-sf0.003-bi-composite-projected-fk-neo4j/graphs/csv/bi/composite-projected-fk/
             cypher/scripts/restore-database.sh
-            cypher/scripts/bi.sh
+            cypher/scripts/bi.sh 0.003 --test
       - run:
           name: Test Postgres BI script
           command: |
             export POSTGRES_CSV_DIR=`pwd`/test-data/social-network-sf0.003-bi-composite-merged-fk/graphs/csv/bi/composite-merged-fk/
             postgres/scripts/restore-database.sh
-            postgres/scripts/bi.sh
+            postgres/scripts/bi.sh --test
       - slack/status
