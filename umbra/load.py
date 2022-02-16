@@ -17,7 +17,7 @@ if len(sys.argv) < 2:
     exit(1)
 
 data_dir = sys.argv[1]
-compressed = len(sys.argv) == 3 and sys.argv[2] == "--compressed"
+local = len(sys.argv) == 3 and sys.argv[2] == "--local"
 
 pg_con = psycopg2.connect(host="localhost", user="postgres", password="mysecretpassword", port=5432)
 con = pg_con.cursor()
@@ -46,13 +46,18 @@ dynamic_path = f"{data_dir}/initial_snapshot/dynamic"
 static_entities = ["Organisation", "Place", "Tag", "TagClass"]
 dynamic_entities = ["Comment", "Comment_hasTag_Tag", "Forum", "Forum_hasMember_Person", "Forum_hasTag_Tag", "Person", "Person_hasInterest_Tag", "Person_knows_Person", "Person_likes_Comment", "Person_likes_Post", "Person_studyAt_University", "Person_workAt_Company", "Post", "Post_hasTag_Tag"]
 
+if local:
+    dbs_data_dir = data_dir
+else:
+    dbs_data_dir = '/data'
+
 print("## Static entities")
 
 for entity in static_entities:
     for csv_file in [f for f in os.listdir(f"{static_path}/{entity}") if f.endswith(".csv")]:
         csv_path = f"{static_path}/{entity}/{csv_file}"
         print(f"- {csv_path}")
-        con.execute(f"COPY {entity} FROM '/data/initial_snapshot/static/{entity}/{csv_file}' (DELIMITER '|', HEADER, FORMAT csv)")
+        con.execute(f"COPY {entity} FROM '{dbs_data_dir}/initial_snapshot/static/{entity}/{csv_file}' (DELIMITER '|', HEADER, FORMAT csv)")
         pg_con.commit()
 
 print("## Dynamic entities")
@@ -61,7 +66,7 @@ for entity in dynamic_entities:
     for csv_file in [f for f in os.listdir(f"{dynamic_path}/{entity}") if f.endswith(".csv")]:
         csv_path = f"{dynamic_path}/{entity}/{csv_file}"
         print(f"- {csv_path}")
-        con.execute(f"COPY {entity} FROM '/data/initial_snapshot/dynamic/{entity}/{csv_file}' (DELIMITER '|', HEADER, FORMAT csv)")
+        con.execute(f"COPY {entity} FROM '{dbs_data_dir}/initial_snapshot/dynamic/{entity}/{csv_file}' (DELIMITER '|', HEADER, FORMAT csv)")
         pg_con.commit()
 
 run_script(con, "ddl/constraints.sql")
