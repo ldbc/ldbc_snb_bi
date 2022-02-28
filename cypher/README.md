@@ -8,9 +8,9 @@ Note that some BI queries are not expressed (efficiently) in Cypher so they make
 The Neo4j implementation expects the data to be in `composite-projected-fk` CSV layout, without headers and with quoted fields.
 To generate data that confirms this requirement, run Datagen with the `--explode-edges` and the `--format-options header=false,quoteAll=true` options.
 
-(Rationale: Files should not have headers as these are provided separately (in the `headers/` directory) and quoting the fields in the CSV is required to [preserve trailing spaces](https://neo4j.com/docs/operations-manual/4.3/tools/neo4j-admin-import/#import-tool-header-format).)
+(Rationale: Files should not have headers as these are provided separately in the `headers/` directory and quoting the fields in the CSV is required to [preserve trailing spaces](https://neo4j.com/docs/operations-manual/4.3/tools/neo4j-admin-import/#import-tool-header-format).)
 
-In Datagen's directory (`ldbc_snb_datagen_spark`), issue the following commands:
+In Datagen's directory (`ldbc_snb_datagen_spark`), issue the following commands. We assume that the Datagen project is built and the `${PLATFORM_VERSION}`, `${DATAGEN_VERSION}` environment variables are set correctly.
 
 ```bash
 export SF=desired_scale_factor
@@ -18,9 +18,18 @@ export SF=desired_scale_factor
 
 ```bash
 rm -rf out-sf${SF}/
-export SF=1
-tools/build.sh
-tools/run.py --cores 4 --memory 8G target/ldbc_snb_datagen_2.12_spark3.1-0.5.0-SNAPSHOT.jar -- --format csv --scale-factor ${SF} --explode-edges --mode bi --output-dir out-sf${SF}/ --generate-factors --format-options header=false,quoteAll=true
+tools/run.py \
+    --cores 4 \
+    --memory 8G \
+    ./target/ldbc_snb_datagen_${PLATFORM_VERSION}-${DATAGEN_VERSION}.jar -- \
+    -- \
+    --format csv \
+    --scale-factor ${SF} \
+    --explode-edges \
+    --mode bi \
+    --output-dir out-sf${SF}/ \
+    --generate-factors \
+    --format-options header=false,quoteAll=true
 ```
 
 ## Loading the data

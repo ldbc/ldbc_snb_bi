@@ -4,28 +4,45 @@
 
 ## Generating the data set
 
-The TigerGraph implementation expects the data to be in `composite-projected-fk` CSV layout, without headers and with quoted fields.
-To generate data that confirms this requirement, run Datagen with the `--explode-edges` and the `--format-options header=false,quoteAll=true` options. Both data with headers and without headers are supported. 
+The TigerGraph implementation expects the data to be in `composite-projected-fk` CSV layout. To generate data that confirms this requirement, run Datagen with the `--explode-edges` option. Both data with headers and without headers (`--format-options header=false`) are supported.
 
-In Datagen's directory (`ldbc_snb_datagen_spark`), issue the following commands:
+In Datagen's directory (`ldbc_snb_datagen_spark`), issue the following commands. We assume that the Datagen project is built and the `${PLATFORM_VERSION}`, `${DATAGEN_VERSION}` environment variables are set correctly.
+
+```bash
+export SF=desired_scale_factor
+```
 
 ```bash
 rm -rf out-sf${SF}/
-export SF=1
-tools/build.sh
-tools/run.py --cores 4 --memory 8G target/ldbc_snb_datagen_2.12_spark3.1-0.5.0-SNAPSHOT.jar -- --format csv --scale-factor ${SF} --explode-edges --mode bi --output-dir out-sf${SF}/ --generate-factors --format-options header=false
+tools/run.py \
+    --cores 4 \
+    --memory 8G \
+    ./target/ldbc_snb_datagen_${PLATFORM_VERSION}-${DATAGEN_VERSION}.jar -- \
+    -- \
+    --format csv \
+    --scale-factor ${SF} \
+    --explode-edges \
+    --mode bi \
+    --output-dir out-sf${SF}/ \
+    --generate-factors \
+    --format-options header=false
 ```
 
 ## Loading the data
 
-Set the `$TG_DATA_DIR` environment variable.
+Set the `${TG_DATA_DIR}` environment variable.
+
 ```bash
 export TG_DATA_DIR=${LDBC_SNB_DATAGEN_DIR}/out-sf${SF}/csv/bi/composite-projected-fk/
 ```
 
-In the default setting, the driver consider the dataset does not have headers. If the data has header, set `export TG_HEADER=true`.
+In the default setting, the driver consider the dataset does not have headers. **If your CSVs have headers,** set:
 
-Start TigerGraph Docker container. For data larger than 50G, you need a license. If you work on a cluster, you can install TigerGraph manually and skip this step.
+```bash
+export TG_HEADER=true
+```
+
+Start the TigerGraph Docker container. For data larger than 50G, you need a license. If you work on a cluster, you can install TigerGraph manually and skip this step.
 
 ```bash
 scripts/stop-docker.sh #if there is an existing container
@@ -48,10 +65,10 @@ scripts/batches.sh
 
 ## Queries
 
-To run and validate the queries
+To run and validate the queries.
 
 ```bash
 scripts/validate.sh
 ```
 
-results are written to `results/validation_params.csv`.
+Results are written to `results/validation_params.csv`.

@@ -13,7 +13,7 @@ scripts/build-container.sh
 
 ### Loading the data set
 
-Umbra uses the same format as [Postgres](../postgres/README.md#generating-the-data-set), however, it currently does not support loading from compressed files (`.csv.gz`).
+Umbra uses the same format as [Postgres](../postgres/README.md#generating-the-data-set), however, it does not support directly loading from compressed files (`.csv.gz`).
 
 1. Set the `${UMBRA_CSV_DIR}` environment variable to point to the data set, e.g.:
 
