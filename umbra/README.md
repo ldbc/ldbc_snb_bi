@@ -4,7 +4,7 @@
 
 ## Building the container
 
-Set the `UMBRA_URL` environment variable and build the container:
+Set the `${UMBRA_URL}` environment variable and build the container:
 
 ```bash
 export UMBRA_URL=
@@ -18,7 +18,7 @@ Umbra uses the same format as [Postgres](../postgres/README.md#generating-the-da
 1. Set the `${UMBRA_CSV_DIR}` environment variable to point to the data set, e.g.:
 
     ```bash
-    export UMBRA_CSV_DIR=${DATAGEN_DIRECTORY}/out-sf${SF}/graphs/csv/bi/composite-merged-fk/
+    export UMBRA_CSV_DIR=${LDBC_SNB_DATAGEN_DIRECTORY}/out-sf${SF}/graphs/csv/bi/composite-merged-fk/
     ```
 
     To download and use the sample data set, run:
