@@ -6,8 +6,8 @@
     30786325588624 AS personId,
     'China' AS country,
     'MusicalArtist' AS tagClass,
-    2 AS minPathDistance,
-    3 AS maxPathDistance
+    3 AS minPathDistance,
+    4 AS maxPathDistance
 }
 */
 MATCH (startPerson:Person {id: $personId})
