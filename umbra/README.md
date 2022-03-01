@@ -18,10 +18,10 @@ Umbra uses the same format as [Postgres](../postgres/README.md#generating-the-da
 1. Set the `${UMBRA_CSV_DIR}` environment variable to point to the data set, e.g.:
 
     ```bash
-    export UMBRA_CSV_DIR=
+    export UMBRA_CSV_DIR=${DATAGEN_DIRECTORY}/out-sf${SF}/graphs/csv/bi/composite-merged-fk/
     ```
 
-    To use the test data set, run:
+    To download and use the sample data set, run:
 
     ```bash
     wget -q https://ldbcouncil.org/ldbc_snb_datagen_spark/social-network-sf0.003-bi-composite-merged-fk.zip

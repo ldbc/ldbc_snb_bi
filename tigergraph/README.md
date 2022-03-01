@@ -36,7 +36,15 @@ Set the `${TG_DATA_DIR}` environment variable.
 export TG_DATA_DIR=${LDBC_SNB_DATAGEN_DIR}/out-sf${SF}/csv/bi/composite-projected-fk/
 ```
 
-In the default setting, the driver consider the dataset does not have headers. **If your CSVs have headers,** set:
+To download and use the sample data set, run:
+
+```bash
+wget -q https://ldbcouncil.org/ldbc_snb_datagen_spark/social-network-sf0.003-bi-composite-projected-fk.zip
+unzip -q social-network-sf0.003-bi-composite-projected-fk.zip
+export TG_DATA_DIR=`pwd`/social-network-sf0.003-bi-composite-projected-fk/graphs/csv/bi/composite-projected-fk/
+```
+
+In the default setting, the driver assumes that the CSV files do not have headers. **If your CSVs have headers,** set:
 
 ```bash
 export TG_HEADER=true
