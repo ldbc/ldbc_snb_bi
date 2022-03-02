@@ -13,7 +13,7 @@ print("Running Postgres / psycopg2")
 print("Datagen / load initial data set using SQL")
 
 if len(sys.argv) < 2:
-    print("Usage: load.py <POSTGRES_DATA_DIRECTORY> [--compressed]")
+    print("Usage: load.py <POSTGRES_DATA_DIR> [--compressed]")
     exit(1)
 
 data_dir = sys.argv[1]

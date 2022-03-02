@@ -17,7 +17,7 @@ def run_script(con, filename):
 print("Datagen / apply batches using SQL")
 
 if len(sys.argv) < 2:
-    print("Usage: batches.py <POSTGRES_DATA_DIRECTORY> [--compressed]")
+    print("Usage: batches.py <UMBRA_DATA_DIR> [--compressed]")
     exit(1)
 
 data_dir = sys.argv[1]
