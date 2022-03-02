@@ -132,8 +132,8 @@ WHERE Post_Delete_candidates.id = Post.id
 ;
 
 DELETE FROM Person_likes_Post
-USING Person_likes_Post_Delete_candidates
-WHERE Person_likes_Post_Delete_candidates.trg = Person_likes_Post.PostId
+USING Post_Delete_candidates
+WHERE Post_Delete_candidates.id = Person_likes_Post.PostId
 ;
 
 DELETE FROM Post_hasTag_Tag
