@@ -8,8 +8,6 @@ cd ..
 
 . scripts/vars.sh
 
-scripts/stop.sh
-
 mkdir -p ${UMBRA_DATABASE_DIR}/
 
 echo -n "Starting container . . . "

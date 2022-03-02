@@ -8,6 +8,7 @@ cd ..
 
 . scripts/vars.sh
 
+scripts/stop.sh
 scripts/start-container.sh
 scripts/start-db.sh
 scripts/load.sh

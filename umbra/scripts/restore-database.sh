@@ -8,6 +8,9 @@ cd ..
 
 . scripts/vars.sh
 
+# trigger sudo right away
+sudo echo > /dev/null
+
 scripts/stop.sh
 sudo rm -rf scratch/db
 sudo cp -r scratch/backup/ scratch/db/
