@@ -34,7 +34,7 @@ tools/run.py \
 
 ## Loading the data
 
-Set the `${NEO4J_CSV_DIR}` environment variable.
+Set the `${NEO4J_CSV_DIR}` environment variable. E.g., assuming that your `${LDBC_SNB_DATAGEN_DIR}` and `${SF}` environment variables are set, run:
 
 ```bash
 export NEO4J_CSV_DIR=${LDBC_SNB_DATAGEN_DIR}/out-sf${SF}/graphs/csv/bi/composite-projected-fk/

@@ -15,10 +15,10 @@ scripts/build-container.sh
 
 Umbra uses the same format as [Postgres](../postgres/README.md#generating-the-data-set), however, it does not support directly loading from compressed files (`.csv.gz`).
 
-1. Set the `${UMBRA_CSV_DIR}` environment variable to point to the data set, e.g.:
+1. Set the `${UMBRA_CSV_DIR}` environment variable to point to the data set. E.g., assuming that your `${LDBC_SNB_DATAGEN_DIR}` and `${SF}` environment variables are set, run:
 
     ```bash
-    export UMBRA_CSV_DIR=${LDBC_SNB_DATAGEN_DIRECTORY}/out-sf${SF}/graphs/csv/bi/composite-merged-fk/
+    export UMBRA_CSV_DIR=${LDBC_SNB_DATAGEN_DIR}/out-sf${SF}/graphs/csv/bi/composite-merged-fk/
     ```
 
     To download and use the sample data set, run:

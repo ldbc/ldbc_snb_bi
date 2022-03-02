@@ -29,10 +29,10 @@ tools/run.py \
 
 ## Loading the data
 
-Set the `${POSTGRES_CSV_DIR}` environment variable.
+Set the `${POSTGRES_CSV_DIR}` environment variable. E.g., assuming that your `${LDBC_SNB_DATAGEN_DIR}` and `${SF}` environment variables are set, run:
 
 ```bash
-export POSTGRES_CSV_DIR=${LDBC_SNB_DATAGEN_DIRECTORY}/out-sf${SF}/graphs/csv/bi/composite-merged-fk/
+export POSTGRES_CSV_DIR=${LDBC_SNB_DATAGEN_DIR}/out-sf${SF}/graphs/csv/bi/composite-merged-fk/
 ```
 
 Set the following flag **if the data is compressed**:

@@ -30,7 +30,7 @@ tools/run.py \
 
 ## Loading the data
 
-Set the `${TG_DATA_DIR}` environment variable.
+Set the `${TG_DATA_DIR}` environment variable. E.g., assuming that your `${LDBC_SNB_DATAGEN_DIR}` and `${SF}` environment variables are set, run:
 
 ```bash
 export TG_DATA_DIR=${LDBC_SNB_DATAGEN_DIR}/out-sf${SF}/csv/bi/composite-projected-fk/
