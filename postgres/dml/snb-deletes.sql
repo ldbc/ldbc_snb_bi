@@ -98,6 +98,7 @@ WHERE Person_likes_Comment_Delete_candidates.src = Person_likes_Comment.PersonId
 ----------------------------------------------------------------------------------------------------
 DELETE FROM Forum
 USING Forum_Delete_candidates
+WHERE Forum.id = Forum_Delete_candidates.id
 ;
 
 DELETE FROM Forum_hasMember_Person
