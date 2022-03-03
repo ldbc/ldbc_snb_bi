@@ -141,7 +141,7 @@ USING Post_Delete_candidates
 WHERE Post_Delete_candidates.id = Post_hasTag_Tag.PostId
 ;
 
--- Offload cascading deletes to DEL7
+-- offload cascading deletes to DEL7
 INSERT INTO Comment_Delete_candidates 
 SELECT Post_Delete_candidates.deletionDate AS deletionDate, Comment.id AS id
 FROM Comment
