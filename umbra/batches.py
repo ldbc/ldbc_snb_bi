@@ -11,7 +11,7 @@ def run_script(con, filename):
         for query in queries:
             if query.isspace():
                 continue
-            print(f"{query}")
+            #print(f"{query}")
             con.execute(query)
 
 print("Datagen / apply batches using SQL")
@@ -78,7 +78,7 @@ while batch_start_date < network_end_date:
     # Entities to be deleted are first put into {entity}_Delete_candidate tables.
     # These are cleaned up before running the delete script.
     for entity in delete_entities:
-        print(f"DELETE FROM {entity}_Delete_candidates");
+        #print(f"DELETE FROM {entity}_Delete_candidates");
         con.execute(f"DELETE FROM {entity}_Delete_candidates")
         # print(f"====> DROP TABLE IF EXISTS {entity}_Delete_candidates");
         # con.execute(f"DROP TABLE IF EXISTS {entity}_Delete_candidates")
