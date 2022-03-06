@@ -20,6 +20,7 @@ In Datagen's directory (`ldbc_snb_datagen_spark`), issue the following commands.
 
 ```bash
 export SF=desired_scale_factor
+export LDBC_DATAGEN_MAX_MEM=available_memory
 ```
 
 ```bash
