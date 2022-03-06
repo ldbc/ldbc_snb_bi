@@ -14,13 +14,14 @@ In Datagen's directory (`ldbc_snb_datagen_spark`), issue the following commands.
 
 ```bash
 export SF=desired_scale_factor
+export LDBC_DATAGEN_MAX_MEM=available_memory
 ```
 
 ```bash
 rm -rf out-sf${SF}/
 tools/run.py \
-    --cores 4 \
-    --memory 8G \
+    --cores $(nproc) \
+    --memory ${LDBC_DATAGEN_MAX_MEM} \
     ./target/ldbc_snb_datagen_${PLATFORM_VERSION}-${DATAGEN_VERSION}.jar -- \
     -- \
     --format csv \
