@@ -63,6 +63,10 @@ if len(sys.argv) > 2:
     if sys.argv[2] == "--test":
         test = True
 
+results_file = open(f'output/results.csv', 'w')
+timings_file = open(f'output/timings.csv', 'w')
+timings_file.write(f"sf|q|time\n")
+
 con = psycopg2.connect(host="localhost", port=5433, user="postgres", password="mysecretpassword")
 
 for query_variant in ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "15a", "15b", "16a", "16b", "17", "18"]: #, "19a", "19b", "20"
@@ -91,7 +95,10 @@ for query_variant in ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9",
         # drop type designators
         type_pattern = re.compile(':.*')
         query_parameters = {type_pattern.sub('', k): v for k, v in query_parameters.items()}
-        run_query(con, query_variant, query_spec, query_parameters)
+        (results, duration) = run_query(con, query_variant, query_spec, query_parameters)
+
+        timings_file.write(f"{sf}|{query_variant}|{duration}\n")
+        #results_file.write(f"{query_num}|{query_variant}|{query_parameters_in_order}|{results}\n")
 
         # test run: 1 query, regular run: 10 queries
         if test or i == 10:
