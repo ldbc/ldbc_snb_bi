@@ -98,10 +98,15 @@ for query_variant in ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9",
         (results, duration) = run_query(con, query_variant, query_spec, query_parameters)
 
         timings_file.write(f"{sf}|{query_variant}|{duration}\n")
+        timings_file.flush()
         #results_file.write(f"{query_num}|{query_variant}|{query_parameters_in_order}|{results}\n")
+        results_file.flush()
 
         # test run: 1 query, regular run: 10 queries
         if test or i == 10:
             break
+
+results_file.close()
+timings_file.close()
 
 con.close()
