@@ -89,13 +89,16 @@ def read_query_fun(tx, query_num, query_spec, query_parameters):
 def write_query_fun(tx, query_spec):
     tx.run(query_spec, {})
 
-def run_query(session, query_num, query_id, query_spec, query_parameters):
-    #print(f'Q{query_id}: {query_parameters}')
+def run_query(session, query_num, query_id, query_spec, query_parameters, test):
+    if test:
+        print(f'Q{query_id}: {query_parameters}')
     start = time.time()
     results = session.write_transaction(read_query_fun, query_num, query_spec, query_parameters)
     end = time.time()
     duration = end - start
-    #print("Q{}: {:.4f} seconds, {} tuples".format(query_id, duration, results[0]))
+    if test:
+        print(f"-> {duration:.4f} seconds")
+        print(f"-> {results}")
     return (results, duration)
 
 
@@ -142,10 +145,12 @@ for query_variant in ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9",
         query_parameters = {k.split(":")[0]: cast_parameter_to_driver_input(v, k.split(":")[1]) for k, v in query_parameters.items()}
         query_parameters_in_order = f'<{";".join([convert_value_to_string(query_parameters[parameter["name"]], parameter["type"], True) for parameter in parameters])}>'
 
-        (results, duration) = run_query(session, query_num, query_variant, query_spec, query_parameters)
+        (results, duration) = run_query(session, query_num, query_variant, query_spec, query_parameters, test)
 
         timings_file.write(f"{sf}|{query_variant}|{duration}\n")
+        timings_file.flush()
         results_file.write(f"{query_num}|{query_variant}|{query_parameters_in_order}|{results}\n")
+        results_file.flush()
 
         # test run: 1 query, regular run: 10 queries
         if test or i == 10:

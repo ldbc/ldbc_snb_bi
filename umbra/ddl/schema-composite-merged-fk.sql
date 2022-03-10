@@ -45,14 +45,16 @@ CREATE TABLE Comment (
     LocationCountryId bigint not null,
     ParentPostId bigint,
     ParentCommentId bigint
-);
+) WITH (storage = paged);
+
 
 CREATE TABLE Forum (
     creationDate timestamp with time zone not null,
     id bigint primary key,
     title varchar(256) not null,
     ModeratorPersonId bigint -- can be null as its cardinality is 0..1
-);
+) WITH (storage = paged);
+
 
 CREATE TABLE Post (
     creationDate timestamp with time zone not null,
@@ -66,7 +68,8 @@ CREATE TABLE Post (
     CreatorPersonId bigint not null,
     ContainerForumId bigint not null,
     LocationCountryId bigint not null
-);
+) WITH (storage = paged);
+
 
 CREATE TABLE Person (
     creationDate timestamp with time zone not null,
@@ -80,16 +83,78 @@ CREATE TABLE Person (
     LocationCityId bigint not null,
     speaks varchar(640) not null,
     email varchar(8192) not null
-);
+) WITH (storage = paged);
+
 
 -- edges
-CREATE TABLE Comment_hasTag_Tag        (creationDate timestamp with time zone not null, CommentId bigint not null, TagId bigint not null);
-CREATE TABLE Post_hasTag_Tag           (creationDate timestamp with time zone not null, PostId bigint not null,    TagId bigint not null);
-CREATE TABLE Forum_hasMember_Person    (creationDate timestamp with time zone not null, ForumId bigint not null,   PersonId bigint not null);
-CREATE TABLE Forum_hasTag_Tag          (creationDate timestamp with time zone not null, ForumId bigint not null,   TagId bigint not null);
-CREATE TABLE Person_hasInterest_Tag    (creationDate timestamp with time zone not null, PersonId bigint not null,  TagId bigint not null);
-CREATE TABLE Person_likes_Comment      (creationDate timestamp with time zone not null, PersonId bigint not null,  CommentId bigint not null);
-CREATE TABLE Person_likes_Post         (creationDate timestamp with time zone not null, PersonId bigint not null,  PostId bigint not null);
-CREATE TABLE Person_studyAt_University (creationDate timestamp with time zone not null, PersonId bigint not null,  UniversityId bigint not null, classYear int not null);
-CREATE TABLE Person_workAt_Company     (creationDate timestamp with time zone not null, PersonId bigint not null,  CompanyId bigint not null, workFrom int not null);
-CREATE TABLE Person_knows_Person       (creationDate timestamp with time zone not null, Person1id bigint not null, Person2id bigint not null);
+CREATE TABLE Comment_hasTag_Tag (
+    creationDate timestamp with time zone not null,
+    CommentId bigint not null,
+    TagId bigint not null,
+    PRIMARY KEY(CommentId, TagId)
+) WITH (storage = paged);
+
+CREATE TABLE Post_hasTag_Tag (
+    creationDate timestamp with time zone not null,
+    PostId bigint not null,
+    TagId bigint not null,
+    PRIMARY KEY(PostId, TagId)
+) WITH (storage = paged);
+
+CREATE TABLE Forum_hasMember_Person (
+    creationDate timestamp with time zone not null,
+    ForumId bigint not null,
+    PersonId bigint not null,
+    PRIMARY KEY(ForumId, PersonId)
+) WITH (storage = paged);
+
+CREATE TABLE Forum_hasTag_Tag (
+    creationDate timestamp with time zone not null,
+    ForumId bigint not null,
+    TagId bigint not null,
+    PRIMARY KEY(ForumId, TagId)
+) WITH (storage = paged);
+
+CREATE TABLE Person_hasInterest_Tag (
+    creationDate timestamp with time zone not null,
+    PersonId bigint not null,
+    TagId bigint not null,
+    PRIMARY KEY(PersonId, TagId)
+) WITH (storage = paged);
+
+CREATE TABLE Person_likes_Comment (
+    creationDate timestamp with time zone not null,
+    PersonId bigint not null,
+    CommentId bigint not null,
+    PRIMARY KEY(PersonId, CommentId)
+) WITH (storage = paged);
+
+CREATE TABLE Person_likes_Post (
+    creationDate timestamp with time zone not null,
+    PersonId bigint not null,
+    PostId bigint not null,
+    PRIMARY KEY(PersonId, PostId)
+) WITH (storage = paged);
+
+CREATE TABLE Person_studyAt_University (
+    creationDate timestamp with time zone not null,
+    PersonId bigint not null,
+    UniversityId bigint not null,
+    classYear int not null,
+    PRIMARY KEY(PersonId, UniversityId)
+) WITH (storage = paged);
+
+CREATE TABLE Person_workAt_Company (
+    creationDate timestamp with time zone not null,
+    PersonId bigint not null,
+    CompanyId bigint not null,
+    workFrom int not null,
+    PRIMARY KEY(PersonId, CompanyId)
+) WITH (storage = paged);
+
+CREATE TABLE Person_knows_Person (
+    creationDate timestamp with time zone not null,
+    Person1id bigint not null,
+    Person2id bigint not null,
+    PRIMARY KEY(Person1id, Person2id)
+) WITH (storage = paged);

@@ -57,6 +57,7 @@ JOIN Forum
   ON Forum.ModeratorPersonId = Person_Delete_candidates.id
 WHERE Forum.title LIKE 'Album %'
    OR Forum.title LIKE 'Wall %'
+ON CONFLICT DO NOTHING
 ;
 
 -- offload cascading Post deletes to DEL6
@@ -65,6 +66,7 @@ SELECT Person_Delete_candidates.deletionDate AS deletionDate, Post.id AS id
 FROM Person_Delete_candidates
 JOIN Post
   ON Post.CreatorPersonId = Person_Delete_candidates.id
+ON CONFLICT DO NOTHING
 ;
 
 -- offload cascading Comment deletes to DEL7
@@ -73,6 +75,7 @@ SELECT Person_Delete_candidates.deletionDate AS deletionDate, Comment.id AS id
 FROM Person_Delete_candidates
 JOIN Comment
   ON Comment.CreatorPersonId = Person_Delete_candidates.id
+ON CONFLICT DO NOTHING
 ;
 
 ----------------------------------------------------------------------------------------------------
@@ -98,6 +101,7 @@ WHERE Person_likes_Comment_Delete_candidates.src = Person_likes_Comment.PersonId
 ----------------------------------------------------------------------------------------------------
 DELETE FROM Forum
 USING Forum_Delete_candidates
+WHERE Forum.id = Forum_Delete_candidates.id
 ;
 
 DELETE FROM Forum_hasMember_Person
@@ -111,6 +115,7 @@ SELECT Forum_Delete_candidates.deletionDate AS deletionDate, Post.id AS id
 FROM Post
 JOIN Forum_Delete_candidates
   ON Forum_Delete_candidates.id = Post.ContainerForumId
+ON CONFLICT DO NOTHING
 ;
 
 ----------------------------------------------------------------------------------------------------
@@ -131,8 +136,8 @@ WHERE Post_Delete_candidates.id = Post.id
 ;
 
 DELETE FROM Person_likes_Post
-USING Person_likes_Post_Delete_candidates
-WHERE Person_likes_Post_Delete_candidates.trg = Person_likes_Post.PostId
+USING Post_Delete_candidates
+WHERE Post_Delete_candidates.id = Person_likes_Post.PostId
 ;
 
 DELETE FROM Post_hasTag_Tag
@@ -140,12 +145,13 @@ USING Post_Delete_candidates
 WHERE Post_Delete_candidates.id = Post_hasTag_Tag.PostId
 ;
 
--- Offload cascading deletes to DEL7
+-- offload cascading deletes to DEL7
 INSERT INTO Comment_Delete_candidates 
 SELECT Post_Delete_candidates.deletionDate AS deletionDate, Comment.id AS id
 FROM Comment
 JOIN Post_Delete_candidates
   ON Post_Delete_candidates.id = Comment.ParentPostId
+ON CONFLICT DO NOTHING
 ;
 
 ----------------------------------------------------------------------------------------------------

@@ -8,15 +8,13 @@ cd ..
 
 . scripts/vars.sh
 
-scripts/stop.sh
-
 mkdir -p ${UMBRA_DATABASE_DIR}/
 
 echo -n "Starting container . . . "
 docker run \
     --platform linux/amd64 \
     --rm \
-    --publish=5432:5432 \
+    --publish=5433:5432 \
     --volume=${UMBRA_CSV_DIR}:/data/:z \
     --volume=${UMBRA_DATABASE_DIR}:/scratch/db/:z \
     --volume=${UMBRA_DDL_DIR}:/ddl/:z \

@@ -98,6 +98,7 @@ WHERE Person_likes_Comment_Delete_candidates.src = Person_likes_Comment.PersonId
 ----------------------------------------------------------------------------------------------------
 DELETE FROM Forum
 USING Forum_Delete_candidates
+WHERE Forum.id = Forum_Delete_candidates.id
 ;
 
 DELETE FROM Forum_hasMember_Person
@@ -125,22 +126,28 @@ WHERE Forum_hasMember_Person_Delete_candidates.src = Forum_hasMember_Person.Foru
 ----------------------------------------------------------------------------------------------------
 -- DEL6 --------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------
+DROP TABLE IF exists Post_Delete_candidates_unique;
+CREATE TABLE Post_Delete_candidates_unique(id bigint not null);
+INSERT INTO Post_Delete_candidates_unique
+  SELECT DISTINCT id
+  FROM Post_Delete_candidates;
+
 DELETE FROM Post
-USING Post_Delete_candidates -- starting from the delete candidate post
-WHERE Post_Delete_candidates.id = Post.id
+USING Post_Delete_candidates_unique -- starting from the delete candidate post
+WHERE Post_Delete_candidates_unique.id = Post.id
 ;
 
 DELETE FROM Person_likes_Post
-USING Person_likes_Post_Delete_candidates
-WHERE Person_likes_Post_Delete_candidates.trg = Person_likes_Post.PostId
+USING Post_Delete_candidates_unique
+WHERE Post_Delete_candidates_unique.id = Person_likes_Post.PostId
 ;
 
 DELETE FROM Post_hasTag_Tag
-USING Post_Delete_candidates
-WHERE Post_Delete_candidates.id = Post_hasTag_Tag.PostId
+USING Post_Delete_candidates_unique
+WHERE Post_Delete_candidates_unique.id = Post_hasTag_Tag.PostId
 ;
 
--- Offload cascading deletes to DEL7
+-- offload cascading deletes to DEL7
 INSERT INTO Comment_Delete_candidates 
 SELECT Post_Delete_candidates.deletionDate AS deletionDate, Comment.id AS id
 FROM Comment
@@ -151,11 +158,17 @@ JOIN Post_Delete_candidates
 ----------------------------------------------------------------------------------------------------
 -- DEL7 --------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------
+DROP TABLE IF exists Comment_Delete_candidates_unique;
+CREATE TABLE Comment_Delete_candidates_unique(id bigint not null);
+INSERT INTO Comment_Delete_candidates_unique
+  SELECT DISTINCT id
+  FROM Comment_Delete_candidates;
+
 DELETE FROM Comment
 USING (
   WITH RECURSIVE MessageThread AS (
       SELECT id
-      FROM Comment_Delete_candidates -- starting from the delete candidate comments
+      FROM Comment_Delete_candidates_unique -- starting from the delete candidate comments
       UNION
       SELECT Comment.id AS id
       FROM MessageThread
@@ -173,7 +186,7 @@ DELETE FROM Person_likes_Comment
 USING (
   WITH RECURSIVE MessageThread AS (
       SELECT id
-      FROM Comment_Delete_candidates -- starting from the delete candidate comments
+      FROM Comment_Delete_candidates_unique -- starting from the delete candidate comments
       UNION
       SELECT Comment.id AS id
       FROM MessageThread
@@ -191,7 +204,7 @@ DELETE FROM Comment_hasTag_Tag
 USING (
   WITH RECURSIVE MessageThread AS (
       SELECT id
-      FROM Comment_Delete_candidates -- starting from the delete candidate comments
+      FROM Comment_Delete_candidates_unique -- starting from the delete candidate comments
       UNION ALL
       SELECT comment.id AS id
       FROM MessageThread

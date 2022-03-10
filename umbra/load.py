@@ -8,18 +8,18 @@ def vacuum(con):
     pg_con.cursor().execute("VACUUM FULL")
     pg_con.set_isolation_level(old_isolation_level)
 
-print("Running Postgres / psycopg2")
+print("Running Umbra / psycopg2")
 
 print("Datagen / load initial data set using SQL")
 
 if len(sys.argv) < 2:
-    print("Usage: load.py <POSTGRES_DATA_DIRECTORY> [--compressed]")
+    print("Usage: load.py <UMBRA_DATA_DIR> [--compressed]")
     exit(1)
 
 data_dir = sys.argv[1]
 local = len(sys.argv) == 3 and sys.argv[2] == "--local"
 
-pg_con = psycopg2.connect(host="localhost", user="postgres", password="mysecretpassword", port=5432)
+pg_con = psycopg2.connect(host="localhost", user="postgres", password="mysecretpassword", port=5433)
 con = pg_con.cursor()
 
 def run_script(con, filename):

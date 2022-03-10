@@ -2,9 +2,6 @@ from neo4j import GraphDatabase, time
 from datetime import datetime, date
 from dateutil.relativedelta import relativedelta
 import time
-import pytz
-import csv
-import re
 import sys
 import os
 
@@ -23,7 +20,7 @@ def run_update(session, query_spec, batch, csv_file):
 
 
 if len(sys.argv) < 2:
-    print("Usage: batches.py <NEO4J_DATA_DIRECTORY> [--compressed]")
+    print("Usage: batches.py <NEO4J_DATA_DIR> [--compressed]")
     exit(1)
 
 data_dir = sys.argv[1]

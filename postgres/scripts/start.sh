@@ -10,8 +10,6 @@ cd ..
 
 python3 -c 'import psycopg2' || (echo "psycopg2 Python package is missing or broken" && exit 1)
 
-scripts/stop.sh
-
 if [ -n "${POSTGRES_CSV_DIR-}" ]; then
     if [ ! -d "${POSTGRES_CSV_DIR}" ]; then
         echo "Directory ${POSTGRES_CSV_DIR} does not exist."

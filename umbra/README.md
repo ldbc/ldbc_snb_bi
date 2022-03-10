@@ -4,24 +4,50 @@
 
 ## Building the container
 
-Set the `UMBRA_URL` environment variable and build the container:
+Set the `${UMBRA_URL}` environment variable and build the container:
 
 ```bash
 export UMBRA_URL=
 scripts/build-container.sh
 ```
 
-### Loading the data set
+## Generating the data set
 
-Umbra uses the same format as [Postgres](../postgres/README.md#generating-the-data-set), however, it currently does not support loading from compressed files (`.csv.gz`).
+The Umbra implementation expects the data to be in `composite-merged-fk` CSV layout, with headers and without quoted fields.
+To generate data that confirms this requirement, run Datagen without any layout or formatting arguments (`--explode-*` or `--format-options`).
 
-1. Set the `${UMBRA_CSV_DIR}` environment variable to point to the data set, e.g.:
+In Datagen's directory (`ldbc_snb_datagen_spark`), issue the following commands. We assume that the Datagen project is built and the `${PLATFORM_VERSION}`, `${DATAGEN_VERSION}` environment variables are set correctly.
+
+```bash
+export SF=desired_scale_factor
+export LDBC_DATAGEN_MAX_MEM=available_memory
+```
+
+```bash
+rm -rf out-sf${SF}/
+tools/run.py \
+    --cores $(nproc) \
+    --memory ${LDBC_DATAGEN_MAX_MEM} \
+    ./target/ldbc_snb_datagen_${PLATFORM_VERSION}-${DATAGEN_VERSION}.jar \
+    -- \
+    --format csv \
+    --scale-factor ${SF} \
+    --mode bi \
+    --output-dir out-sf${SF} \
+    --generate-factors
+```
+
+## Loading the data set
+
+Note that unlike Postgres, Umbra does not support directly loading from compressed files (`.csv.gz`).
+
+1. Set the `${UMBRA_CSV_DIR}` environment variable to point to the data set. E.g., assuming that your `${LDBC_SNB_DATAGEN_DIR}` and `${SF}` environment variables are set, run:
 
     ```bash
-    export UMBRA_CSV_DIR=
+    export UMBRA_CSV_DIR=${LDBC_SNB_DATAGEN_DIR}/out-sf${SF}/graphs/csv/bi/composite-merged-fk/
     ```
 
-    To use the test data set, run:
+    To download and use the sample data set, run:
 
     ```bash
     wget -q https://ldbcouncil.org/ldbc_snb_datagen_spark/social-network-sf0.003-bi-composite-merged-fk.zip

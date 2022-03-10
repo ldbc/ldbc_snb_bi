@@ -7,33 +7,42 @@
 The Postgres implementation expects the data to be in `composite-merged-fk` CSV layout, with headers and without quoted fields.
 To generate data that confirms this requirement, run Datagen without any layout or formatting arguments (`--explode-*` or `--format-options`).
 
-In Datagen's directory (`ldbc_snb_datagen_spark`), issue the following commands:
+In Datagen's directory (`ldbc_snb_datagen_spark`), issue the following commands. We assume that the Datagen project is built and the `${PLATFORM_VERSION}`, `${DATAGEN_VERSION}` environment variables are set correctly.
 
 ```bash
-tools/build.sh
+export SF=desired_scale_factor
+export LDBC_DATAGEN_MAX_MEM=available_memory
+```
 
-# set the desired SF and generate
-export SF=0.003
-rm -rf sf${SF}/
-tools/run.py ./target/ldbc_snb_datagen_${PLATFORM_VERSION}-${DATAGEN_VERSION}.jar -- \
-    --format csv --scale-factor ${SF} --mode bi --output-dir sf${SF}
+```bash
+rm -rf out-sf${SF}/
+tools/run.py \
+    --cores $(nproc) \
+    --memory ${LDBC_DATAGEN_MAX_MEM} \
+    ./target/ldbc_snb_datagen_${PLATFORM_VERSION}-${DATAGEN_VERSION}.jar \
+    -- \
+    --format csv \
+    --scale-factor ${SF} \
+    --mode bi \
+    --output-dir out-sf${SF} \
+    --generate-factors
 ```
 
 ## Loading the data
 
-Set the `POSTGRES_CSV_DIR` environment variable.
+Set the `${POSTGRES_CSV_DIR}` environment variable. E.g., assuming that your `${LDBC_SNB_DATAGEN_DIR}` and `${SF}` environment variables are set, run:
 
 ```bash
-export POSTGRES_CSV_DIR=${DATAGEN_DIRECTORY}/sf${SF}/graphs/csv/bi/composite-merged-fk/
+export POSTGRES_CSV_DIR=${LDBC_SNB_DATAGEN_DIR}/out-sf${SF}/graphs/csv/bi/composite-merged-fk/
 ```
 
-If the data is compressed, set:
+Set the following flag **if the data is compressed**:
 
 ```bash
 export POSTGRES_CSV_FLAGS="--compressed"
 ```
 
-To use the sample data set, run:
+To download and use the sample data set, run:
 
 ```bash
 wget -q https://ldbcouncil.org/ldbc_snb_datagen_spark/social-network-sf0.003-bi-composite-merged-fk-postgres-compressed.zip
