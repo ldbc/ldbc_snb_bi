@@ -37,6 +37,15 @@ The paramgen implements [parameter curation](https://research.vu.nl/en/publicati
     cp -r ${LDBC_SNB_DATAGEN_DIR}/out-sf${SF}/factors/csv/raw/composite-merged-fk/* factors/
     ```
 
+    To download and use the factors for the sample data set, run:
+
+    ```bash
+    rm -rf factors/*
+    wget -q https://ldbcouncil.org/ldbc_snb_datagen_spark/social-network-sf0.003-bi-factors.zip
+    unzip -q social-network-sf0.003-bi-factors.zip
+    cp -r social-network-sf0.003-bi-factors/factors/csv/raw/composite-merged-fk/* factors/
+    ```
+
 1. Run:
 
     ```bash

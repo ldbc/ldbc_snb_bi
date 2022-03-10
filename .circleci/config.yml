@@ -46,7 +46,7 @@ jobs:
           command: |
             wget -q https://ldbcouncil.org/ldbc_snb_datagen_spark/social-network-sf0.003-bi-factors.zip
             unzip social-network-sf0.003-bi-factors.zip -d .
-            mv social-network-sf0.003-bi-factors/csv/raw/composite-merged-fk/* paramgen/factors/
+            mv social-network-sf0.003-bi-factors/factors/csv/raw/composite-merged-fk/* paramgen/factors/
       - run:
           name: Generate parameters
           command: |
