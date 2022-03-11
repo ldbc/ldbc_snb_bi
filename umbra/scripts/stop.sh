@@ -8,7 +8,11 @@ cd ..
 
 . scripts/vars.sh
 
-echo -n "Cleaning up running Umbra containers . . . "
-docker stop ${UMBRA_CONTAINER_NAME} || true
-docker rm ${UMBRA_CONTAINER_NAME} || true
+echo -n "Stopping Umbra container . . . "
+#docker stop ${UMBRA_CONTAINER_NAME}
+docker exec ${UMBRA_CONTAINER_NAME} bash -c "apt update && apt install -y procps && pkill -SIGINT -f umbra_server" || true
+echo "Stopped."
+sleep 5
+echo -n "Removing container . . ."
+docker rm ${UMBRA_CONTAINER_NAME}
 echo "Cleanup completed."
