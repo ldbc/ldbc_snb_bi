@@ -2,14 +2,9 @@
 
 [Umbra](https://umbra-db.com/) implementation of the [LDBC Social Network Benchmark's BI workload](https://github.com/ldbc/ldbc_snb_docs).
 
-## Building the container
+## Getting the container
 
-Set the `${UMBRA_URL}` environment variable and build the container:
-
-```bash
-export UMBRA_URL=
-scripts/build-container.sh
-```
+The Umbra container is currently available upon request.
 
 ## Generating the data set
 
