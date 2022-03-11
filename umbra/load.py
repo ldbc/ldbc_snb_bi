@@ -54,7 +54,7 @@ else:
 print("## Static entities")
 
 for entity in static_entities:
-    for csv_file in [f for f in os.listdir(f"{static_path}/{entity}") if f.endswith(".csv")]:
+    for csv_file in [f for f in os.listdir(f"{static_path}/{entity}") if f.startswith("part-") and f.endswith(".csv")]:
         csv_path = f"{static_path}/{entity}/{csv_file}"
         print(f"- {csv_path}")
         con.execute(f"COPY {entity} FROM '{dbs_data_dir}/initial_snapshot/static/{entity}/{csv_file}' (DELIMITER '|', HEADER, FORMAT csv)")
@@ -63,7 +63,7 @@ for entity in static_entities:
 print("## Dynamic entities")
 
 for entity in dynamic_entities:
-    for csv_file in [f for f in os.listdir(f"{dynamic_path}/{entity}") if f.endswith(".csv")]:
+    for csv_file in [f for f in os.listdir(f"{dynamic_path}/{entity}") if f.startswith("part-") and f.endswith(".csv")]:
         csv_path = f"{dynamic_path}/{entity}/{csv_file}"
         print(f"- {csv_path}")
         con.execute(f"COPY {entity} FROM '{dbs_data_dir}/initial_snapshot/dynamic/{entity}/{csv_file}' (DELIMITER '|', HEADER, FORMAT csv)")
