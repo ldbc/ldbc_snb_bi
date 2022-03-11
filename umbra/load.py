@@ -8,11 +8,8 @@ def vacuum(con):
     pg_con.cursor().execute("VACUUM FULL")
     pg_con.set_isolation_level(old_isolation_level)
 
-print("Running Umbra / psycopg2")
-
-print("Datagen / load initial data set using SQL")
-
 if len(sys.argv) < 2:
+    print("Umbra loader script")
     print("Usage: load.py <UMBRA_DATA_DIR> [--compressed]")
     exit(1)
 
@@ -52,27 +49,30 @@ else:
     dbs_data_dir = '/data'
 
 print("## Static entities")
-
 for entity in static_entities:
     for csv_file in [f for f in os.listdir(f"{static_path}/{entity}") if f.startswith("part-") and f.endswith(".csv")]:
-        csv_path = f"{static_path}/{entity}/{csv_file}"
-        print(f"- {csv_path}")
+        csv_path = f"{entity}/{csv_file}"
+        print(f"- {csv_path}", end='\r')
         con.execute(f"COPY {entity} FROM '{dbs_data_dir}/initial_snapshot/static/{entity}/{csv_file}' (DELIMITER '|', HEADER, FORMAT csv)")
         pg_con.commit()
+print(" " * 120, end='\r')
+print("Loaded static entities.")
 
 print("## Dynamic entities")
-
 for entity in dynamic_entities:
     for csv_file in [f for f in os.listdir(f"{dynamic_path}/{entity}") if f.startswith("part-") and f.endswith(".csv")]:
-        csv_path = f"{dynamic_path}/{entity}/{csv_file}"
-        print(f"- {csv_path}")
+        csv_path = f"{entity}/{csv_file}"
+        print(f"- {csv_path}", end='\r')
         con.execute(f"COPY {entity} FROM '{dbs_data_dir}/initial_snapshot/dynamic/{entity}/{csv_file}' (DELIMITER '|', HEADER, FORMAT csv)")
         pg_con.commit()
+print(" " * 120, end='\r')
+print("Loaded dynamic entities.")
 
 run_script(con, "ddl/constraints.sql")
 pg_con.commit()
 
-print("Vacuuming")
+print("Vacuuming . . . ", end="")
 vacuum(pg_con)
+print("Done.")
 
-print("Loaded initial snapshot")
+print("Loaded initial snapshot to Umbra.")

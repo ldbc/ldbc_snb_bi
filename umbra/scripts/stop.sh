@@ -9,9 +9,9 @@ cd ..
 . scripts/vars.sh
 
 echo -n "Stopping Umbra container . . ."
-docker stop ${UMBRA_CONTAINER_NAME} >/dev/null 2>&1 || true
+(docker ps -a --format {{.Names}} | grep --quiet --word-regexp ${UMBRA_CONTAINER_NAME}) && docker stop ${UMBRA_CONTAINER_NAME} >/dev/null
 echo " Stopped."
 
 echo -n "Removing Umbra container . . ."
-docker rm ${UMBRA_CONTAINER_NAME} >/dev/null 2>&1 || true
+(docker ps -a --format {{.Names}} | grep --quiet --word-regexp ${UMBRA_CONTAINER_NAME}) && docker rm ${UMBRA_CONTAINER_NAME} >/dev/null
 echo " Removed."

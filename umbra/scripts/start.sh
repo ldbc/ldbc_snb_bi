@@ -22,7 +22,8 @@ docker run \
     ${UMBRA_DOCKER_IMAGE} \
     umbra_server \
         --address 0.0.0.0 \
-        /var/db/ldbc.db
+        /var/db/ldbc.db \
+    >/dev/null
 
 until python3 scripts/test-db-connection.py > /dev/null 2>&1; do
     echo -n ". "
