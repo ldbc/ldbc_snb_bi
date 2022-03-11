@@ -32,7 +32,7 @@ WITH collect({ personId: personId, personFirstName: personFirstName, personLastN
 MATCH (forum:PopularForum)
 REMOVE forum:PopularForum
 
-WITH results
+WITH count(*) AS dummy, results
 
 UNWIND results AS r
 RETURN
