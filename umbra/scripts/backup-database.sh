@@ -8,10 +8,10 @@ cd ..
 
 . scripts/vars.sh
 
-# trigger sudo right away
-sudo echo > /dev/null
-
 scripts/stop.sh
-sudo rm -rf scratch/backup/
-sudo cp -r scratch/db/ scratch/backup/
+docker run \
+    --volume=${UMBRA_DATABASE_DIR}:/var/db/:z \
+    --volume=${UMBRA_BACKUP_DIR}:/var/backup/:z \
+    ${UMBRA_DOCKER_IMAGE} \
+    bash -c "rm -rf /var/backup/* && cp -r /var/db/* /var/backup/"
 scripts/start.sh

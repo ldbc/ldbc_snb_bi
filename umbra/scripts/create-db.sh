@@ -13,7 +13,7 @@ mkdir -p ${UMBRA_LOG_DIR}/
 docker run \
     --volume=${UMBRA_DATABASE_DIR}:/var/db/:z \
     ${UMBRA_DOCKER_IMAGE} \
-    /bin/bash -c "rm -rf /var/db/* /var/log/*"
+    rm -rf "/var/db/*" "/var/log/*"
 echo " Cleanup done."
 
 echo -n "Creating database . . ."
