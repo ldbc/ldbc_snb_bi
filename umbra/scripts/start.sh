@@ -8,5 +8,23 @@ cd ..
 
 . scripts/vars.sh
 
-scripts/start-container.sh
-scripts/start-db.sh
+python3 -c 'import psycopg2' || (echo "psycopg2 Python package is missing or broken" && exit 1)
+
+echo -n "Starting the database . "
+docker run \
+    --stop-signal SIGINT \
+    --name ${UMBRA_CONTAINER_NAME} \
+    --detach \
+    --volume=${UMBRA_CSV_DIR}:/data/:z \
+    --volume=${UMBRA_DATABASE_DIR}:/var/db/:z \
+    --volume=${UMBRA_DDL_DIR}:/ddl/:z \
+    --volume=${UMBRA_LOG_DIR}:/var/log/:z \
+    --publish=8000:5432 \
+    ${UMBRA_DOCKER_IMAGE} \
+    bash -c "umbra_server --address 0.0.0.0 /var/db/ldbc.db > /var/log/stdout.log 2> /var/log/stderr.log"
+
+until python3 scripts/test-db-connection.py > /dev/null 2>&1; do
+    echo -n ". "
+    sleep 1
+done
+echo "Database started."

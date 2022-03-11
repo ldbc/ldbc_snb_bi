@@ -9,6 +9,6 @@ cd ..
 . scripts/vars.sh
 
 scripts/stop.sh
-scripts/start-container.sh
-scripts/start-db.sh
+scripts/create-db.sh
+scripts/start.sh
 scripts/load.sh

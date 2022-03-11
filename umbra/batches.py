@@ -42,7 +42,7 @@ delete_edges = ["Forum_hasMember_Person", "Person_knows_Person", "Person_likes_C
 delete_entities = delete_nodes + delete_edges
 
 
-pg_con = psycopg2.connect(database="ldbcsnb", host="localhost", user="postgres", password="mysecretpassword",  port=5433)
+pg_con = psycopg2.connect(database="ldbcsnb", host="localhost", user="postgres", password="mysecretpassword",  port=8000)
 con = pg_con.cursor()
 
 run_script(con, f"ddl/schema-delete-candidates.sql");

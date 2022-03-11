@@ -9,5 +9,6 @@ cd ..
 . scripts/vars.sh
 
 echo -n "Cleaning up running Umbra containers . . . "
-docker rm -f ${UMBRA_CONTAINER_NAME} > /dev/null 2>&1 || true
+docker stop ${UMBRA_CONTAINER_NAME} || true
+docker rm ${UMBRA_CONTAINER_NAME} || true
 echo "Cleanup completed."

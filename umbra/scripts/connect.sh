@@ -10,4 +10,4 @@ cd ..
 
 export PGPASSWORD=mysecretpassword
 
-psql -h localhost -U postgres -p 5433
+psql -h localhost -U postgres -p 8000
