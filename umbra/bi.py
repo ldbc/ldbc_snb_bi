@@ -1,10 +1,12 @@
 from datetime import datetime
 import csv
+import os
 import re
 import psycopg2
 import time
 import sys
-from contextlib import contextmanager
+
+# Usage: bi.py [--test]
 
 def run_query(con, query_id, query_spec, query_parameters):
     if test:
@@ -32,15 +34,10 @@ def convert_to_date(timestamp):
     dt = datetime.strptime(timestamp, '%Y-%m-%d')
     return f"'{dt}'::date"
 
-
-if len(sys.argv) < 2:
-    print("Usage: bi.py <sf> [--test]")
-
-sf = sys.argv[1]
-
+sf = os.environ.get("SF")
 test = False
-if len(sys.argv) > 2:
-    if sys.argv[2] == "--test":
+if len(sys.argv) > 1:
+    if sys.argv[1] == "--test":
         test = True
 
 results_file = open(f'output/results.csv', 'w')

@@ -3,8 +3,11 @@ from neo4j import GraphDatabase
 import datetime
 import time
 import csv
+import os
 import re
 import sys
+
+# Usage: bi.py [--test]
 
 # TODO: provide two modes of operation: validation and benchmark
 # validation CSV header: Query ID|Query variant|Parameters|Results
@@ -101,15 +104,10 @@ def run_query(session, query_num, query_id, query_spec, query_parameters, test):
         print(f"-> {results}")
     return (results, duration)
 
-
-if len(sys.argv) < 2:
-    print("Usage: bi.py <sf> [--test]")
-
-sf = sys.argv[1]
-
+sf = os.environ.get("SF")
 test = False
-if len(sys.argv) > 2:
-    if sys.argv[2] == "--test":
+if len(sys.argv) > 1:
+    if sys.argv[1] == "--test":
         test = True
 
 driver = GraphDatabase.driver("bolt://localhost:7687")
