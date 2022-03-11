@@ -3,24 +3,8 @@ import csv
 import re
 import psycopg2
 import time
-import signal
 import sys
 from contextlib import contextmanager
-
-@contextmanager
-def timeout(t):
-    signal.signal(signal.SIGALRM, raise_timeout)
-    signal.alarm(t)
-
-    try:
-        yield
-    except TimeoutError:
-        raise
-    finally:
-        signal.signal(signal.SIGALRM, signal.SIG_IGN)
-
-def raise_timeout(signum, frame):
-    raise TimeoutError
 
 def run_query(con, query_id, query_spec, query_parameters):
     if test:
@@ -31,11 +15,7 @@ def run_query(con, query_id, query_spec, query_parameters):
     for key in query_parameters.keys():
         query_spec = query_spec.replace(f":{key}", query_parameters[key])
 
-    try:
-        with timeout(300):
-            cur.execute(query_spec)
-    except TimeoutError:
-        return
+    cur.execute(query_spec)
     results = cur.fetchall()
     end = time.time()
     duration = end - start
