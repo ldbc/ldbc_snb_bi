@@ -14,10 +14,9 @@ To get started with the LDBC SNB benchmarks, check out our introductory presenta
 
 ## Implementations
 
-The repository contains three implementations:
+The repository contains the following implementations:
 
 * [`cypher`](cypher/): queries are expressed in the Cypher language and run in the Neo4j graph database management system (version 4) using its stored procedure libraries (e.g. Graph Data Science)
-* [`postgres`](postgres/): queries are implemented in SQL and run in PostgreSQL relational database management system (version 14) (incomplete, see [related issues](https://github.com/ldbc/ldbc_snb_bi/labels/postgres))
 * [`umbra`](umbra/): queries are implemented in SQL and run in [Umbra JIT-compiled columnar database management system](https://umbra-db.com/) (incomplete, see [related issues](https://github.com/ldbc/ldbc_snb_bi/labels/umbra))
 
 All implementations use Docker for ease of setup and execution. However, the setups can be adjusted to use a non-containerized DBMS.
