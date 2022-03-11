@@ -21,9 +21,7 @@ jobs:
             sudo apt update
             # install dependencies
             sudo apt install -y wget unzip
-            paramgen/scripts/install-dependencies.sh
-            cypher/scripts/install-dependencies.sh
-            postgres/scripts/install-dependencies.sh
+            scripts/install-dependencies.sh
       - run:
           name: Download data sets
           command: |
@@ -35,11 +33,9 @@ jobs:
             unzip -q social-network-sf0.003-bi-composite-projected-fk-neo4j.zip
             wget -q https://ldbcouncil.org/ldbc_snb_datagen_spark/social-network-sf0.003-bi-composite-projected-fk-neo4j-compressed.zip
             unzip -q social-network-sf0.003-bi-composite-projected-fk-neo4j-compressed.zip
-            # Postgres
+            # Umbra
             wget -q https://ldbcouncil.org/ldbc_snb_datagen_spark/social-network-sf0.003-bi-composite-merged-fk.zip
             unzip -q social-network-sf0.003-bi-composite-merged-fk.zip
-            wget -q https://ldbcouncil.org/ldbc_snb_datagen_spark/social-network-sf0.003-bi-composite-merged-fk-postgres-compressed.zip
-            unzip -q social-network-sf0.003-bi-composite-merged-fk-postgres-compressed.zip
             cd ..
       - run:
           name: Download factors
@@ -59,12 +55,6 @@ jobs:
             cypher/scripts/batches.sh
             cd ..
       - run:
-          name: Test Postgres toolchain with uncompressed CSVs
-          command: |
-            export POSTGRES_CSV_DIR=`pwd`/test-data/social-network-sf0.003-bi-composite-merged-fk/graphs/csv/bi/composite-merged-fk/
-            postgres/scripts/load-in-one-step.sh
-            postgres/scripts/batches.sh
-      - run:
           name: Test Cypher toolchain with compressed CSVs
           command: |
             export NEO4J_CSV_DIR=`pwd`/test-data/social-network-sf0.003-bi-composite-projected-fk-neo4j-compressed/graphs/csv/bi/composite-projected-fk/
@@ -74,23 +64,9 @@ jobs:
             cypher/scripts/batches.sh
             cd ..
       - run:
-          name: Test Postgres toolchain with compressed CSVs
-          command: |
-            export POSTGRES_CSV_DIR=`pwd`/test-data/social-network-sf0.003-bi-composite-merged-fk-postgres-compressed/graphs/csv/bi/composite-merged-fk/
-            export POSTGRES_CSV_FLAGS="--compressed"
-            postgres/scripts/load-in-one-step.sh
-            postgres/scripts/backup-database.sh
-            postgres/scripts/batches.sh
-      - run:
           name: Test Cypher BI script
           command: |
             export NEO4J_CSV_DIR=`pwd`/test-data/social-network-sf0.003-bi-composite-projected-fk-neo4j/graphs/csv/bi/composite-projected-fk/
             cypher/scripts/restore-database.sh
             cypher/scripts/bi.sh 0.003 --test
-      - run:
-          name: Test Postgres BI script
-          command: |
-            export POSTGRES_CSV_DIR=`pwd`/test-data/social-network-sf0.003-bi-composite-merged-fk/graphs/csv/bi/composite-merged-fk/
-            postgres/scripts/restore-database.sh
-            postgres/scripts/bi.sh --test
       - slack/status
