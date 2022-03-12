@@ -16,4 +16,5 @@ LEFT JOIN Person_knows_Person k3
 WHERE k1.Person1Id != k2.Person2Id
 GROUP BY k1.Person1Id, k2.Person2Id
 ORDER BY mutualFriendCount DESC, k1.Person1Id ASC, k2.Person2Id ASC
+LIMIT 20
 ;
