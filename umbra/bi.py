@@ -52,12 +52,11 @@ def convert_value_to_string(value, result_type, input):
         raise ValueError(f"Result type {result_type} not found")
 
 def run_query(con, query_num, query_spec, query_parameters):
-    start = time.time()
-    cur = con.cursor()
-
     for key in query_parameters.keys():
         query_spec = query_spec.replace(f":{key}", query_parameters[key])
 
+    cur = con.cursor()
+    start = time.time()
     cur.execute(query_spec)
     results = cur.fetchall()
     end = time.time()
@@ -94,7 +93,7 @@ timings_file.write(f"sf|q|time\n")
 
 con = psycopg2.connect(host="localhost", port=8000, user="postgres", password="mysecretpassword")
 
-for query_variant in ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "15a", "15b", "16a", "16b", "17", "18"]: #, "19a", "19b", "20"
+for query_variant in ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "16a", "16b", "18", "17", "15b", "15a"]:
     query_num = int(re.sub("[^0-9]", "", query_variant))
     query_subvariant = re.sub("[^ab]", "", query_variant)
 
