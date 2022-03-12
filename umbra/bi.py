@@ -95,7 +95,8 @@ timings_file.write(f"sf|q|time\n")
 
 con = psycopg2.connect(host="localhost", port=8000, user="postgres", password="mysecretpassword")
 
-for query_variant in ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "15a", "15b", "16a", "16b", "17", "18"]: #, "19a", "19b", "20"
+#for query_variant in ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "15a", "15b", "16a", "16b", "17", "18"]: #, "19a", "19b", "20"
+for query_variant in ["4"]:
     query_num = int(re.sub("[^0-9]", "", query_variant))
     query_subvariant = re.sub("[^ab]", "", query_variant)
 
@@ -125,7 +126,7 @@ for query_variant in ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9",
 
         timings_file.write(f"{sf}|{query_variant}|{duration}\n")
         timings_file.flush()
-        #results_file.write(f"{query_num}|{query_variant}|{query_parameters_in_order}|{results}\n")
+        results_file.write(f"{query_num}|{query_variant}|{results}\n")
         results_file.flush()
 
         # test run: 1 query, regular run: 10 queries
