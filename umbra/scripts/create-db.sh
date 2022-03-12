@@ -6,7 +6,7 @@ set -o pipefail
 cd "$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 cd ..
 
-echo -n "Cleaning up. . ."
+echo -n "Cleaning up . . ."
 # ensure database and log dirs exists and are empty
 mkdir -p ${UMBRA_DATABASE_DIR}/
 mkdir -p ${UMBRA_LOG_DIR}/

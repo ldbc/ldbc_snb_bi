@@ -8,7 +8,22 @@ FROM Person_knows_Person;
 
 -- Views
 
-CREATE VIEW Message AS
+CREATE TABLE Message (
+    creationDate timestamp with time zone not null,
+    id bigint primary key,
+    content varchar(2000),
+    imageFile varchar(40),
+    locationIP varchar(40) not null,
+    browserUsed varchar(40) not null,
+    language varchar(40),
+    length int not null,
+    CreatorPersonId bigint not null,
+    ContainerForumId bigint,
+    LocationCountryId bigint not null,
+    ParentMessageId bigint
+);
+
+INSERT INTO Message
     SELECT creationDate, id, content, NULL AS imageFile, locationIP, browserUsed, NULL AS language, length, CreatorPersonId, NULL AS ContainerForumId, LocationCountryId, coalesce(ParentPostId, ParentCommentId) AS ParentMessageId
     FROM Comment
     UNION ALL
@@ -17,8 +32,24 @@ CREATE VIEW Message AS
 ;
 
 -- recursive view containing the root Post of each Message (for Posts, themselves, for Comments, traversing up the Message thread to the root Post of the tree)
-CREATE VIEW MessageThread AS
-    WITH RECURSIVE MessageThread_CTE(creationDate, MessageId, RootPostId, RootPostLanguage, content, imageFile, locationIP, browserUsed, language, length, CreatorPersonId, ContainerForumId, LocationCountryId, ParentMessageId, type) AS (
+CREATE TABLE MessageThread (
+    creationDate timestamp with time zone not null,
+    MessageId bigint primary key,
+    RootPostId bigint not null,
+    RootPostLanguage varchar(40),
+    content varchar(2000),
+    imageFile varchar(40),
+    locationIP varchar(40) not null,
+    browserUsed varchar(40) not null,
+    length int not null,
+    CreatorPersonId bigint not null,
+    ContainerForumId bigint,
+    LocationCountryId bigint not null,
+    ParentMessageId bigint,
+    type varchar(7)
+);
+INSERT INTO MessageThread
+    WITH RECURSIVE MessageThread_CTE(creationDate, MessageId, RootPostId, RootPostLanguage, content, imageFile, locationIP, browserUsed, length, CreatorPersonId, ContainerForumId, LocationCountryId, ParentMessageId, type) AS (
         SELECT
             creationDate,
             id AS MessageId,
@@ -28,7 +59,6 @@ CREATE VIEW MessageThread AS
             imageFile,
             locationIP,
             browserUsed,
-            language,
             length,
             CreatorPersonId,
             ContainerForumId,
@@ -46,7 +76,6 @@ CREATE VIEW MessageThread AS
             NULL::varchar(40) AS imageFile,
             Comment.locationIP AS locationIP,
             Comment.browserUsed AS browserUsed,
-            NULL::varchar(40) AS language,
             Comment.length AS length,
             Comment.CreatorPersonId AS CreatorPersonId,
             MessageThread_CTE.ContainerForumId AS ContainerForumId,
@@ -58,37 +87,71 @@ CREATE VIEW MessageThread AS
     )
     SELECT * FROM MessageThread_CTE;
 
-CREATE VIEW Person_likes_Message AS
+CREATE TABLE Person_likes_Message (
+    creationDate timestamp with time zone NOT NULL,
+    PersonId bigint NOT NULL,
+    MessageId bigint NOT NULL
+);
+INSERT INTO Person_likes_Message
     SELECT creationDate, PersonId, CommentId AS MessageId FROM Person_likes_Comment
     UNION ALL
     SELECT creationDate, PersonId, PostId AS MessageId FROM Person_likes_Post
 ;
 
-CREATE VIEW Message_hasTag_Tag AS
+CREATE TABLE Message_hasTag_Tag (
+    creationDate timestamp with time zone NOT NULL,
+    MessageId bigint NOT NULL,
+    TagId bigint NOT NULL
+);
+INSERT INTO Message_hasTag_Tag
     SELECT creationDate, CommentId AS MessageId, TagId FROM Comment_hasTag_Tag
     UNION ALL
     SELECT creationDate, PostId AS MessageId, TagId FROM Post_hasTag_Tag
 ;
 
-CREATE VIEW Country AS
+CREATE TABLE Country (
+    id bigint primary key,
+    name varchar(256) not null,
+    url varchar(256) not null,
+    PartOfContinentId bigint
+);
+INSERT INTO Country
     SELECT id, name, url, PartOfPlaceId AS PartOfContinentId
     FROM Place
     WHERE type = 'Country'
 ;
 
-CREATE VIEW City AS
+CREATE TABLE City (
+    id bigint primary key,
+    name varchar(256) not null,
+    url varchar(256) not null,
+    PartOfCountryId bigint
+);
+INSERT INTO City
     SELECT id, name, url, PartOfPlaceId AS PartOfCountryId
     FROM Place
     WHERE type = 'City'
 ;
 
-CREATE VIEW Company AS
+CREATE TABLE Company (
+    id bigint primary key,
+    name varchar(256) not null,
+    url varchar(256) not null,
+    LocationPlaceId bigint not null
+);
+INSERT INTO Company
     SELECT id, name, url, LocationPlaceId AS LocatedInCountryId
     FROM Organisation
     WHERE type = 'Company'
 ;
 
-CREATE VIEW University AS
+CREATE TABLE University (
+    id bigint primary key,
+    name varchar(256) not null,
+    url varchar(256) not null,
+    LocationPlaceId bigint not null
+);
+INSERT INTO University
     SELECT id, name, url, LocationPlaceId AS LocatedInCityId
     FROM Organisation
     WHERE type = 'University'
