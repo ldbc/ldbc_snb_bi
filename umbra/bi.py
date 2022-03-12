@@ -89,7 +89,7 @@ def run_query(con, query_num, query_spec, query_parameters):
     if test:
         print(f"-> {duration:.4f} seconds")
         print(f"-> {result_tuples}")
-    return (results, duration)
+    return (result_tuples, duration)
 
 def convert_to_datetime(timestamp):
     dt = datetime.datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%f+00:00")
