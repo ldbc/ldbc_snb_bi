@@ -1,5 +1,4 @@
-from neo4j import GraphDatabase
-
+import neo4j
 import datetime
 import time
 import csv
@@ -110,7 +109,7 @@ if len(sys.argv) > 1:
     if sys.argv[1] == "--test":
         test = True
 
-driver = GraphDatabase.driver("bolt://localhost:7687")
+driver = neo4j.GraphDatabase.driver("bolt://localhost:7687")
 session = driver.session()
 
 print("Creating graph (precomputing weights) for Q19")
