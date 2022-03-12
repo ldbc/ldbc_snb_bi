@@ -139,12 +139,15 @@ for query_variant in ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9",
     i = 0
     for query_parameters in parameters_csv:
         i = i + 1
-        query_parameters = {k.split(":")[0]: cast_parameter_to_driver_input(v, k.split(":")[1]) for k, v in query_parameters.items()}
-        query_parameters_in_order = f'<{";".join([convert_value_to_string(query_parameters[parameter["name"]], parameter["type"], True) for parameter in parameters])}>'
 
-        (results, duration) = run_query(session, query_num, query_variant, query_spec, query_parameters, test)
+        query_parameters_converted = {k.split(":")[0]: cast_parameter_to_driver_input(v, k.split(":")[1]) for k, v in query_parameters.items()}
 
-        timings_file.write(f"{sf}|{query_variant}|{duration}\n")
+        query_parameters_split = {k.split(":")[0]: v for k, v in query_parameters.items()}
+        query_parameters_in_order = f'<{";".join([query_parameters_split[parameter["name"]] for parameter in parameters])}>'
+
+        (results, duration) = run_query(session, query_num, query_variant, query_spec, query_parameters_converted, test)
+
+        timings_file.write(f"{sf}|{query_variant}|{query_parameters_in_order}|{duration}\n")
         timings_file.flush()
         results_file.write(f"{query_num}|{query_variant}|{query_parameters_in_order}|{results}\n")
         results_file.flush()

@@ -51,6 +51,24 @@ def convert_value_to_string(value, result_type, input):
     else:
         raise ValueError(f"Result type {result_type} not found")
 
+
+def cast_parameter_to_driver_input(value, parameter_type):
+    if parameter_type == "INT" or parameter_type == "INT32":
+        return value
+    elif parameter_type == "ID" or parameter_type == "INT64":
+        return f"{value}::bigint"
+    elif parameter_type == "STRING[]":
+        return "(" + ', '.join([f"'{e}'" for e in value.split(';') ]) + ")"
+    elif parameter_type == "STRING":
+        return f"'{value}'"
+    elif parameter_type == "DATETIME":
+        return convert_to_datetime(value)
+    elif parameter_type == "DATE":
+        return convert_to_date(value)
+    else:
+        raise ValueError(f"Parameter type {parameter_type} not found")
+
+
 def run_query(con, query_num, query_spec, query_parameters):
     for key in query_parameters.keys():
         query_spec = query_spec.replace(f":{key}", query_parameters[key])
@@ -102,28 +120,22 @@ for query_variant in ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9",
     query_spec = query_file.read()
 
     parameters_csv = csv.DictReader(open(f'../parameters/bi-{query_variant}.csv'), delimiter='|')
+    parameters = [{"name": t[0], "type": t[1]} for t in [f.split(":") for f in parameters_csv.fieldnames]]
 
     i = 0
     for query_parameters in parameters_csv:
         i = i + 1
-        # convert fields based on type designators
-        query_parameters = {k: f"{v}::bigint"         if re.match('.*:(ID|LONG)', k)       else v for k, v in query_parameters.items()}
-        query_parameters = {k: convert_to_date(v)     if re.match('.*:DATE$', k)           else v for k, v in query_parameters.items()}
-        query_parameters = {k: convert_to_datetime(v) if re.match('.*:DATETIME', k)        else v for k, v in query_parameters.items()}
-        query_parameters = {k: f"'{v}'"               if re.match('.*:STRING([^[]|$)', k)  else v for k, v in query_parameters.items()}
-        query_parameters = {k:
-            "("
-            + ', '.join([f"'{e}'" for e in v.split(';') ])
-            + ")"
-            if re.findall('\[\]$', k) else v for k, v in query_parameters.items()}
-        # drop type designators
-        type_pattern = re.compile(':.*')
-        query_parameters = {type_pattern.sub('', k): v for k, v in query_parameters.items()}
-        (results, duration) = run_query(con, query_num, query_spec, query_parameters)
 
-        timings_file.write(f"{sf}|{query_variant}|{duration}\n")
+        query_parameters_converted = {k.split(":")[0]: cast_parameter_to_driver_input(v, k.split(":")[1]) for k, v in query_parameters.items()}
+
+        query_parameters_split = {k.split(":")[0]: v for k, v in query_parameters.items()}
+        query_parameters_in_order = f'<{";".join([query_parameters_split[parameter["name"]] for parameter in parameters])}>'
+
+        (results, duration) = run_query(con, query_num, query_spec, query_parameters_converted)
+
+        timings_file.write(f"{sf}|{query_variant}|{query_parameters_in_order}|{duration}\n")
         timings_file.flush()
-        results_file.write(f"{query_num}|{query_variant}|{results}\n")
+        results_file.write(f"{query_num}|{query_variant}|{query_parameters_in_order}|{results}\n")
         results_file.flush()
 
         # test run: 1 query, regular run: 10 queries
