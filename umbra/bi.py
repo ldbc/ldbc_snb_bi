@@ -68,11 +68,10 @@ def run_query(con, query_num, query_spec, query_parameters):
             f'<{",".join([convert_value_to_string(result[i], type, False) for i, type in enumerate(mapping)])}>'
             for result in results
         ]) + "]"
-    print("-> " + result_tuples)
 
     if test:
         print(f"-> {duration:.4f} seconds")
-        print(f"-> {results}")
+        print(f"-> {result_tuples}")
     return (results, duration)
 
 def convert_to_datetime(timestamp):
