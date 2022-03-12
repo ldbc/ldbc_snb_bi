@@ -35,55 +35,55 @@ result_mapping = {
     20: ["ID", "INT64"],
 }
 
-def convert_value_to_string(value, type, input):
-    if type == "ID[]" or type == "INT[]" or type == "INT32[]" or type == "INT64[]":
-        return ";".join([str(int(x)) for x in value])
-    elif type == "ID" or type == "INT" or type == "INT32" or type == "INT64":
+def convert_value_to_string(value, result_type, input):
+    if result_type == "ID[]" or result_type == "INT[]" or result_type == "INT32[]" or result_type == "INT64[]":
+        return "[" + ";".join([str(int(x)) for x in value]) + "]"
+    elif result_type == "ID" or result_type == "INT" or result_type == "INT32" or result_type == "INT64":
         return str(int(value))
-    elif type == "FLOAT" or type == "FLOAT32" or type == "FLOAT64":
+    elif result_type == "FLOAT" or result_type == "FLOAT32" or result_type == "FLOAT64":
         return str(float(value))
-    elif type == "STRING[]":
+    elif result_type == "STRING[]":
         return "[" + ";".join([f'"{v}"' for v in value]) + "]"
-    elif type == "STRING":
+    elif result_type == "STRING":
         return f'"{value}"'
-    elif type == "DATETIME":
+    elif result_type == "DATETIME":
         if input:
             return f"{datetime.datetime.strftime(value, '%Y-%m-%dT%H:%M:%S.%f')[:-3]}+00:00"
         else:
             return f"{datetime.datetime.strftime(value.to_native(), '%Y-%m-%dT%H:%M:%S.%f')[:-3]}+00:00"
-    elif type == "DATE":
+    elif result_type == "DATE":
         if input:
             return datetime.datetime.strftime(value, '%Y-%m-%d')
         else:
             return datetime.datetime.strftime(value.to_native(), '%Y-%m-%d')
-    elif type == "BOOL":
+    elif result_type == "BOOL":
         return str(bool(value))
     else:
-        raise ValueError(f"Result type {type} not found")
+        raise ValueError(f"Result type {result_type} not found")
 
-def cast_parameter_to_driver_input(value, type):
-    if type == "ID[]" or type == "INT[]" or type == "INT32[]" or type == "INT64[]":
+def cast_parameter_to_driver_input(value, parameter_type):
+    if parameter_type == "ID[]" or parameter_type == "INT[]" or parameter_type == "INT32[]" or parameter_type == "INT64[]":
         return [int(x) for x in value.split(";")]
-    elif type == "ID" or type == "INT" or type == "INT32" or type == "INT64":
+    elif parameter_type == "ID" or parameter_type == "INT" or parameter_type == "INT32" or parameter_type == "INT64":
         return int(value)
-    elif type == "STRING[]":
+    elif parameter_type == "STRING[]":
         return value.split(";")
-    elif type == "STRING":
+    elif parameter_type == "STRING":
         return value
-    elif type == "DATETIME":
+    elif parameter_type == "DATETIME":
         dt = datetime.datetime.strptime(value, '%Y-%m-%dT%H:%M:%S.%f+00:00')
         return datetime.datetime(dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second, dt.microsecond*1000, tzinfo=datetime.timezone.utc)
-    elif type == "DATE":
+    elif parameter_type == "DATE":
         dt = datetime.datetime.strptime(value, '%Y-%m-%d')
         return datetime.datetime(dt.year, dt.month, dt.day, tzinfo=datetime.timezone.utc)
     else:
-        raise ValueError(f"Parameter type {type} not found")
+        raise ValueError(f"Parameter type {parameter_type} not found")
 
 def read_query_fun(tx, query_num, query_spec, query_parameters):
     results = tx.run(query_spec, query_parameters)
     mapping = result_mapping[query_num]
     result_tuples = "[" + ";".join([
-            f'<{",".join([convert_value_to_string(result[i], type, False) for i, type in enumerate(mapping)])}>'
+            f'<{",".join([convert_value_to_string(result[i], value_type, False) for i, value_type in enumerate(mapping)])}>'
             for result in results
         ]) + "]"
     return result_tuples
