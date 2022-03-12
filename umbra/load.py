@@ -54,8 +54,8 @@ for entity in static_entities:
         csv_path = f"{entity}/{csv_file}"
         print(f"- {csv_path}", end='\r')
         con.execute(f"COPY {entity} FROM '{dbs_data_dir}/initial_snapshot/static/{entity}/{csv_file}' (DELIMITER '|', HEADER, FORMAT csv)")
+        print(" " * 120, end='\r')
         pg_con.commit()
-print(" " * 120, end='\r')
 print("Loaded static entities.")
 
 print("## Dynamic entities")
@@ -64,8 +64,8 @@ for entity in dynamic_entities:
         csv_path = f"{entity}/{csv_file}"
         print(f"- {csv_path}", end='\r')
         con.execute(f"COPY {entity} FROM '{dbs_data_dir}/initial_snapshot/dynamic/{entity}/{csv_file}' (DELIMITER '|', HEADER, FORMAT csv)")
+        print(" " * 120, end='\r')
         pg_con.commit()
-print(" " * 120, end='\r')
 print("Loaded dynamic entities.")
 
 print("Creating materialized views . . . ", end="")
