@@ -68,8 +68,10 @@ for entity in dynamic_entities:
 print(" " * 120, end='\r')
 print("Loaded dynamic entities.")
 
+print("Creating materialized views . . . ", end="")
 run_script(con, "ddl/constraints.sql")
 pg_con.commit()
+print("Done.")
 
 print("Vacuuming . . . ", end="")
 vacuum(pg_con)
