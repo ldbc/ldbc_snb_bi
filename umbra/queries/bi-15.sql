@@ -74,7 +74,7 @@ WITH RECURSIVE ReplyScores(ThreadId
          , ARRAY[person1Id, person2Id]::bigint[] AS path
          , score AS weight
          , 1 AS hopCount
-         , max(CASE WHEN person2Id = :person2Id THEN 1 ELSE 0 END) OVER () AS person2Reached
+         , max(CASE WHEN person2Id = :person2Id THEN 1 ELSE 0 END) OVER (ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS person2Reached
       FROM wknows
      WHERE person1Id = :person1Id
   UNION ALL
@@ -83,7 +83,7 @@ WITH RECURSIVE ReplyScores(ThreadId
          , array_append(path, person2Id) AS path
          , weight + score AS weight
          , hopCount + 1 AS hopCount
-         , max(CASE WHEN person2Id = :person2Id THEN 1 ELSE 0 END) OVER () AS person2Reached
+         , max(CASE WHEN person2Id = :person2Id THEN 1 ELSE 0 END) OVER (ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS person2Reached
       FROM paths p
       JOIN wknows k
         ON p.endPerson = k.person1Id
