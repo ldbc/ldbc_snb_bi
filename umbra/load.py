@@ -52,9 +52,10 @@ print("## Static entities")
 for entity in static_entities:
     for csv_file in [f for f in os.listdir(f"{static_path}/{entity}") if f.startswith("part-") and f.endswith(".csv")]:
         csv_path = f"{entity}/{csv_file}"
-        print(f"- {csv_path}", end='\r')
+        print(f"- {csv_path}")
+        #print(f"- {csv_path}", end='\r')
         con.execute(f"COPY {entity} FROM '{dbs_data_dir}/initial_snapshot/static/{entity}/{csv_file}' (DELIMITER '|', HEADER, FORMAT csv)")
-        print(" " * 120, end='\r')
+        #print(" " * 120, end='\r')
         pg_con.commit()
 print("Loaded static entities.")
 
@@ -62,9 +63,10 @@ print("## Dynamic entities")
 for entity in dynamic_entities:
     for csv_file in [f for f in os.listdir(f"{dynamic_path}/{entity}") if f.startswith("part-") and f.endswith(".csv")]:
         csv_path = f"{entity}/{csv_file}"
-        print(f"- {csv_path}", end='\r')
+        print(f"- {csv_path}")
+        #print(f"- {csv_path}", end='\r')
         con.execute(f"COPY {entity} FROM '{dbs_data_dir}/initial_snapshot/dynamic/{entity}/{csv_file}' (DELIMITER '|', HEADER, FORMAT csv)")
-        print(" " * 120, end='\r')
+        #print(" " * 120, end='\r')
         pg_con.commit()
 print("Loaded dynamic entities.")
 
