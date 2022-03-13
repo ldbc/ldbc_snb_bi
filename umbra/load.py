@@ -1,6 +1,7 @@
 import psycopg2
 import sys
 import os
+import time
 
 def vacuum(con):
     old_isolation_level = con.isolation_level
@@ -26,8 +27,12 @@ def run_script(con, filename):
         for query in queries:
             if query.isspace():
                 continue
-            #print(f"{query}")
+            print(f"{query}")
+            start = time.time()
             con.execute(query)
+            end = time.time()
+            duration = end - start
+            print(f"-> {duration:.4f} seconds")
 
 
 run_script(con, "ddl/drop-views.sql")
