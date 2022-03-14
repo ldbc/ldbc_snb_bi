@@ -32,7 +32,7 @@ WITH RECURSIVE ReplyScores(ThreadId
       JOIN Comment
         ON coalesce(Comment.ParentPostId, Comment.ParentCommentId) = r.ReplyMessageId
 )
-   , Person_paiScores_directed AS (
+   , Person_pairScores_directed AS (
     SELECT OriginalMessageCreatorPersonId AS OriginalMessageAuthorPersonId
          , ReplyMessageCreatorPersonId AS ReplyMessageCreatorPersonId
          , sum(Score) AS score
@@ -42,13 +42,13 @@ WITH RECURSIVE ReplyScores(ThreadId
            OriginalMessageCreatorPersonId != ReplyMessageCreatorPersonId
      GROUP BY OriginalMessageCreatorPersonId, ReplyMessageCreatorPersonId
 )
-   , Person_paiScores AS (
+   , Person_pairScores AS (
         -- note: this should already have both (A, B, score) and (B, A, score)
     SELECT coalesce(s1.OriginalMessageAuthorPersonId, s2.ReplyMessageCreatorPersonId) AS person1Id
          , coalesce(s1.ReplyMessageCreatorPersonId, s2.OriginalMessageAuthorPersonId) AS person2Id
          , coalesce(s1.score, 0.0) + coalesce(s2.score, 0.0) AS score
-      FROM Person_paiScores_directed s1
-           FULL JOIN Person_paiScores_directed s2
+      FROM Person_pairScores_directed s1
+           FULL JOIN Person_pairScores_directed s2
                   ON s1.OriginalMessageAuthorPersonId = s2.ReplyMessageCreatorPersonId 
                  AND s1.ReplyMessageCreatorPersonId = s2.OriginalMessageAuthorPersonId
 )
@@ -58,7 +58,7 @@ WITH RECURSIVE ReplyScores(ThreadId
          , Person_knows_Person.person2Id
          , coalesce(score, 0.0) AS score
       FROM Person_knows_Person
-           LEFT JOIN Person_paiScores pps
+           LEFT JOIN Person_pairScores pps
                   ON Person_knows_Person.person1Id = pps.person1Id
                  AND Person_knows_Person.person2Id = pps.person2Id
 )
