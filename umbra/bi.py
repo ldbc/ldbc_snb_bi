@@ -101,9 +101,12 @@ def convert_to_date(timestamp):
 
 sf = os.environ.get("SF")
 test = False
+pgtuning = False
 if len(sys.argv) > 1:
     if sys.argv[1] == "--test":
         test = True
+    if sys.argv[1] == "--pgtuning":
+        pgtuning = True
 
 results_file = open(f'output/results.csv', 'w')
 timings_file = open(f'output/timings.csv', 'w')
@@ -111,7 +114,7 @@ timings_file.write(f"sf|q|parameters|time\n")
 
 con = psycopg2.connect(host="localhost", port=8000, user="postgres", password="mysecretpassword")
 
-for query_variant in ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "16a", "16b", "18", "17", "15b", "15a"]:
+for query_variant in ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "16a", "16b", "17", "18", "15b"]: #, "15a"
     query_num = int(re.sub("[^0-9]", "", query_variant))
     query_subvariant = re.sub("[^ab]", "", query_variant)
 
@@ -138,8 +141,10 @@ for query_variant in ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9",
         results_file.write(f"{query_num}|{query_variant}|{query_parameters_in_order}|{results}\n")
         results_file.flush()
 
-        # test run: 1 query, regular run: 10 queries
-        if test or i == 10:
+        # - test run: 1 query
+        # - regular run: 10 queries
+        # - paramgen tuning: 50 queries
+        if (test) or (not pgtuning and i == 10) or (pgtuning and i == 100):
             break
 
 results_file.close()
