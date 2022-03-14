@@ -122,7 +122,7 @@ session.write_transaction(write_query_fun, open(f'queries/bi-20-create-graph.cyp
 
 results_file = open(f'output/results.csv', 'w')
 timings_file = open(f'output/timings.csv', 'w')
-timings_file.write(f"sf|q|time\n")
+timings_file.write(f"sf|q|parameters|time\n")
 
 for query_variant in ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "15a", "15b", "16a", "16b", "17", "18", "19a", "19b", "20"]:
     query_num = int(re.sub("[^0-9]", "", query_variant))

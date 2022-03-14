@@ -107,7 +107,7 @@ if len(sys.argv) > 1:
 
 results_file = open(f'output/results.csv', 'w')
 timings_file = open(f'output/timings.csv', 'w')
-timings_file.write(f"sf|q|time\n")
+timings_file.write(f"sf|q|parameters|time\n")
 
 con = psycopg2.connect(host="localhost", port=8000, user="postgres", password="mysecretpassword")
 
