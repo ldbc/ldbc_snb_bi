@@ -16,20 +16,7 @@ def run_script(con, filename):
 
 print("Datagen / apply batches using SQL")
 
-if len(sys.argv) < 2:
-    print("Usage: batches.py <UMBRA_DATA_DIR> [--compressed]")
-    exit(1)
-
-data_dir = sys.argv[1]
-compressed = len(sys.argv) == 3 and sys.argv[2] == "--compressed"
-
-if compressed:
-    csv_extension = ".csv.gz"
-    csv_from_clause_prefix="PROGRAM 'gzip -dc "
-else:
-    csv_extension = ".csv"
-    csv_from_clause_prefix="'"
-csv_from_clause_postfix="'"
+data_dir = sf = os.environ.get("UMBRA_DATA_DIR")
 
 insert_nodes = ["Comment", "Forum", "Person", "Post"]
 insert_edges = ["Comment_hasTag_Tag", "Forum_hasMember_Person", "Forum_hasTag_Tag", "Person_hasInterest_Tag", "Person_knows_Person", "Person_likes_Comment", "Person_likes_Post", "Person_studyAt_University", "Person_workAt_Company",  "Post_hasTag_Tag"]
@@ -67,10 +54,10 @@ while batch_start_date < network_end_date:
             continue
 
         print(f"--> {entity}:")
-        for csv_file in [f for f in os.listdir(batch_path) if f.endswith(csv_extension)]:
+        for csv_file in [f for f in os.listdir(batch_path) if f.endswith(".csv")]:
             csv_path = f"{batch_path}/{csv_file}"
             print(f"- {csv_path}")
-            con.execute(f"COPY {entity} FROM {csv_from_clause_prefix}/data/inserts/dynamic/{entity}/{batch_dir}/{csv_file}{csv_from_clause_postfix} (DELIMITER '|', HEADER, FORMAT csv)")
+            con.execute(f"COPY {entity} FROM '/data/inserts/dynamic/{entity}/{batch_dir}/{csv_file}' (DELIMITER '|', HEADER, FORMAT csv)")
             pg_con.commit()
 
     print("## Deletes")
@@ -93,10 +80,10 @@ while batch_start_date < network_end_date:
             continue
 
         print(f"--> {entity}:")
-        for csv_file in [f for f in os.listdir(batch_path) if f.endswith(csv_extension)]:
+        for csv_file in [f for f in os.listdir(batch_path) if f.endswith(".csv")]:
             csv_path = f"{batch_path}/{csv_file}"
             print(f"> {csv_path}")
-            con.execute(f"COPY {entity}_Delete_candidates FROM {csv_from_clause_prefix}/data/deletes/dynamic/{entity}/{batch_dir}/{csv_file}{csv_from_clause_postfix} (DELIMITER '|', HEADER, FORMAT csv)")
+            con.execute(f"COPY {entity}_Delete_candidates FROM '/data/deletes/dynamic/{entity}/{batch_dir}/{csv_file}' (DELIMITER '|', HEADER, FORMAT csv)")
             pg_con.commit()
 
     print()

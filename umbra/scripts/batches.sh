@@ -8,9 +8,4 @@ cd ..
 
 . scripts/vars.sh
 
-if [ ! -d "${UMBRA_CSV_DIR}" ]; then
-    echo "Directory ${UMBRA_CSV_DIR} does not exist."
-    exit 1
-fi
-
-python3 batches.py ${UMBRA_CSV_DIR}
+python3 batches.py $@
