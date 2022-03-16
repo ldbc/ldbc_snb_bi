@@ -15,14 +15,14 @@ In Datagen's directory (`ldbc_snb_datagen_spark`), issue the following commands.
 
 ```bash
 export SF=desired_scale_factor
-export LDBC_DATAGEN_MAX_MEM=available_memory
+export LDBC_SNB_DATAGEN_MAX_MEM=available_memory
 ```
 
 ```bash
 rm -rf out-sf${SF}/
 tools/run.py \
     --cores $(nproc) \
-    --memory ${LDBC_DATAGEN_MAX_MEM} \
+    --memory ${LDBC_SNB_DATAGEN_MAX_MEM} \
     ./target/ldbc_snb_datagen_${PLATFORM_VERSION}-${DATAGEN_VERSION}.jar \
     -- \
     --format csv \
@@ -58,13 +58,11 @@ Note that unlike Postgres, Umbra does not support directly loading from compress
 
 ## Microbatches
 
-Test loading the microbatches:
+Test loading the microbatches, make sure that `${UMBRA_CSV_DIR}` is set correctly and run:
 
 ```bash
 scripts/batches.sh
 ```
-
-:warning: Deletions currently do not work, see the `#TODO` entries in `batches.py`.
 
 ## Queries
 
