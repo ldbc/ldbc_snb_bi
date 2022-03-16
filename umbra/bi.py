@@ -70,11 +70,11 @@ def cast_parameter_to_driver_input(value, parameter_type):
         raise ValueError(f"Parameter type {parameter_type} not found")
 
 
-def run_query(con, query_num, query_spec, query_parameters):
+def run_query(pg_con, query_num, query_spec, query_parameters):
     for key in query_parameters.keys():
         query_spec = query_spec.replace(f":{key}", query_parameters[key])
 
-    cur = con.cursor()
+    cur = pg_con.cursor()
     start = time.time()
     cur.execute(query_spec)
     results = cur.fetchall()
@@ -117,7 +117,7 @@ results_file = open(f'output/results.csv', 'w')
 timings_file = open(f'output/timings.csv', 'w')
 timings_file.write(f"sf|q|parameters|time\n")
 
-con = psycopg2.connect(host="localhost", user="postgres", password="mysecretpassword", port=8000)
+pg_con = psycopg2.connect(host="localhost", user="postgres", password="mysecretpassword", port=8000)
 
 for query_variant in ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "16a", "16b", "17", "18", "15b"]: #, "15a"
     query_num = int(re.sub("[^0-9]", "", query_variant))
@@ -139,7 +139,7 @@ for query_variant in ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9",
         query_parameters_split = {k.split(":")[0]: v for k, v in query_parameters.items()}
         query_parameters_in_order = f'<{";".join([query_parameters_split[parameter["name"]] for parameter in parameters])}>'
 
-        (results, duration) = run_query(con, query_num, query_spec, query_parameters_converted)
+        (results, duration) = run_query(pg_con, query_num, query_spec, query_parameters_converted)
 
         timings_file.write(f"{sf}|{query_variant}|{query_parameters_in_order}|{duration}\n")
         timings_file.flush()
@@ -155,4 +155,4 @@ for query_variant in ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9",
 results_file.close()
 timings_file.close()
 
-con.close()
+pg_con.close()
