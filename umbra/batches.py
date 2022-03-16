@@ -1,7 +1,6 @@
 import psycopg2
 from datetime import datetime, date
 from dateutil.relativedelta import relativedelta
-import sys
 import os
 
 def run_script(cur, filename):

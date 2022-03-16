@@ -72,6 +72,14 @@ To run the queries, issue:
 scripts/bi.sh
 ```
 
+## Benchmark
+
+To run the queries and the batches alternately, as specified by the benchmark, run:
+
+```bash
+scripts/benchmark.sh
+```
+
 ## Running queries interactively
 
 To connect to the database through the SQL console, use:
