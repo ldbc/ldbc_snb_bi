@@ -37,13 +37,13 @@ result_mapping = {
 
 def convert_value_to_string(value, result_type, input):
     if result_type == "ID[]" or result_type == "INT[]" or result_type == "INT32[]" or result_type == "INT64[]":
-        return "[" + ";".join([str(int(x)) for x in value]) + "]"
+        return "[" + ",".join([str(int(x)) for x in value]) + "]"
     elif result_type == "ID" or result_type == "INT" or result_type == "INT32" or result_type == "INT64":
         return str(int(value))
     elif result_type == "FLOAT" or result_type == "FLOAT32" or result_type == "FLOAT64":
         return str(float(value))
     elif result_type == "STRING[]":
-        return "[" + ";".join([f'"{v}"' for v in value]) + "]"
+        return "[" + ",".join([f'"{v}"' for v in value]) + "]"
     elif result_type == "STRING":
         return f'"{value}"'
     elif result_type == "DATETIME":
