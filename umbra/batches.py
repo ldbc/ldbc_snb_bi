@@ -33,8 +33,8 @@ con = pg_con.cursor()
 
 run_script(con, f"ddl/schema-delete-candidates.sql");
 
-network_start_date = date(2012, 9, 13)
-network_end_date = date(2012, 12, 31)
+network_start_date = date(2012, 11, 29)
+network_end_date = date(2013, 1, 11)
 # smaller range for testing
 #network_end_date = date(2012, 9, 15)
 batch_size = relativedelta(days=1)

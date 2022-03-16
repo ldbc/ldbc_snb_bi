@@ -54,8 +54,8 @@ for entity in delete_entities:
 driver = GraphDatabase.driver("bolt://localhost:7687")
 session = driver.session()
 
-network_start_date = date(2012, 9, 13)
-network_end_date = date(2012, 12, 31)
+network_start_date = date(2012, 11, 29)
+network_end_date = date(2013, 1, 1)
 batch_size = relativedelta(days=1)
 
 batch_start_date = network_start_date

@@ -100,7 +100,7 @@ def load_distributed():
 
 header = '_with_header' if args.header else ''
 docker_data = Path('/data')
-network_start_date = date(2012, 11, 31)
+network_start_date = date(2012, 11, 29)
 network_end_date = date(2013, 1, 1)
 batch_size = timedelta(days=1)
 batch_start_date = network_start_date
