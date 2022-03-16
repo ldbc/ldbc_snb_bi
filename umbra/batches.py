@@ -20,7 +20,7 @@ if data_dir is None:
     exit(1)
 
 print("Datagen / apply batches using SQL")
-print(f"- Input data directory (${{UMBRA_CSV_DIR}}): {data_dir}")
+print(f"- Input data directory, ${{UMBRA_CSV_DIR}}: {data_dir}")
 
 insert_nodes = ["Comment", "Forum", "Person", "Post"]
 insert_edges = ["Comment_hasTag_Tag", "Forum_hasMember_Person", "Forum_hasTag_Tag", "Person_hasInterest_Tag", "Person_knows_Person", "Person_likes_Comment", "Person_likes_Post", "Person_studyAt_University", "Person_workAt_Company",  "Post_hasTag_Tag"]
@@ -68,15 +68,7 @@ while batch_start_date < network_end_date:
     # Entities to be deleted are first put into {entity}_Delete_candidate tables.
     # These are cleaned up before running the delete script.
     for entity in delete_entities:
-        #print(f"DELETE FROM {entity}_Delete_candidates");
         cur.execute(f"DELETE FROM {entity}_Delete_candidates")
-        # print(f"====> DROP TABLE IF EXISTS {entity}_Delete_candidates");
-        # cur.execute(f"DROP TABLE IF EXISTS {entity}_Delete_candidates")
-        # print(f"====> recreate table {entity}_Delete_candidates")
-        # if entity in delete_nodes:
-        #     cur.execute(f"CREATE TABLE {entity}_Delete_candidates(deletionDate timestamp with time zone not null, id bigint not null)")
-        # else:
-        #     cur.execute(f"CREATE TABLE {entity}_Delete_candidates(deletionDate timestamp with time zone not null, src bigint not null, trg bigint not null)")
 
         batch_path = f"{data_dir}/deletes/dynamic/{entity}/{batch_dir}"
         if not os.path.exists(batch_path):
