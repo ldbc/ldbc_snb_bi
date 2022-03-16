@@ -7,7 +7,7 @@ import psycopg2
 import time
 import sys
 
-# Usage: bi.py [--test]
+# Usage: queries.py [--test]
 
 result_mapping = {
      1: ["INT32", "BOOL", "INT32", "INT32", "FLOAT32", "INT32", "FLOAT32"],

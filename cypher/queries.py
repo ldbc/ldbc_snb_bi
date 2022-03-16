@@ -6,7 +6,7 @@ import os
 import re
 import sys
 
-# Usage: bi.py [--test]
+# Usage: queries.py [--test]
 
 # TODO: provide two modes of operation: validation and benchmark
 # validation CSV header: Query ID|Query variant|Parameters|Results

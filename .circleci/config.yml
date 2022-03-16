@@ -68,5 +68,5 @@ jobs:
           command: |
             export NEO4J_CSV_DIR=`pwd`/test-data/social-network-sf0.003-bi-composite-projected-fk-neo4j/graphs/csv/bi/composite-projected-fk/
             cypher/scripts/restore-database.sh
-            cypher/scripts/bi.sh 0.003 --test
+            cypher/scripts/queries.sh --test
       - slack/status
