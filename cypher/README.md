@@ -7,6 +7,7 @@ Note that some BI queries are not expressed (efficiently) in Cypher so they make
 
 The Neo4j implementation expects the data to be in `composite-projected-fk` CSV layout, without headers and with quoted fields.
 To generate data that confirms this requirement, run Datagen with the `--explode-edges` and the `--format-options header=false,quoteAll=true` options.
+This implementation also supports compressed data sets, both for the initial load and for batches. To generate compressed data sets, include `compression=gzip` in the Datagen's `--format-options` and set the `${NEO4J_CSV_FLAGS}` accordingly (see later).
 
 (Rationale: Files should not have headers as these are provided separately in the `headers/` directory and quoting the fields in the CSV is required to [preserve trailing spaces](https://neo4j.com/docs/operations-manual/4.3/tools/neo4j-admin-import/#import-tool-header-format).)
 
@@ -30,7 +31,7 @@ tools/run.py \
     --mode bi \
     --output-dir out-sf${SF}/ \
     --generate-factors \
-    --format-options header=false,quoteAll=true
+    --format-options header=false,quoteAll=true,compression=gzip
 ```
 
 ## Loading the data
