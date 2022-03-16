@@ -4,7 +4,7 @@ from dateutil.relativedelta import relativedelta
 import sys
 import os
 
-def run_script(con, filename):
+def run_script(cur, filename):
     with open(filename, "r") as f:
         queries_file = f.read()
         queries = queries_file.split(";")
@@ -12,11 +12,15 @@ def run_script(con, filename):
             if query.isspace():
                 continue
             #print(f"{query}")
-            con.execute(query)
+            cur.execute(query)
+
+data_dir = sf = os.environ.get("UMBRA_CSV_DIR")
+if data_dir is None:
+    print("${UMBRA_CSV_DIR} environment variable must be set")
+    exit(1)
 
 print("Datagen / apply batches using SQL")
-
-data_dir = sf = os.environ.get("UMBRA_DATA_DIR")
+print(f"- Input data directory (${{UMBRA_CSV_DIR}}): {data_dir}")
 
 insert_nodes = ["Comment", "Forum", "Person", "Post"]
 insert_edges = ["Comment_hasTag_Tag", "Forum_hasMember_Person", "Forum_hasTag_Tag", "Person_hasInterest_Tag", "Person_knows_Person", "Person_likes_Comment", "Person_likes_Post", "Person_studyAt_University", "Person_workAt_Company",  "Post_hasTag_Tag"]
@@ -29,9 +33,9 @@ delete_entities = delete_nodes + delete_edges
 
 
 pg_con = psycopg2.connect(database="ldbcsnb", host="localhost", user="postgres", password="mysecretpassword", port=8000)
-con = pg_con.cursor()
+cur = pg_con.cursor()
 
-run_script(con, f"ddl/schema-delete-candidates.sql");
+run_script(cur, f"ddl/schema-delete-candidates.sql");
 
 network_start_date = date(2012, 11, 29)
 network_end_date = date(2013, 1, 11)
@@ -56,7 +60,7 @@ while batch_start_date < network_end_date:
         for csv_file in [f for f in os.listdir(batch_path) if f.endswith(".csv")]:
             csv_path = f"{batch_path}/{csv_file}"
             print(f"- {csv_path}")
-            con.execute(f"COPY {entity} FROM '/data/inserts/dynamic/{entity}/{batch_dir}/{csv_file}' (DELIMITER '|', HEADER, FORMAT csv)")
+            cur.execute(f"COPY {entity} FROM '/data/inserts/dynamic/{entity}/{batch_dir}/{csv_file}' (DELIMITER '|', HEADER, FORMAT csv)")
             pg_con.commit()
 
     print("## Deletes")
@@ -65,14 +69,14 @@ while batch_start_date < network_end_date:
     # These are cleaned up before running the delete script.
     for entity in delete_entities:
         #print(f"DELETE FROM {entity}_Delete_candidates");
-        con.execute(f"DELETE FROM {entity}_Delete_candidates")
+        cur.execute(f"DELETE FROM {entity}_Delete_candidates")
         # print(f"====> DROP TABLE IF EXISTS {entity}_Delete_candidates");
-        # con.execute(f"DROP TABLE IF EXISTS {entity}_Delete_candidates")
+        # cur.execute(f"DROP TABLE IF EXISTS {entity}_Delete_candidates")
         # print(f"====> recreate table {entity}_Delete_candidates")
         # if entity in delete_nodes:
-        #     con.execute(f"CREATE TABLE {entity}_Delete_candidates(deletionDate timestamp with time zone not null, id bigint not null)")
+        #     cur.execute(f"CREATE TABLE {entity}_Delete_candidates(deletionDate timestamp with time zone not null, id bigint not null)")
         # else:
-        #     con.execute(f"CREATE TABLE {entity}_Delete_candidates(deletionDate timestamp with time zone not null, src bigint not null, trg bigint not null)")
+        #     cur.execute(f"CREATE TABLE {entity}_Delete_candidates(deletionDate timestamp with time zone not null, src bigint not null, trg bigint not null)")
 
         batch_path = f"{data_dir}/deletes/dynamic/{entity}/{batch_dir}"
         if not os.path.exists(batch_path):
@@ -82,16 +86,17 @@ while batch_start_date < network_end_date:
         for csv_file in [f for f in os.listdir(batch_path) if f.endswith(".csv")]:
             csv_path = f"{batch_path}/{csv_file}"
             print(f"> {csv_path}")
-            con.execute(f"COPY {entity}_Delete_candidates FROM '/data/deletes/dynamic/{entity}/{batch_dir}/{csv_file}' (DELIMITER '|', HEADER, FORMAT csv)")
+            cur.execute(f"COPY {entity}_Delete_candidates FROM '/data/deletes/dynamic/{entity}/{batch_dir}/{csv_file}' (DELIMITER '|', HEADER, FORMAT csv)")
             pg_con.commit()
 
     print()
     print("<running delete script>")
     # Invoke delete script which makes use of the {entity}_Delete_candidates tables
-    run_script(con, "dml/snb-deletes.sql")
+    run_script(cur, "dml/snb-deletes.sql")
     print("<finished delete script>")
     print()
 
     batch_start_date = batch_start_date + batch_size
 
-con.close()
+cur.close()
+pg_con.close()

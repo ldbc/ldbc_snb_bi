@@ -58,13 +58,11 @@ Note that unlike Postgres, Umbra does not support directly loading from compress
 
 ## Microbatches
 
-Test loading the microbatches:
+Test loading the microbatches, make sure that `${UMBRA_CSV_DIR}` is set correctly and run:
 
 ```bash
 scripts/batches.sh
 ```
-
-:warning: Deletions currently do not work, see the `#TODO` entries in `batches.py`.
 
 ## Queries
 
