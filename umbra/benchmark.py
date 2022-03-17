@@ -235,9 +235,7 @@ network_end_date = datetime.date(2012, 12, 2)
 batch_size = relativedelta(days=1)
 batch_start_date = network_start_date
 
-# R_0
-run_queries(pg_con, sf, test, pgtuning)
-# R_i + W_i blocks
+# run alternating write-read blocks
 while batch_start_date < network_end_date:
     run_batch_updates(pg_con, data_dir, batch_start_date)
     run_queries(pg_con, sf, test, pgtuning)
