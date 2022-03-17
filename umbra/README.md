@@ -50,6 +50,13 @@ Note that unlike Postgres, Umbra does not support directly loading from compress
     export UMBRA_CSV_DIR=`pwd`/social-network-sf0.003-bi-composite-merged-fk/graphs/csv/bi/composite-merged-fk/
     ```
 
+    Or, simply run:
+
+    ```
+    scripts/get-sample-data-set.sh
+    . scripts/use-sample-data-set.sh
+    ```
+
 1. To start the DBMS, create a database and load the data, run:
 
     ```bash

@@ -9,7 +9,9 @@ cd ..
 . scripts/vars.sh
 
 scripts/stop.sh
-rm -rf scratch/{backup-data,backup-plugins}/
-cp -r scratch/data/ scratch/backup-data/
-cp -r scratch/plugins/ scratch/backup-plugins/
+docker run \
+    --volume=${UMBRA_DATABASE_DIR}:/var/db/:z \
+    --volume=${UMBRA_BACKUP_DIR}:/var/backup/:z \
+    ${UMBRA_DOCKER_IMAGE} \
+    bash -c "rm -rf /var/backup/* && cp -r /var/db/* /var/backup/"
 scripts/start.sh

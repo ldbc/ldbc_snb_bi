@@ -25,18 +25,12 @@ jobs:
       - run:
           name: Download data sets
           command: |
-            ## test data
-            mkdir test-data/
-            cd test-data
-            # Neo4j
+            cd cypher
+            # uncompressed CSVs
             wget -q https://ldbcouncil.org/ldbc_snb_datagen_spark/social-network-sf0.003-bi-composite-projected-fk-neo4j.zip
             unzip -q social-network-sf0.003-bi-composite-projected-fk-neo4j.zip
-            wget -q https://ldbcouncil.org/ldbc_snb_datagen_spark/social-network-sf0.003-bi-composite-projected-fk-neo4j-compressed.zip
-            unzip -q social-network-sf0.003-bi-composite-projected-fk-neo4j-compressed.zip
-            # Umbra
-            wget -q https://ldbcouncil.org/ldbc_snb_datagen_spark/social-network-sf0.003-bi-composite-merged-fk.zip
-            unzip -q social-network-sf0.003-bi-composite-merged-fk.zip
-            cd ..
+            # compressed CSVs
+            scripts/get-sample-data-set.sh
       - run:
           name: Download factors
           command: |
@@ -50,23 +44,20 @@ jobs:
       - run:
           name: Test Cypher toolchain with uncompressed CSVs
           command: |
-            export NEO4J_CSV_DIR=`pwd`/test-data/social-network-sf0.003-bi-composite-projected-fk-neo4j/graphs/csv/bi/composite-projected-fk/
+            export NEO4J_CSV_DIR=`pwd`/cypher/social-network-sf0.003-bi-composite-projected-fk-neo4j/graphs/csv/bi/composite-projected-fk/
             cypher/scripts/load-in-one-step.sh
             cypher/scripts/batches.sh
-            cd ..
       - run:
           name: Test Cypher toolchain with compressed CSVs
           command: |
-            export NEO4J_CSV_DIR=`pwd`/test-data/social-network-sf0.003-bi-composite-projected-fk-neo4j-compressed/graphs/csv/bi/composite-projected-fk/
-            export NEO4J_CSV_FLAGS="--compressed"
+            . cypher/scripts/use-sample-data-set.sh
             cypher/scripts/load-in-one-step.sh
             cypher/scripts/backup-database.sh
             cypher/scripts/batches.sh
-            cd ..
       - run:
           name: Test Cypher BI script
           command: |
-            export NEO4J_CSV_DIR=`pwd`/test-data/social-network-sf0.003-bi-composite-projected-fk-neo4j/graphs/csv/bi/composite-projected-fk/
+            . cypher/scripts/use-sample-data-set.sh
             cypher/scripts/restore-database.sh
             cypher/scripts/queries.sh --test
       - slack/status

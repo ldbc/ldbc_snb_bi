@@ -57,6 +57,13 @@ export NEO4J_CSV_DIR=`pwd`/social-network-sf0.003-bi-composite-projected-fk-neo4
 export NEO4J_CSV_FLAGS="--compressed"
 ```
 
+Or, simply run:
+
+```bash
+scripts/get-sample-data-set.sh
+. scripts/use-sample-data-set.sh
+```
+
 Load the data:
 
 ```bash
