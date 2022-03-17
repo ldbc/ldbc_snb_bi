@@ -3,12 +3,6 @@ import sys
 import os
 import time
 
-def vacuum(con):
-    old_isolation_level = con.isolation_level
-    pg_con.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
-    pg_con.cursor().execute("VACUUM FULL")
-    pg_con.set_isolation_level(old_isolation_level)
-
 if len(sys.argv) < 2:
     print("Umbra loader script")
     print("Usage: load.py <UMBRA_DATA_DIR> [--compressed]")
@@ -78,10 +72,6 @@ print("Loaded dynamic entities.")
 print("Creating materialized views . . . ")
 run_script(con, "ddl/constraints.sql")
 pg_con.commit()
-print("Done.")
-
-print("Vacuuming . . . ")
-vacuum(pg_con)
 print("Done.")
 
 print("Loaded initial snapshot to Umbra.")

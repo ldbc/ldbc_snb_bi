@@ -21,7 +21,7 @@ CREATE TABLE Message (
     ContainerForumId bigint,
     LocationCountryId bigint not null,
     ParentMessageId bigint
-);
+) WITH (storage = paged);
 
 INSERT INTO Message
     SELECT creationDate, id, content, NULL AS imageFile, locationIP, browserUsed, NULL AS language, length, CreatorPersonId, NULL AS ContainerForumId, LocationCountryId, coalesce(ParentPostId, ParentCommentId) AS ParentMessageId
@@ -47,7 +47,8 @@ CREATE TABLE MessageThread (
     LocationCountryId bigint not null,
     ParentMessageId bigint,
     type varchar(7)
-);
+) WITH (storage = paged);
+
 INSERT INTO MessageThread
     WITH RECURSIVE MessageThread_CTE(creationDate, MessageId, RootPostId, RootPostLanguage, content, imageFile, locationIP, browserUsed, length, CreatorPersonId, ContainerForumId, LocationCountryId, ParentMessageId, type) AS (
         SELECT
@@ -85,13 +86,15 @@ INSERT INTO MessageThread
         FROM Comment, MessageThread_CTE
         WHERE coalesce(Comment.ParentPostId, Comment.ParentCommentId) = MessageThread_CTE.MessageId
     )
-    SELECT * FROM MessageThread_CTE;
+    SELECT * FROM MessageThread_CTE
+;
 
 CREATE TABLE Person_likes_Message (
     creationDate timestamp with time zone NOT NULL,
     PersonId bigint NOT NULL,
     MessageId bigint NOT NULL
-);
+) WITH (storage = paged);
+
 INSERT INTO Person_likes_Message
     SELECT creationDate, PersonId, CommentId AS MessageId FROM Person_likes_Comment
     UNION ALL
@@ -102,7 +105,8 @@ CREATE TABLE Message_hasTag_Tag (
     creationDate timestamp with time zone NOT NULL,
     MessageId bigint NOT NULL,
     TagId bigint NOT NULL
-);
+) WITH (storage = paged);
+
 INSERT INTO Message_hasTag_Tag
     SELECT creationDate, CommentId AS MessageId, TagId FROM Comment_hasTag_Tag
     UNION ALL
@@ -114,7 +118,8 @@ CREATE TABLE Country (
     name varchar(256) not null,
     url varchar(256) not null,
     PartOfContinentId bigint
-);
+) WITH (storage = paged);
+
 INSERT INTO Country
     SELECT id, name, url, PartOfPlaceId AS PartOfContinentId
     FROM Place
@@ -126,7 +131,8 @@ CREATE TABLE City (
     name varchar(256) not null,
     url varchar(256) not null,
     PartOfCountryId bigint
-);
+) WITH (storage = paged);
+
 INSERT INTO City
     SELECT id, name, url, PartOfPlaceId AS PartOfCountryId
     FROM Place
@@ -138,7 +144,8 @@ CREATE TABLE Company (
     name varchar(256) not null,
     url varchar(256) not null,
     LocationPlaceId bigint not null
-);
+) WITH (storage = paged);
+
 INSERT INTO Company
     SELECT id, name, url, LocationPlaceId AS LocatedInCountryId
     FROM Organisation
@@ -150,7 +157,8 @@ CREATE TABLE University (
     name varchar(256) not null,
     url varchar(256) not null,
     LocationPlaceId bigint not null
-);
+) WITH (storage = paged);
+
 INSERT INTO University
     SELECT id, name, url, LocationPlaceId AS LocatedInCityId
     FROM Organisation
