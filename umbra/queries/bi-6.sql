@@ -9,7 +9,7 @@ WITH poster_w_liker AS (
     JOIN Message_hasTag_Tag
       ON Message_hasTag_Tag.TagId = Tag.id
        -- as an optimization, we use that the set of message1 is the same as message2
-    JOIN MessageThread m1
+    JOIN Message m1
       ON m1.MessageId = Message_hasTag_Tag.MessageId
    LEFT JOIN Person_likes_Message l2
           ON m1.MessageId = l2.MessageId
@@ -18,7 +18,7 @@ WITH poster_w_liker AS (
 )
 , popularity_score AS (
   SELECT m3.CreatorPersonId AS PersonId, count(*) AS popularityScore
-    FROM MessageThread m3
+    FROM Message m3
     JOIN Person_likes_Message l3
       ON l3.MessageId = m3.MessageId
    GROUP BY m3.CreatorPersonId

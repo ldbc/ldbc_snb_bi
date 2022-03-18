@@ -28,12 +28,12 @@ WITH RECURSIVE
       SELECT p.dst, p.path, SUM(Score)
       FROM SelectedPaths p, Iterator it, (
          SELECT (case when msg.ParentMessageId IS NULL then 1.0 else 0.5 end) AS Score
-         FROM MessageThread msg, MessageThread reply
+         FROM Message msg, Message reply
          WHERE reply.ParentMessageId = msg.MessageId AND msg.CreatorPersonId = p.path[i] AND reply.CreatorPersonId = p.path[i + 1]
            AND EXISTS (SELECT * FROM MyForums WHERE msg.ContainerForumId = MyForums.Id)
          UNION ALL
          SELECT (case when msg.ParentMessageId IS NULL then 1.0 else 0.5 end) AS Score
-         FROM MessageThread msg, MessageThread reply
+         FROM Message msg, Message reply
          WHERE reply.ParentMessageId = msg.MessageId AND msg.CreatorPersonId = p.path[i + 1] AND reply.CreatorPersonId = p.path[i]
           AND EXISTS (SELECT * FROM MyForums WHERE msg.ContainerForumId = MyForums.Id)
       ) t

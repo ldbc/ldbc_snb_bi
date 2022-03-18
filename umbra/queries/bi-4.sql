@@ -26,13 +26,13 @@ SELECT au.id AS "person.id"
      , au.lastName AS "person.lastName"
      , au.creationDate
      -- a single person might be member of more than 1 of the top100 forums, so their messages should be DISTINCT counted
-     , count(MessageThread.MessageId) AS messageCount
+     , count(Message.MessageId) AS messageCount
   FROM
        Person au
-       LEFT JOIN MessageThread
-              ON au.id = MessageThread.CreatorPersonId
-             AND MessageThread.ContainerForumId IN (SELECT id FROM Top100_Popular_Forums)
-             AND MessageThread.creationDate > :date
+       LEFT JOIN Message
+              ON au.id = Message.CreatorPersonId
+             AND Message.ContainerForumId IN (SELECT id FROM Top100_Popular_Forums)
+             AND Message.creationDate > :date
   WHERE EXISTS (SELECT * FROM Top100_Popular_Forums INNER JOIN
                 Forum_hasMember_Person ON Top100_Popular_Forums.id =
                 Forum_hasMember_Person.ForumId WHERE Forum_hasMember_Person.PersonId = au.id

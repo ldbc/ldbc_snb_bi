@@ -26,8 +26,8 @@ WITH PersonPairCandidates AS (
 ,  case1 AS (
     SELECT DISTINCT Person1Id, Person2Id, 4 AS score
       FROM PersonPairCandidates
-         , MessageThread m -- message by p2
-         , MessageThread r -- reply by p1
+         , Message m -- message by p2
+         , Message r -- reply by p1
      WHERE
         -- join
            m.MessageId = r.ParentMessageId
@@ -37,8 +37,8 @@ WITH PersonPairCandidates AS (
 ,  case2 AS (
     SELECT DISTINCT Person1Id, Person2Id, 1 AS score
       FROM PersonPairCandidates
-         , MessageThread m -- message by p1
-         , MessageThread r -- reply by p2
+         , Message m -- message by p1
+         , Message r -- reply by p2
      WHERE
         -- join
            m.MessageId = r.ParentMessageId
@@ -48,7 +48,7 @@ WITH PersonPairCandidates AS (
 ,  case3 AS (
     SELECT DISTINCT Person1Id, Person2Id, 10 AS score
       FROM PersonPairCandidates
-         , MessageThread m -- message by p2
+         , Message m -- message by p2
          , Person_likes_Message l
      WHERE
         -- join
@@ -59,7 +59,7 @@ WITH PersonPairCandidates AS (
 ,  case4 AS (
     SELECT DISTINCT Person1Id, Person2Id, 1 AS score
       FROM PersonPairCandidates
-         , MessageThread m -- message by p1
+         , Message m -- message by p1
          , Person_likes_Message l
      WHERE
         -- join

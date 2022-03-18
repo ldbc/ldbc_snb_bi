@@ -7,7 +7,7 @@ SELECT creationDate, Person2Id, Person1Id
 FROM Person_knows_Person;
 
 -- A recursive materialized view containing the root Post of each Message (for Posts, themselves, for Comments, traversing up the Message thread to the root Post of the tree)
-CREATE TABLE MessageThread (
+CREATE TABLE Message (
     creationDate timestamp with time zone not null,
     MessageId bigint primary key,
     RootPostId bigint not null,
@@ -24,8 +24,8 @@ CREATE TABLE MessageThread (
     type varchar(7)
 ) WITH (storage = paged);
 
-INSERT INTO MessageThread
-    WITH RECURSIVE MessageThread_CTE(creationDate, MessageId, RootPostId, RootPostLanguage, content, imageFile, locationIP, browserUsed, length, CreatorPersonId, ContainerForumId, LocationCountryId, ParentMessageId, type) AS (
+INSERT INTO Message
+    WITH RECURSIVE Message_CTE(creationDate, MessageId, RootPostId, RootPostLanguage, content, imageFile, locationIP, browserUsed, length, CreatorPersonId, ContainerForumId, LocationCountryId, ParentMessageId, type) AS (
         SELECT
             creationDate,
             id AS MessageId,
@@ -46,22 +46,22 @@ INSERT INTO MessageThread
         SELECT
             Comment.creationDate AS creationDate,
             Comment.id AS MessageId,
-            MessageThread_CTE.RootPostId AS RootPostId,
-            MessageThread_CTE.RootPostLanguage AS RootPostLanguage,
+            Message_CTE.RootPostId AS RootPostId,
+            Message_CTE.RootPostLanguage AS RootPostLanguage,
             Comment.content AS content,
             NULL::varchar(40) AS imageFile,
             Comment.locationIP AS locationIP,
             Comment.browserUsed AS browserUsed,
             Comment.length AS length,
             Comment.CreatorPersonId AS CreatorPersonId,
-            MessageThread_CTE.ContainerForumId AS ContainerForumId,
+            Message_CTE.ContainerForumId AS ContainerForumId,
             Comment.LocationCountryId AS LocationCityId,
             coalesce(Comment.ParentPostId, Comment.ParentCommentId) AS ParentMessageId,
             'Comment' AS type
-        FROM Comment, MessageThread_CTE
-        WHERE coalesce(Comment.ParentPostId, Comment.ParentCommentId) = MessageThread_CTE.MessageId
+        FROM Comment, Message_CTE
+        WHERE coalesce(Comment.ParentPostId, Comment.ParentCommentId) = Message_CTE.MessageId
     )
-    SELECT * FROM MessageThread_CTE
+    SELECT * FROM Message_CTE
 ;
 
 CREATE TABLE Person_likes_Message (

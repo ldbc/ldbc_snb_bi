@@ -51,12 +51,12 @@ WITH friends AS
   )
   , messages_of_tagclass_by_friends AS (
     SELECT DISTINCT f.friendId
-         , MessageThread.MessageId AS messageid
+         , Message.MessageId AS messageid
       FROM friend_list f
-      JOIN MessageThread
-        ON MessageThread.CreatorPersonId = f.friendId
+      JOIN Message
+        ON Message.CreatorPersonId = f.friendId
       JOIN Message_hasTag_Tag
-        ON Message_hasTag_Tag.MessageId = MessageThread.MessageId
+        ON Message_hasTag_Tag.MessageId = Message.MessageId
       JOIN Tag
         ON Tag.id = Message_hasTag_Tag.TagId
       JOIN TagClass
