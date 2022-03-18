@@ -29,7 +29,6 @@ def run_script(con, filename):
             print(f"-> {duration:.4f} seconds")
 
 
-run_script(con, "ddl/drop-views.sql")
 run_script(con, "ddl/drop-tables.sql")
 run_script(con, "ddl/schema-composite-merged-fk.sql")
 run_script(con, "ddl/schema-delete-candidates.sql")

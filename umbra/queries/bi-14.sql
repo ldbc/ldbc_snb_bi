@@ -26,45 +26,45 @@ WITH PersonPairCandidates AS (
 ,  case1 AS (
     SELECT DISTINCT Person1Id, Person2Id, 4 AS score
       FROM PersonPairCandidates
-         , Message m -- message by p2
-         , Message r -- reply by p1
+         , MessageThread m -- message by p2
+         , MessageThread r -- reply by p1
      WHERE
         -- join
-           m.id = r.ParentMessageId
+           m.MessageId = r.ParentMessageId
        AND Person1Id = r.CreatorPersonId
        AND Person2Id = m.CreatorPersonId
 )
 ,  case2 AS (
     SELECT DISTINCT Person1Id, Person2Id, 1 AS score
       FROM PersonPairCandidates
-         , Message m -- message by p1
-         , Message r -- reply by p2
+         , MessageThread m -- message by p1
+         , MessageThread r -- reply by p2
      WHERE
         -- join
-           m.id = r.ParentMessageId
+           m.MessageId = r.ParentMessageId
        AND Person2Id = r.CreatorPersonId
        AND Person1Id = m.CreatorPersonId
 )
 ,  case3 AS (
     SELECT DISTINCT Person1Id, Person2Id, 10 AS score
       FROM PersonPairCandidates
-         , Message m -- message by p2
+         , MessageThread m -- message by p2
          , Person_likes_Message l
      WHERE
         -- join
            Person2Id = m.CreatorPersonId
-       AND m.id = l.MessageId
+       AND m.MessageId = l.MessageId
        AND l.PersonId = Person1Id
 )
 ,  case4 AS (
     SELECT DISTINCT Person1Id, Person2Id, 1 AS score
       FROM PersonPairCandidates
-         , Message m -- message by p1
+         , MessageThread m -- message by p1
          , Person_likes_Message l
      WHERE
         -- join
            Person1Id = m.CreatorPersonId
-       AND m.id = l.MessageId
+       AND m.MessageId = l.MessageId
        AND l.PersonId = Person2Id
 )
 ,  pair_scores AS (

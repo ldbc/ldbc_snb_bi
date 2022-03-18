@@ -15,16 +15,16 @@ WITH Person_interested_in_Tag AS (
    , Person_Message_score AS (
     SELECT Person.id AS PersonId
          , count(*) AS message_score
-      FROM Message
+      FROM MessageThread
       JOIN Person
-        ON Person.id = Message.CreatorPersonId
+        ON Person.id = MessageThread.CreatorPersonId
       JOIN Message_hasTag_Tag
-        ON Message_hasTag_Tag.MessageId = Message.id
+        ON Message_hasTag_Tag.MessageId = MessageThread.MessageId
       JOIN Tag
         ON Tag.id = Message_hasTag_Tag.TagId
        AND Tag.name = :tag
-     WHERE :startDate < Message.creationDate
-       AND Message.creationDate < :endDate
+     WHERE :startDate < MessageThread.creationDate
+       AND MessageThread.creationDate < :endDate
      GROUP BY Person.id
 )
    , Person_score AS (

@@ -2,34 +2,34 @@
 \set tag '\'Slavoj_Žižek\''
 \set delta '4'
  */
-SELECT Message1.CreatorPersonId AS "person1.id", count(Message2.id) AS messageCount
+SELECT Message1.CreatorPersonId AS "person1.id", count(Message2.MessageId) AS messageCount
 FROM Tag
 -- (tag)<-[:HAS_TAG]-(message1)
 JOIN Message_hasTag_Tag Message1_hasTag_Tag
   ON Message1_hasTag_Tag.TagId = Tag.id
-JOIN Message Message1
-  ON Message1.id = Message1_hasTag_Tag.MessageId
+JOIN MessageThread Message1
+  ON Message1.MessageId = Message1_hasTag_Tag.MessageId
 -- (message1)-[:REPLY_OF*0..]->(post1)
 JOIN MessageThread MessageThread1
-  ON MessageThread1.MessageId = Message1.id
+  ON MessageThread1.MessageId = Message1.MessageId
 JOIN Post Post1
   ON Post1.id = MessageThread1.RootPostId
 -- (tag)<-[:HAS_TAG]-(message2)
 JOIN Message_hasTag_Tag Message2_hasTag_Tag
   ON Message2_hasTag_Tag.TagId = Tag.id
 -- (message2 <date filtering>})
-JOIN Message Message2
-  ON Message2.id = Message2_hasTag_Tag.MessageId
+JOIN MessageThread Message2
+  ON Message2.MessageId = Message2_hasTag_Tag.MessageId
  AND (Message1.creationDate + ':delta hour'::interval) < Message2.creationDate
 JOIN Comment_hasTag_Tag
   ON Comment_hasTag_Tag.TagId = Tag.id
 -- (comment)-[:REPLY_OF]->(message)
 JOIN Comment
   ON Comment.id = Comment_hasTag_Tag.CommentId
- AND coalesce(Comment.ParentPostId, Comment.ParentCommentId) = Message2.id
+ AND coalesce(Comment.ParentPostId, Comment.ParentCommentId) = Message2.MessageId
 -- (message)-[:REPLY_OF*0..]-(post2)
 JOIN MessageThread MessageThread2
-  ON MessageThread2.MessageId = Message2.id
+  ON MessageThread2.MessageId = Message2.MessageId
 JOIN Post Post2
   ON Post2.id = MessageThread2.RootPostId
  AND Post2.ContainerForumId != Post1.ContainerForumId -- forum2 != forum1

@@ -6,32 +6,7 @@ INSERT INTO Person_knows_Person (creationDate, Person1Id, Person2Id)
 SELECT creationDate, Person2Id, Person1Id
 FROM Person_knows_Person;
 
--- Views
-
-CREATE TABLE Message (
-    creationDate timestamp with time zone not null,
-    id bigint primary key,
-    content varchar(2000),
-    imageFile varchar(40),
-    locationIP varchar(40) not null,
-    browserUsed varchar(40) not null,
-    language varchar(40),
-    length int not null,
-    CreatorPersonId bigint not null,
-    ContainerForumId bigint,
-    LocationCountryId bigint not null,
-    ParentMessageId bigint
-) WITH (storage = paged);
-
-INSERT INTO Message
-    SELECT creationDate, id, content, NULL AS imageFile, locationIP, browserUsed, NULL AS language, length, CreatorPersonId, NULL AS ContainerForumId, LocationCountryId, coalesce(ParentPostId, ParentCommentId) AS ParentMessageId
-    FROM Comment
-    UNION ALL
-    SELECT creationDate, id, content, imageFile, locationIP, browserUsed, language, length, CreatorPersonId, ContainerForumId, LocationCountryId, NULL AS ParentMessageId
-    FROM Post
-;
-
--- recursive view containing the root Post of each Message (for Posts, themselves, for Comments, traversing up the Message thread to the root Post of the tree)
+-- A recursive materialized view containing the root Post of each Message (for Posts, themselves, for Comments, traversing up the Message thread to the root Post of the tree)
 CREATE TABLE MessageThread (
     creationDate timestamp with time zone not null,
     MessageId bigint primary key,

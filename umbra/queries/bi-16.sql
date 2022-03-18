@@ -7,13 +7,13 @@
  */
 WITH
   subgraphA AS (
-    SELECT DISTINCT Person.id AS PersonId, Message.id AS MessageId
+    SELECT DISTINCT Person.id AS PersonId, MessageThread.MessageId AS MessageId
     FROM Person
-    JOIN Message
-      ON Message.CreatorPersonId = Person.id
-     AND Message.creationDate::date = :dateA
+    JOIN MessageThread
+      ON MessageThread.CreatorPersonId = Person.id
+     AND MessageThread.creationDate::date = :dateA
     JOIN Message_hasTag_Tag
-      ON Message_hasTag_Tag.MessageId = Message.Id
+      ON Message_hasTag_Tag.MessageId = MessageThread.MessageId
     JOIN Tag
       ON Tag.id = Message_hasTag_Tag.TagId
      AND Tag.name = :tagA
@@ -32,13 +32,13 @@ WITH
     ORDER BY subgraphA1.PersonId ASC
   ),
   subgraphB AS (
-    SELECT DISTINCT Person.id AS PersonId, Message.id AS MessageId
+    SELECT DISTINCT Person.id AS PersonId, MessageThread.MessageId AS MessageId
     FROM Person
-    JOIN Message
-      ON Message.CreatorPersonId = Person.id
-     AND Message.creationDate::date = :dateB
+    JOIN MessageThread
+      ON MessageThread.CreatorPersonId = Person.id
+     AND MessageThread.creationDate::date = :dateB
     JOIN Message_hasTag_Tag
-      ON Message_hasTag_Tag.MessageId = Message.Id
+      ON Message_hasTag_Tag.MessageId = MessageThread.MessageId
     JOIN Tag
       ON Tag.id = Message_hasTag_Tag.TagId
      AND Tag.name = :tagB

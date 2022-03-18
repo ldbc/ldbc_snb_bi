@@ -22,4 +22,5 @@ WITH person_w_posts AS (
 )
 SELECT *
   FROM message_count_distribution
+ORDER BY personCount DESC, messageCount DESC
 ;
