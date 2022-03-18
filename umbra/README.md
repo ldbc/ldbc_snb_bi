@@ -36,26 +36,34 @@ tools/run.py \
 
 Note that unlike Postgres, Umbra does not support directly loading from compressed files (`.csv.gz`).
 
-1. Set the `${UMBRA_CSV_DIR}` environment variable to point to the data set. E.g., assuming that your `${LDBC_SNB_DATAGEN_DIR}` and `${SF}` environment variables are set, run:
+1. Set the `${UMBRA_CSV_DIR}` environment variable to point to the data set.
 
-    ```bash
-    export UMBRA_CSV_DIR=${LDBC_SNB_DATAGEN_DIR}/out-sf${SF}/graphs/csv/bi/composite-merged-fk/
-    ```
+    * To use a locally generated data set, set the `${LDBC_SNB_DATAGEN_DIR}` and `${SF}` environment variables and run:
 
-    To download and use the sample data set, run:
+        ```bash
+        export UMBRA_CSV_DIR=${LDBC_SNB_DATAGEN_DIR}/out-sf${SF}/graphs/csv/bi/composite-merged-fk/
+        ```
 
-    ```bash
-    wget -q https://ldbcouncil.org/ldbc_snb_datagen_spark/social-network-sf0.003-bi-composite-merged-fk.zip
-    unzip -q social-network-sf0.003-bi-composite-merged-fk.zip
-    export UMBRA_CSV_DIR=`pwd`/social-network-sf0.003-bi-composite-merged-fk/graphs/csv/bi/composite-merged-fk/
-    ```
+        Or, simply run:
 
-    Or, simply run:
+        ```bash
+        . scripts/use-datagen-data-set.sh
+        ```
 
-    ```
-    scripts/get-sample-data-set.sh
-    . scripts/use-sample-data-set.sh
-    ```
+    * To download and use the sample data set, run:
+
+        ```bash
+        wget -q https://ldbcouncil.org/ldbc_snb_datagen_spark/social-network-sf0.003-bi-composite-merged-fk.zip
+        unzip -q social-network-sf0.003-bi-composite-merged-fk.zip
+        export UMBRA_CSV_DIR=`pwd`/social-network-sf0.003-bi-composite-merged-fk/graphs/csv/bi/composite-merged-fk/
+        ```
+
+        Or, simply run:
+
+        ```
+        scripts/get-sample-data-set.sh
+        . scripts/use-sample-data-set.sh
+        ```
 
 1. To start the DBMS, create a database and load the data, run:
 
@@ -76,7 +84,13 @@ scripts/batches.sh
 To run the queries, issue:
 
 ```bash
-scripts/bi.sh
+scripts/queries.sh
+```
+
+For a test run, use:
+
+```bash
+scripts/queries.sh ${SF} --test
 ```
 
 ## Benchmark
