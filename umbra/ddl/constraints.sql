@@ -21,6 +21,8 @@ CREATE TABLE Message (
     ContainerForumId bigint,
     LocationCountryId bigint not null,
     ParentMessageId bigint,
+    ParentPostId bigint,
+    ParentCommentId bigint,
     type varchar(7)
 ) WITH (storage = paged);
 
@@ -40,6 +42,8 @@ INSERT INTO Message
             ContainerForumId,
             LocationCountryId,
             NULL::bigint AS ParentMessageId,
+            NULL::bigint AS ParentPostId,
+            NULL::bigint AS ParentCommentId,
             'Post' AS type
         FROM Post
         UNION ALL
@@ -57,6 +61,8 @@ INSERT INTO Message
             Message_CTE.ContainerForumId AS ContainerForumId,
             Comment.LocationCountryId AS LocationCityId,
             coalesce(Comment.ParentPostId, Comment.ParentCommentId) AS ParentMessageId,
+            Comment.ParentPostId,
+            Comment.ParentCommentId,
             'Comment' AS type
         FROM Comment, Message_CTE
         WHERE coalesce(Comment.ParentPostId, Comment.ParentCommentId) = Message_CTE.MessageId
@@ -138,4 +144,19 @@ INSERT INTO University
     SELECT id, name, url, LocationPlaceId AS LocatedInCityId
     FROM Organisation
     WHERE type = 'University'
+;
+
+DROP TABLE Post;
+DROP TABLE Comment;
+
+CREATE VIEW Comment AS
+    SELECT creationDate, MessageId AS id, locationIP, browserUsed, content, length, CreatorPersonId, LocationCountryId, ParentPostId, ParentCommentId
+    FROM Message
+    WHERE ParentMessageId IS NOT NULL
+;
+
+CREATE VIEW Post AS
+    SELECT creationDate, MessageId AS id, imageFile, locationIP, browserUsed, RootPostLanguage, content, length, CreatorPersonId, ContainerForumId, LocationCountryId
+    From Message
+    WHERE ParentMessageId IS NULL
 ;
