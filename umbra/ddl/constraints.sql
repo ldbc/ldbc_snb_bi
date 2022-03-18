@@ -160,3 +160,9 @@ CREATE VIEW Post AS
     From Message
     WHERE ParentMessageId IS NULL
 ;
+
+DROP TABLE Comment_hasTag_Tag;
+DROP TABLE Post_hasTag_Tag;
+
+DROP TABLE Person_likes_Comment;
+DROP TABLE Person_likes_Post;

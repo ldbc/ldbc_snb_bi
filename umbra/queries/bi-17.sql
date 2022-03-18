@@ -19,11 +19,11 @@ JOIN Message_hasTag_Tag Message2_hasTag_Tag
 JOIN Message Message2
   ON Message2.MessageId = Message2_hasTag_Tag.MessageId
  AND (Message1.creationDate + ':delta hour'::interval) < Message2.creationDate
-JOIN Comment_hasTag_Tag
-  ON Comment_hasTag_Tag.TagId = Tag.id
+JOIN Message_hasTag_Tag
+  ON Message_hasTag_Tag.TagId = Tag.id
 -- (comment)-[:REPLY_OF]->(message2)
 JOIN Comment
-  ON Comment.id = Comment_hasTag_Tag.CommentId
+  ON Comment.id = Message_hasTag_Tag.MessageId
  AND coalesce(Comment.ParentPostId, Comment.ParentCommentId) = Message2.MessageId
 -- (message2)-[:REPLY_OF*0..]-(post2)
 JOIN Post Post2
