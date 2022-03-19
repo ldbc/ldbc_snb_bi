@@ -15,15 +15,15 @@ WITH Person_interested_in_Tag AS (
    , Person_Message_score AS (
     SELECT Person.id AS PersonId
          , count(*) AS message_score
-      FROM Message
+      FROM Tag
+      JOIN Message_hasTag_Tag
+        ON Message_hasTag_Tag.TagId = Tag.id
+      JOIN Message
+        ON Message_hasTag_Tag.MessageId = Message.MessageId
+       AND :startDate < Message.creationDate
       JOIN Person
         ON Person.id = Message.CreatorPersonId
-      JOIN Message_hasTag_Tag
-        ON Message_hasTag_Tag.MessageId = Message.MessageId
-      JOIN Tag
-        ON Tag.id = Message_hasTag_Tag.TagId
-       AND Tag.name = :tag
-     WHERE :startDate < Message.creationDate
+     WHERE Tag.name = :tag
        AND Message.creationDate < :endDate
      GROUP BY Person.id
 )
@@ -37,13 +37,13 @@ WITH Person_interested_in_Tag AS (
 )
 SELECT p.PersonId AS "person.id"
      , p.score AS score
-     , sum(f.score) AS friendsScore
+     , coalesce(sum(f.score), 0) AS friendsScore
   FROM Person_score p
-  JOIN Person_knows_Person
+  LEFT JOIN Person_knows_Person
     ON Person_knows_Person.Person1Id = p.PersonId
-  JOIN Person_score f -- the friend
+  LEFT JOIN Person_score f -- the friend
     ON f.PersonId = Person_knows_Person.Person2Id
  GROUP BY p.PersonId, p.score
- ORDER BY p.score + sum(f.score) DESC, p.PersonId
+ ORDER BY p.score + coalesce(sum(f.score), 0) DESC, p.PersonId
  LIMIT 100
 ;
