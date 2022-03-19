@@ -115,6 +115,7 @@ if len(sys.argv) > 1:
     if sys.argv[1] == "--pgtuning":
         pgtuning = True
 
+query_variants = ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "16a", "16b", "17", "18", "15b"] #, "15a"
 
 results_file = open(f'output/results.csv', 'w')
 timings_file = open(f'output/timings.csv', 'w')
@@ -122,8 +123,7 @@ timings_file.write(f"sf|q|parameters|time\n")
 
 pg_con = psycopg2.connect(host="localhost", user="postgres", password="mysecretpassword", port=8000)
 
-#for query_variant in ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "16a", "16b", "17", "18", "15b"]: #, "15a"
-for query_variant in ["2a"]:
+for query_variant in query_variants:
     query_num = int(re.sub("[^0-9]", "", query_variant))
     query_subvariant = re.sub("[^ab]", "", query_variant)
 

@@ -87,9 +87,10 @@ def read_query_fun(tx, query_num, query_spec, query_parameters):
 def write_query_fun(tx, query_spec):
     tx.run(query_spec, {})
 
-def run_query(session, query_num, query_id, query_spec, query_parameters, test):
+def run_query(session, query_num, query_variant, query_spec, query_parameters, test):
     if test:
-        print(f'Q{query_id}: {query_parameters}')
+        print(f'Q{query_variant}: {query_parameters}')
+
     start = time.time()
     results = session.write_transaction(read_query_fun, query_num, query_spec, query_parameters)
     end = time.time()
@@ -105,10 +106,10 @@ if len(sys.argv) > 1:
     if sys.argv[1] == "--test":
         test = True
 
+query_variants = ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "15a", "15b", "16a", "16b", "17", "18", "19a", "19b", "20"]
+
 driver = neo4j.GraphDatabase.driver("bolt://localhost:7687")
 session = driver.session()
-
-query_variants = ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "15a", "15b", "16a", "16b", "17", "18", "19a", "19b", "20"]
 
 if "19a" in query_variants or "19b" in query_variants:
     print("Creating graph (precomputing weights) for Q19")
