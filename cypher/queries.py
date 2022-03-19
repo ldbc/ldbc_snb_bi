@@ -108,19 +108,23 @@ if len(sys.argv) > 1:
 driver = neo4j.GraphDatabase.driver("bolt://localhost:7687")
 session = driver.session()
 
-print("Creating graph (precomputing weights) for Q19")
-session.write_transaction(write_query_fun, open(f'queries/bi-19-drop-graph.cypher', 'r').read())
-session.write_transaction(write_query_fun, open(f'queries/bi-19-create-graph.cypher', 'r').read())
+query_variants = ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "15a", "15b", "16a", "16b", "17", "18", "19a", "19b", "20"]
 
-print("Creating graph (precomputing weights) for Q20")
-session.write_transaction(write_query_fun, open(f'queries/bi-20-drop-graph.cypher', 'r').read())
-session.write_transaction(write_query_fun, open(f'queries/bi-20-create-graph.cypher', 'r').read())
+if "19a" in query_variants or "19b" in query_variants:
+    print("Creating graph (precomputing weights) for Q19")
+    session.write_transaction(write_query_fun, open(f'queries/bi-19-drop-graph.cypher', 'r').read())
+    session.write_transaction(write_query_fun, open(f'queries/bi-19-create-graph.cypher', 'r').read())
+
+if "20" in query_variants:
+    print("Creating graph (precomputing weights) for Q20")
+    session.write_transaction(write_query_fun, open(f'queries/bi-20-drop-graph.cypher', 'r').read())
+    session.write_transaction(write_query_fun, open(f'queries/bi-20-create-graph.cypher', 'r').read())
 
 results_file = open(f'output/results.csv', 'w')
 timings_file = open(f'output/timings.csv', 'w')
 timings_file.write(f"sf|q|parameters|time\n")
 
-for query_variant in ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "15a", "15b", "16a", "16b", "17", "18", "19a", "19b", "20"]:
+for query_variant in query_variants:
     query_num = int(re.sub("[^0-9]", "", query_variant))
     query_subvariant = re.sub("[^ab]", "", query_variant)
 
