@@ -77,18 +77,19 @@ WITH PersonPairCandidates AS (
      GROUP BY Person1Id, Person2Id
 )
 ,  score_ranks AS (
-    SELECT s.Person1Id
-         , s.Person2Id
+    SELECT PersonPairCandidates.Person1Id
+         , PersonPairCandidates.Person2Id
          , City.name AS cityName
-         , s.score
+         , coalesce(s.score, 0) AS score
          , row_number() OVER (PARTITION BY City.id ORDER BY s.score DESC NULLS LAST, s.Person1Id, s.Person2Id) AS rownum
       FROM Country
       JOIN City
         ON City.PartOfCountryId = Country.id
       JOIN PersonPairCandidates
         ON PersonPairCandidates.Person1LocationCityId = City.id
-      JOIN pair_scores s
-        ON s.Person1Id = PersonPairCandidates.Person1Id
+      LEFT JOIN pair_scores s
+             ON s.Person1Id = PersonPairCandidates.Person1Id
+            AND s.person2Id = PersonPairCandidates.Person2Id
      WHERE
         -- filter
            Country.name = :country1
