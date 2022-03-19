@@ -25,7 +25,7 @@ SELECT Z.zombieid AS "zombie.id"
      , count(Person_likes_Message.PersonId) AS totalLikeCount
      , CASE WHEN count(Person_likes_Message.PersonId) = 0 THEN 0 ELSE count(zl.zombieid)::float/count(Person_likes_Message.PersonId) END AS zombieScore
   FROM Message
-       INNER JOIN Person_likes_Message ON (Message.MessageId = Person_likes_Message.MessageId)
+       LEFT  JOIN Person_likes_Message ON (Message.MessageId = Person_likes_Message.MessageId)
        INNER JOIN Person ON (Person_likes_Message.PersonId = Person.id AND Person.creationDate < :endDate)
        LEFT  JOIN Zombies ZL ON (Person.id = ZL.zombieid) -- see if the like was given by a zombie
        RIGHT JOIN Zombies Z ON (Z.zombieid = Message.CreatorPersonId)
