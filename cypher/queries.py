@@ -8,10 +8,6 @@ import sys
 
 # Usage: queries.py [--test]
 
-# TODO: provide two modes of operation: validation and benchmark
-# validation CSV header: Query ID|Query variant|Parameters|Results
-# benchmark CSV header:  Query ID|Query variant|Response time
-
 result_mapping = {
      1: ["INT32", "BOOL", "INT32", "INT32", "FLOAT32", "INT32", "FLOAT32"],
      2: ["STRING", "INT32", "INT32", "INT32"],
