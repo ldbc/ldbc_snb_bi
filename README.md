@@ -21,7 +21,9 @@ The repository contains the following implementations:
 
 All implementations use Docker for ease of setup and execution. However, the setups can be adjusted to use a non-containerized DBMS.
 
-To cross-validate their results, use [numdiff](scripts/numdiff.md) (draft command):
+## Cross-validation
+
+To cross-validate the results of two implementations, run the queries (whose results are saved in the implementation's `output/result.csv` file). Then, use the [numdiff](scripts/numdiff.md) tool:
 
 ```bash
 numdiff \
