@@ -6,16 +6,16 @@ WITH detail AS (
 SELECT Tag.name AS TagName
      , count(DISTINCT CASE WHEN Message.creationDate <  :date + INTERVAL '100 days' THEN Message.MessageId ELSE NULL END) AS countMonth1
      , count(DISTINCT CASE WHEN Message.creationDate >= :date + INTERVAL '100 days' THEN Message.MessageId ELSE NULL END) AS countMonth2
-  FROM Message
-  JOIN Message_hasTag_Tag
-    ON Message_hasTag_tag.MessageId = Message.MessageId
+  FROM TagClass
   JOIN Tag
-    ON Tag.id = Message_hasTag_tag.TagId
-  JOIN TagClass
-    ON TagClass.id = Tag.TypeTagClassId
-   AND TagClass.name = :tagClass
- WHERE :date <= Message.creationDate
-   AND Message.creationDate <= :date + INTERVAL '200 days'
+    ON Tag.TypeTagClassId = TagClass.id
+  LEFT JOIN Message_hasTag_Tag
+         ON Message_hasTag_tag.TagId = Tag.id
+  LEFT JOIN Message
+    ON Message.MessageId = Message_hasTag_tag.MessageId
+   AND Message.creationDate >= :date
+   AND Message.creationDate <  :date + INTERVAL '200 days'
+ WHERE TagClass.name = :tagClass
  GROUP BY Tag.name
 )
 SELECT TagName AS "tag.name"
