@@ -21,7 +21,7 @@ The repository contains the following implementations:
 
 All implementations use Docker for ease of setup and execution. However, the setups can be adjusted to use a non-containerized DBMS.
 
-To cross-validate results, use [numdiff](scripts/numdiff.md) (draft command):
+To cross-validate their results, use [numdiff](scripts/numdiff.md) (draft command):
 
 ```bash
 numdiff \
@@ -29,6 +29,12 @@ numdiff \
     --absolute-tolerance 0.001 \
     cypher/output/results.csv \
     umbra/output/results.csv
+```
+
+Or, simply run:
+
+```bash
+scripts/cross-validate.sh
 ```
 
 ## Parameter generation
