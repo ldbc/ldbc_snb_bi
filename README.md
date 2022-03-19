@@ -21,6 +21,16 @@ The repository contains the following implementations:
 
 All implementations use Docker for ease of setup and execution. However, the setups can be adjusted to use a non-containerized DBMS.
 
+To cross-validate results, use [numdiff](scripts/numdiff.md) (draft command):
+
+```bash
+numdiff \
+    --separators='\|\n;,<>' \
+    --absolute-tolerance 0.001 \
+    cypher/output/results.csv \
+    umbra/output/results.csv
+```
+
 ## Parameter generation
 
 The query input parameter generator is implemented in the [`paramgen/`](paramgen/) directory.
@@ -28,3 +38,4 @@ The query input parameter generator is implemented in the [`paramgen/`](paramgen
 ## Usage
 
 See [`.circleci/config.yml`](.circleci/config.yml) for an up-to-date example on how to use the projects in this repository.
+
