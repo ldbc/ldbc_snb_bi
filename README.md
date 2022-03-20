@@ -16,8 +16,9 @@ To get started with the LDBC SNB benchmarks, check out our introductory presenta
 
 The repository contains the following implementations:
 
-* [`cypher`](cypher/): queries are expressed in the Cypher language and run in the [Neo4j graph database management system](https://dbdb.io/db/neo4j) (v4.4) using its stored procedure libraries
-* [`umbra`](umbra/): queries are implemented in SQL and run in [Umbra JIT-compiled columnar database management system](https://dbdb.io/db/umbra) (weighted shortest path queries, Q19 and Q20, are not supported)
+* [`cypher`](cypher/): queries are expressed in the [Cypher language](https://neo4j.com/developer/cypher/) and run in the [Neo4j graph database management system](https://dbdb.io/db/neo4j)
+* [`umbra`](umbra/): queries are expressed in SQL and run in [Umbra JIT-compiled columnar database management system](https://dbdb.io/db/umbra) (limitation: weighted shortest path queries, Q19 and Q20, are not supported)
+* [`tigergraph](tigergraph/): queries are expressed in the [GSQL language](https://www.tigergraph.com/gsql/) and run in the [TigerGraph graph database management system](https://tigergraph.com/)
 
 All implementations use Docker for ease of setup and execution. However, the setups can be adjusted to use a non-containerized DBMS.
 
