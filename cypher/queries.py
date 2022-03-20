@@ -6,11 +6,7 @@ import os
 import re
 import sys
 
-# Usage: bi.py [--test]
-
-# TODO: provide two modes of operation: validation and benchmark
-# validation CSV header: Query ID|Query variant|Parameters|Results
-# benchmark CSV header:  Query ID|Query variant|Response time
+# Usage: queries.py [--test]
 
 result_mapping = {
      1: ["INT32", "BOOL", "INT32", "INT32", "FLOAT32", "INT32", "FLOAT32"],
@@ -30,20 +26,20 @@ result_mapping = {
     15: ["ID[]", "FLOAT32"],
     16: ["ID", "INT32", "INT32"],
     17: ["ID", "INT32"],
-    18: ["ID", "INT32"],
+    18: ["ID", "ID", "INT32"],
     19: ["ID", "ID", "FLOAT32"],
     20: ["ID", "INT64"],
 }
 
 def convert_value_to_string(value, result_type, input):
     if result_type == "ID[]" or result_type == "INT[]" or result_type == "INT32[]" or result_type == "INT64[]":
-        return "[" + ";".join([str(int(x)) for x in value]) + "]"
+        return "[" + ",".join([str(int(x)) for x in value]) + "]"
     elif result_type == "ID" or result_type == "INT" or result_type == "INT32" or result_type == "INT64":
         return str(int(value))
     elif result_type == "FLOAT" or result_type == "FLOAT32" or result_type == "FLOAT64":
         return str(float(value))
     elif result_type == "STRING[]":
-        return "[" + ";".join([f'"{v}"' for v in value]) + "]"
+        return "[" + ",".join([f'"{v}"' for v in value]) + "]"
     elif result_type == "STRING":
         return f'"{value}"'
     elif result_type == "DATETIME":
@@ -91,9 +87,10 @@ def read_query_fun(tx, query_num, query_spec, query_parameters):
 def write_query_fun(tx, query_spec):
     tx.run(query_spec, {})
 
-def run_query(session, query_num, query_id, query_spec, query_parameters, test):
+def run_query(session, query_num, query_variant, query_spec, query_parameters, test):
     if test:
-        print(f'Q{query_id}: {query_parameters}')
+        print(f'Q{query_variant}: {query_parameters}')
+
     start = time.time()
     results = session.write_transaction(read_query_fun, query_num, query_spec, query_parameters)
     end = time.time()
@@ -109,22 +106,26 @@ if len(sys.argv) > 1:
     if sys.argv[1] == "--test":
         test = True
 
+query_variants = ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "15a", "15b", "16a", "16b", "17", "18", "19a", "19b", "20"]
+
 driver = neo4j.GraphDatabase.driver("bolt://localhost:7687")
 session = driver.session()
 
-print("Creating graph (precomputing weights) for Q19")
-session.write_transaction(write_query_fun, open(f'queries/bi-19-drop-graph.cypher', 'r').read())
-session.write_transaction(write_query_fun, open(f'queries/bi-19-create-graph.cypher', 'r').read())
+if "19a" in query_variants or "19b" in query_variants:
+    print("Creating graph (precomputing weights) for Q19")
+    session.write_transaction(write_query_fun, open(f'queries/bi-19-drop-graph.cypher', 'r').read())
+    session.write_transaction(write_query_fun, open(f'queries/bi-19-create-graph.cypher', 'r').read())
 
-print("Creating graph (precomputing weights) for Q20")
-session.write_transaction(write_query_fun, open(f'queries/bi-20-drop-graph.cypher', 'r').read())
-session.write_transaction(write_query_fun, open(f'queries/bi-20-create-graph.cypher', 'r').read())
+if "20" in query_variants:
+    print("Creating graph (precomputing weights) for Q20")
+    session.write_transaction(write_query_fun, open(f'queries/bi-20-drop-graph.cypher', 'r').read())
+    session.write_transaction(write_query_fun, open(f'queries/bi-20-create-graph.cypher', 'r').read())
 
 results_file = open(f'output/results.csv', 'w')
 timings_file = open(f'output/timings.csv', 'w')
-timings_file.write(f"sf|q|time\n")
+timings_file.write(f"sf|q|parameters|time\n")
 
-for query_variant in ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "15a", "15b", "16a", "16b", "17", "18", "19a", "19b", "20"]:
+for query_variant in query_variants:
     query_num = int(re.sub("[^0-9]", "", query_variant))
     query_subvariant = re.sub("[^ab]", "", query_variant)
 

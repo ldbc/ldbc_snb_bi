@@ -4,95 +4,42 @@
 \set startDate '\'2010-11-01\''::timestamp
 \set endDate '\'2010-12-01\''::timestamp
  */
-
-WITH RECURSIVE ReplyScores(ThreadId
-                          , OriginalMessageCreatorPersonId
-                          , ReplyMessageCreatorPersonId
-                          , ReplyMessageId
-                          , Score
-                           ) AS (
-    SELECT Post.id AS ThreadId
-         , Post.CreatorPersonId AS OriginalMessageCreatorPersonId
-         , Comment.CreatorPersonId AS ReplyMessageCreatorPersonId
-         , Comment.id AS ReplyMessageId
-         , 1.0 AS Score
-      FROM Forum
-      JOIN Post
-        ON Post.ContainerForumId = Forum.id
-      JOIN Comment
-        ON coalesce(Comment.ParentPostId, Comment.ParentCommentId) = Post.id
-     WHERE Forum.creationDate BETWEEN :startDate AND :endDate
+WITH RECURSIVE
+Paths(dst, path) AS (
+  SELECT Person2id, ARRAY[Person1id, Person2id] FROM Person_knows_Person WHERE Person1id = :person1Id
   UNION ALL
-    SELECT r.ThreadId AS ThreadId
-         , r.ReplyMessageCreatorPersonId AS OriginalMessageCreatorPersonId
-         , Comment.CreatorPersonId AS ReplyMessageCreatorPersonId
-         , Comment.id AS ReplyMessageId
-         , 0.5 AS Score
-      FROM ReplyScores r
-      JOIN Comment
-        ON coalesce(Comment.ParentPostId, Comment.ParentCommentId) = r.ReplyMessageId
+  SELECT t.Person2id, array_append(path, t.Person2id)
+  FROM (SELECT * FROM Paths WHERE NOT EXISTS (SELECT * FROM Paths s2 WHERE s2.dst = :person2Id)) s, Person_knows_Person t
+  WHERE s.dst = t.Person1id
+    AND NOT ARRAY[t.Person2id] <@ s.path
+    AND array_length(s.path, 1) <= 4 -- hack: we terminate the recursion when the traversal's depth is > 4
+),
+SelectedPaths(dst, path) AS (
+  SELECT dst, path
+  FROM Paths
+  WHERE dst = :person2Id
+),
+Iterator(i) AS (
+  SELECT i FROM (SELECT array_length(path, 1) v FROM SelectedPaths LIMIT 1) l(v), generate_series(1, l.v) t(i)
+),
+MyForums AS (
+  SELECT * FROM Forum WHERE Forum.creationDate BETWEEN :startDate AND :endDate
+),
+PathWeights(dst, path, Score) AS (
+  SELECT p.dst, p.path, SUM(Score)
+  FROM SelectedPaths p, Iterator it, (
+    SELECT (case when msg.ParentMessageId IS NULL then 1.0 else 0.5 end) AS Score
+    FROM Message msg, Message reply
+    WHERE reply.ParentMessageId = msg.MessageId AND msg.CreatorPersonId = p.path[i] AND reply.CreatorPersonId = p.path[i + 1]
+      AND EXISTS (SELECT * FROM MyForums WHERE msg.ContainerForumId = MyForums.Id)
+    UNION ALL
+    SELECT (case when msg.ParentMessageId IS NULL then 1.0 else 0.5 end) AS Score
+    FROM Message msg, Message reply
+    WHERE reply.ParentMessageId = msg.MessageId AND msg.CreatorPersonId = p.path[i + 1] AND reply.CreatorPersonId = p.path[i]
+      AND EXISTS (SELECT * FROM MyForums WHERE msg.ContainerForumId = MyForums.Id)
+  ) t
+  GROUP BY p.dst, p.path
 )
-   , Person_paiScores_directed AS (
-    SELECT OriginalMessageCreatorPersonId AS OriginalMessageAuthorPersonId
-         , ReplyMessageCreatorPersonId AS ReplyMessageCreatorPersonId
-         , sum(Score) AS score
-      FROM ReplyScores
-     WHERE
-        -- discard self replies from the score earned
-           OriginalMessageCreatorPersonId != ReplyMessageCreatorPersonId
-     GROUP BY OriginalMessageCreatorPersonId, ReplyMessageCreatorPersonId
-)
-   , Person_paiScores AS (
-        -- note: this should already have both (A, B, score) and (B, A, score)
-    SELECT coalesce(s1.OriginalMessageAuthorPersonId, s2.ReplyMessageCreatorPersonId) AS person1Id
-         , coalesce(s1.ReplyMessageCreatorPersonId, s2.OriginalMessageAuthorPersonId) AS person2Id
-         , coalesce(s1.score, 0.0) + coalesce(s2.score, 0.0) AS score
-      FROM Person_paiScores_directed s1
-           FULL JOIN Person_paiScores_directed s2
-                  ON s1.OriginalMessageAuthorPersonId = s2.ReplyMessageCreatorPersonId 
-                 AND s1.ReplyMessageCreatorPersonId = s2.OriginalMessageAuthorPersonId
-)
-   , wknows AS (
-        -- weighted knows
-    SELECT Person_knows_Person.person1Id
-         , Person_knows_Person.person2Id
-         , coalesce(score, 0.0) AS score
-      FROM Person_knows_Person
-           LEFT JOIN Person_paiScores pps
-                  ON Person_knows_Person.person1Id = pps.person1Id
-                 AND Person_knows_Person.person2Id = pps.person2Id
-)
-   , paths(startPerson
-         , endPerson
-         , path
-         , weight
-         , hopCount
-         , person2Reached -- shows if person2 has been reached by any paths produced in the iteration that produced the path represented by this row
-          ) AS (
-    SELECT person1Id AS startPerson
-         , person2Id AS endPerson
-         , ARRAY[person1Id, person2Id]::bigint[] AS path
-         , score AS weight
-         , 1 AS hopCount
-         , max(CASE WHEN person2Id = :person2Id THEN 1 ELSE 0 END) OVER (ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS person2Reached
-      FROM wknows
-     WHERE person1Id = :person1Id
-  UNION ALL
-    SELECT p.startPerson AS startPerson
-         , person2Id AS endPerson
-         , array_append(path, person2Id) AS path
-         , weight + score AS weight
-         , hopCount + 1 AS hopCount
-         , max(CASE WHEN person2Id = :person2Id THEN 1 ELSE 0 END) OVER (ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS person2Reached
-      FROM paths p
-      JOIN wknows k
-        ON p.endPerson = k.person1Id
-     WHERE NOT ARRAY[k.person2Id] <@ p.path -- person2Id is not in the path yet
-        -- stop condition
-       AND p.person2Reached = 0
-)
-SELECT path, weight
-  FROM paths
- WHERE endPerson = :person2Id
- ORDER BY weight DESC, path
-;
+SELECT path, Score as Weights
+FROM PathWeights
+ORDER BY Weights DESC, path;

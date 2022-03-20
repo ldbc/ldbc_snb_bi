@@ -166,54 +166,54 @@ INSERT INTO Comment_Delete_candidates_unique
 
 DELETE FROM Comment
 USING (
-  WITH RECURSIVE MessageThread AS (
+  WITH RECURSIVE Message AS (
       SELECT id
       FROM Comment_Delete_candidates_unique -- starting from the delete candidate comments
       UNION
       SELECT Comment.id AS id
-      FROM MessageThread
+      FROM Message
       JOIN Comment
-        ON Comment.ParentCommentId = MessageThread.id
-        OR Comment.ParentPostId = MessageThread.id
+        ON Comment.ParentCommentId = Message.id
+        OR Comment.ParentPostId = Message.id
   )
   SELECT id
-  FROM MessageThread
+  FROM Message
   ) sub
 WHERE sub.id = Comment.id
 ;
 
 DELETE FROM Person_likes_Comment
 USING (
-  WITH RECURSIVE MessageThread AS (
+  WITH RECURSIVE Message AS (
       SELECT id
       FROM Comment_Delete_candidates_unique -- starting from the delete candidate comments
       UNION
       SELECT Comment.id AS id
-      FROM MessageThread
+      FROM Message
       JOIN Comment
-        ON Comment.ParentCommentId = MessageThread.id
-        OR Comment.ParentPostId = MessageThread.id
+        ON Comment.ParentCommentId = Message.id
+        OR Comment.ParentPostId = Message.id
   )
   SELECT id
-  FROM MessageThread
+  FROM Message
   ) sub
 WHERE sub.id = Person_likes_Comment.CommentId
 ;
 
 DELETE FROM Comment_hasTag_Tag
 USING (
-  WITH RECURSIVE MessageThread AS (
+  WITH RECURSIVE Message AS (
       SELECT id
       FROM Comment_Delete_candidates_unique -- starting from the delete candidate comments
       UNION ALL
       SELECT comment.id AS id
-      FROM MessageThread
+      FROM Message
       JOIN comment
-        ON comment.ParentCommentId = MessageThread.id
-        OR comment.ParentPostId = MessageThread.id
+        ON comment.ParentCommentId = Message.id
+        OR comment.ParentPostId = Message.id
   )
   SELECT id
-  FROM MessageThread
+  FROM Message
   ) sub
 WHERE sub.id = Comment_hasTag_Tag.CommentId
 ;

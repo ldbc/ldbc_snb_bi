@@ -1,13 +1,8 @@
 import psycopg2
 import sys
 import os
+import re
 import time
-
-def vacuum(con):
-    old_isolation_level = con.isolation_level
-    pg_con.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
-    pg_con.cursor().execute("VACUUM FULL")
-    pg_con.set_isolation_level(old_isolation_level)
 
 if len(sys.argv) < 2:
     print("Umbra loader script")
@@ -27,7 +22,9 @@ def run_script(con, filename):
         for query in queries:
             if query.isspace():
                 continue
-            print(f"{query}")
+
+            sql_statement = re.findall(r"^((CREATE|INSERT|DROP|DELETE|SELECT|COPY) [A-Za-z0-9_ ]*)", query, re.MULTILINE)
+            print(f"{sql_statement[0][0].strip()} ...")
             start = time.time()
             con.execute(query)
             end = time.time()
@@ -35,7 +32,6 @@ def run_script(con, filename):
             print(f"-> {duration:.4f} seconds")
 
 
-run_script(con, "ddl/drop-views.sql")
 run_script(con, "ddl/drop-tables.sql")
 run_script(con, "ddl/schema-composite-merged-fk.sql")
 run_script(con, "ddl/schema-delete-candidates.sql")
@@ -78,10 +74,6 @@ print("Loaded dynamic entities.")
 print("Creating materialized views . . . ")
 run_script(con, "ddl/constraints.sql")
 pg_con.commit()
-print("Done.")
-
-print("Vacuuming . . . ")
-vacuum(pg_con)
 print("Done.")
 
 print("Loaded initial snapshot to Umbra.")

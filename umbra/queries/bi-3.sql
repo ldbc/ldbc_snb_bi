@@ -6,16 +6,16 @@ SELECT Forum.id                AS "forum.id"
      , Forum.title             AS "forum.title"
      , Forum.creationDate      AS "forum.creationDate"
      , Forum.ModeratorPersonId AS "person.id"
-     , count(DISTINCT MessageThread.MessageId) AS messageCount
+     , count(DISTINCT Message.MessageId) AS messageCount
   FROM TagClass
   JOIN Tag
     ON Tag.TypeTagClassId = TagClass.id
   JOIN Message_hasTag_Tag
     ON Message_hasTag_Tag.TagId = Tag.id
-  JOIN MessageThread
-    ON MessageThread.MessageId = Message_hasTag_Tag.MessageId
+  JOIN Message
+    ON Message.MessageId = Message_hasTag_Tag.MessageId
   JOIN Forum
-    ON Forum.id = MessageThread.ContainerForumId
+    ON Forum.id = Message.ContainerForumId
   JOIN Person AS ModeratorPerson
     ON ModeratorPerson.id = Forum.ModeratorPersonId
   JOIN City

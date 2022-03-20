@@ -5,17 +5,17 @@ WITH detail AS (
 SELECT CreatorPerson.id AS CreatorPersonId
      , count(DISTINCT Comment.Id)  AS replyCount
      , count(DISTINCT Person_likes_Message.MessageId||' '||Person_likes_Message.PersonId) AS likeCount
-     , count(DISTINCT Message.Id)  AS messageCount
+     , count(DISTINCT Message.MessageId) AS messageCount
      , NULL as score
   FROM Tag
   JOIN Message_hasTag_Tag
     ON Message_hasTag_Tag.TagId = Tag.id
   JOIN Message
-    ON Message.id = Message_hasTag_Tag.MessageId
+    ON Message.MessageId = Message_hasTag_Tag.MessageId
   LEFT JOIN Comment
-         ON Message.id = coalesce(Comment.ParentPostId, Comment.ParentCommentId)
+         ON Message.MessageId = coalesce(Comment.ParentPostId, Comment.ParentCommentId)
   LEFT JOIN Person_likes_Message
-         ON Message.id = Person_likes_Message.MessageId
+         ON Message.MessageId = Person_likes_Message.MessageId
   JOIN Person CreatorPerson -- creator
     ON CreatorPerson.id = Message.CreatorPersonId
  WHERE Tag.name = :tag

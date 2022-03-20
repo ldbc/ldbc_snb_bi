@@ -4,7 +4,7 @@
 WITH
   message_count AS (
     SELECT 0.0 + count(*) AS cnt
-      FROM message
+      FROM Message
      WHERE creationDate < :datetime
 )
 , message_prep AS (
@@ -17,7 +17,7 @@ WITH
              ELSE                   3 -- long
            END AS lengthCategory
          , length
-      FROM message
+      FROM Message
      WHERE creationDate < :datetime
        AND content IS NOT NULL
 )

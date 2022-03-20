@@ -6,7 +6,7 @@ import psycopg2
 import time
 import sys
 
-# Usage: bi.py [--test]
+# Usage: queries.py [--test]
 
 result_mapping = {
      1: ["INT32", "BOOL", "INT32", "INT32", "FLOAT32", "INT32", "FLOAT32"],
@@ -26,10 +26,11 @@ result_mapping = {
     15: ["ID[]", "FLOAT32"],
     16: ["ID", "INT32", "INT32"],
     17: ["ID", "INT32"],
-    18: ["ID", "INT32"],
+    18: ["ID", "ID", "INT32"],
     19: ["ID", "ID", "FLOAT32"],
     20: ["ID", "INT64"],
 }
+
 
 def convert_value_to_string(value, result_type, input):
     if result_type == "ID[]" or result_type == "INT[]" or result_type == "INT32[]" or result_type == "INT64[]":
@@ -69,11 +70,14 @@ def cast_parameter_to_driver_input(value, parameter_type):
         raise ValueError(f"Parameter type {parameter_type} not found")
 
 
-def run_query(con, query_num, query_spec, query_parameters):
+def run_query(pg_con, query_num, query_variant, query_spec, query_parameters):
+    if test:
+        print(f'Q{query_variant}: {query_parameters}')
+
     for key in query_parameters.keys():
         query_spec = query_spec.replace(f":{key}", query_parameters[key])
 
-    cur = con.cursor()
+    cur = pg_con.cursor()
     start = time.time()
     cur.execute(query_spec)
     results = cur.fetchall()
@@ -91,27 +95,35 @@ def run_query(con, query_num, query_spec, query_parameters):
         print(f"-> {result_tuples}")
     return (result_tuples, duration)
 
+
 def convert_to_datetime(timestamp):
     dt = datetime.datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%f+00:00")
     return f"'{dt}'::timestamp"
+
 
 def convert_to_date(timestamp):
     dt = datetime.datetime.strptime(timestamp, '%Y-%m-%d')
     return f"'{dt}'::date"
 
+
 sf = os.environ.get("SF")
 test = False
+pgtuning = False
 if len(sys.argv) > 1:
     if sys.argv[1] == "--test":
         test = True
+    if sys.argv[1] == "--pgtuning":
+        pgtuning = True
+
+query_variants = ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "16a", "16b", "17", "18", "15b"] #, "15a"
 
 results_file = open(f'output/results.csv', 'w')
 timings_file = open(f'output/timings.csv', 'w')
-timings_file.write(f"sf|q|time\n")
+timings_file.write(f"sf|q|parameters|time\n")
 
-con = psycopg2.connect(host="localhost", port=8000, user="postgres", password="mysecretpassword")
+pg_con = psycopg2.connect(host="localhost", user="postgres", password="mysecretpassword", port=8000)
 
-for query_variant in ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "16a", "16b", "18", "17", "15b", "15a"]:
+for query_variant in query_variants:
     query_num = int(re.sub("[^0-9]", "", query_variant))
     query_subvariant = re.sub("[^ab]", "", query_variant)
 
@@ -131,18 +143,20 @@ for query_variant in ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9",
         query_parameters_split = {k.split(":")[0]: v for k, v in query_parameters.items()}
         query_parameters_in_order = f'<{";".join([query_parameters_split[parameter["name"]] for parameter in parameters])}>'
 
-        (results, duration) = run_query(con, query_num, query_spec, query_parameters_converted)
+        (results, duration) = run_query(pg_con, query_num, query_variant, query_spec, query_parameters_converted)
 
         timings_file.write(f"{sf}|{query_variant}|{query_parameters_in_order}|{duration}\n")
         timings_file.flush()
         results_file.write(f"{query_num}|{query_variant}|{query_parameters_in_order}|{results}\n")
         results_file.flush()
 
-        # test run: 1 query, regular run: 10 queries
-        if test or i == 10:
+        # - test run: 1 query
+        # - regular run: 10 queries
+        # - paramgen tuning: 50 queries
+        if (test) or (not pgtuning and i == 10) or (pgtuning and i == 100):
             break
 
 results_file.close()
 timings_file.close()
 
-con.close()
+pg_con.close()

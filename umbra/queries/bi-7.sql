@@ -11,15 +11,15 @@ SELECT RelatedTag.name AS "relatedTag.name"
   INNER JOIN Comment
           ON ParentMessage_HasTag_Tag.MessageId = coalesce(Comment.ParentCommentId, Comment.ParentPostId)
   -- comment's tag
-  INNER JOIN Comment_hasTag_Tag ct
-          ON Comment.id = ct.CommentId
+  INNER JOIN Message_hasTag_Tag ct
+          ON Comment.id = ct.MessageId
   INNER JOIN Tag RelatedTag
           ON ct.TagId = RelatedTag.id
   -- comment doesn't have the given tag: antijoin in the where clause
-  LEFT  JOIN Comment_hasTag_Tag nt
-          ON Comment.id = nt.CommentId
+  LEFT  JOIN Message_hasTag_Tag nt
+          ON Comment.id = nt.MessageId
          AND nt.TagId = ParentMessage_HasTag_Tag.TagId
- WHERE nt.CommentId IS NULL -- antijoin: comment (c) does not have the given tag
+ WHERE nt.MessageId IS NULL -- antijoin: comment (c) does not have the given tag
     -- filter
    AND Tag.name = :tag
  GROUP BY RelatedTag.name

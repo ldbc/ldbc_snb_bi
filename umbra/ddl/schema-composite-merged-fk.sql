@@ -6,7 +6,7 @@ CREATE TABLE Organisation (
     name varchar(256) NOT NULL,
     url varchar(256) NOT NULL,
     LocationPlaceId bigint NOT NULL
-);
+) WITH (storage = paged);
 
 CREATE TABLE Place (
     id bigint PRIMARY KEY,
@@ -14,21 +14,21 @@ CREATE TABLE Place (
     url varchar(256) NOT NULL,
     type varchar(12) NOT NULL,
     PartOfPlaceId bigint -- null for continents
-);
+) WITH (storage = paged);
 
 CREATE TABLE Tag (
     id bigint PRIMARY KEY,
     name varchar(256) NOT NULL,
     url varchar(256) NOT NULL,
     TypeTagClassId bigint NOT NULL
-);
+) WITH (storage = paged);
 
 CREATE TABLE TagClass (
     id bigint PRIMARY KEY,
     name varchar(256) NOT NULL,
     url varchar(256) NOT NULL,
     SubclassOfTagClassId bigint -- null for the root TagClass (Thing)
-);
+) WITH (storage = paged);
 
 -- static tables / separate table per individual subtype
 

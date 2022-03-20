@@ -10,9 +10,9 @@ WITH poster_w_liker AS (
       ON Message_hasTag_Tag.TagId = Tag.id
        -- as an optimization, we use that the set of message1 is the same as message2
     JOIN Message m1
-      ON m1.id = Message_hasTag_Tag.MessageId
+      ON m1.MessageId = Message_hasTag_Tag.MessageId
    LEFT JOIN Person_likes_Message l2
-          ON m1.id = l2.MessageId
+          ON m1.MessageId = l2.MessageId
        --, person p2 -- we don't need the person itself as its ID is in the like l2
    WHERE Tag.name = :tag
 )
@@ -20,7 +20,7 @@ WITH poster_w_liker AS (
   SELECT m3.CreatorPersonId AS PersonId, count(*) AS popularityScore
     FROM Message m3
     JOIN Person_likes_Message l3
-      ON l3.MessageId = m3.id
+      ON l3.MessageId = m3.MessageId
    GROUP BY m3.CreatorPersonId
 )
 SELECT pl.posterPersonid AS "person1.id"

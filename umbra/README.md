@@ -15,14 +15,14 @@ In Datagen's directory (`ldbc_snb_datagen_spark`), issue the following commands.
 
 ```bash
 export SF=desired_scale_factor
-export LDBC_DATAGEN_MAX_MEM=available_memory
+export LDBC_SNB_DATAGEN_MAX_MEM=available_memory
 ```
 
 ```bash
 rm -rf out-sf${SF}/
 tools/run.py \
     --cores $(nproc) \
-    --memory ${LDBC_DATAGEN_MAX_MEM} \
+    --memory ${LDBC_SNB_DATAGEN_MAX_MEM} \
     ./target/ldbc_snb_datagen_${PLATFORM_VERSION}-${DATAGEN_VERSION}.jar \
     -- \
     --format csv \
@@ -36,19 +36,34 @@ tools/run.py \
 
 Note that unlike Postgres, Umbra does not support directly loading from compressed files (`.csv.gz`).
 
-1. Set the `${UMBRA_CSV_DIR}` environment variable to point to the data set. E.g., assuming that your `${LDBC_SNB_DATAGEN_DIR}` and `${SF}` environment variables are set, run:
+1. Set the `${UMBRA_CSV_DIR}` environment variable to point to the data set.
 
-    ```bash
-    export UMBRA_CSV_DIR=${LDBC_SNB_DATAGEN_DIR}/out-sf${SF}/graphs/csv/bi/composite-merged-fk/
-    ```
+    * To use a locally generated data set, set the `${LDBC_SNB_DATAGEN_DIR}` and `${SF}` environment variables and run:
 
-    To download and use the sample data set, run:
+        ```bash
+        export UMBRA_CSV_DIR=${LDBC_SNB_DATAGEN_DIR}/out-sf${SF}/graphs/csv/bi/composite-merged-fk/
+        ```
 
-    ```bash
-    wget -q https://ldbcouncil.org/ldbc_snb_datagen_spark/social-network-sf0.003-bi-composite-merged-fk.zip
-    unzip -q social-network-sf0.003-bi-composite-merged-fk.zip
-    export UMBRA_CSV_DIR=`pwd`/social-network-sf0.003-bi-composite-merged-fk/graphs/csv/bi/composite-merged-fk/
-    ```
+        Or, simply run:
+
+        ```bash
+        . scripts/use-datagen-data-set.sh
+        ```
+
+    * To download and use the sample data set, run:
+
+        ```bash
+        wget -q https://ldbcouncil.org/ldbc_snb_datagen_spark/social-network-sf0.003-bi-composite-merged-fk.zip
+        unzip -q social-network-sf0.003-bi-composite-merged-fk.zip
+        export UMBRA_CSV_DIR=`pwd`/social-network-sf0.003-bi-composite-merged-fk/graphs/csv/bi/composite-merged-fk/
+        ```
+
+        Or, simply run:
+
+        ```
+        scripts/get-sample-data-set.sh
+        . scripts/use-sample-data-set.sh
+        ```
 
 1. To start the DBMS, create a database and load the data, run:
 
@@ -58,20 +73,32 @@ Note that unlike Postgres, Umbra does not support directly loading from compress
 
 ## Microbatches
 
-Test loading the microbatches:
+Test loading the microbatches, make sure that `${UMBRA_CSV_DIR}` is set correctly and run:
 
 ```bash
 scripts/batches.sh
 ```
-
-:warning: Deletions currently do not work, see the `#TODO` entries in `batches.py`.
 
 ## Queries
 
 To run the queries, issue:
 
 ```bash
-scripts/bi.sh
+scripts/queries.sh
+```
+
+For a test run, use:
+
+```bash
+scripts/queries.sh ${SF} --test
+```
+
+## Benchmark
+
+To run the queries and the batches alternately, as specified by the benchmark, run:
+
+```bash
+scripts/benchmark.sh
 ```
 
 ## Running queries interactively
