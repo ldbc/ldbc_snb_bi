@@ -16,6 +16,8 @@ MATCH
   (forum:TopForum)-[:HAS_MEMBER]->(person:Person)
 OPTIONAL MATCH
   (person)<-[:HAS_CREATOR]-(message:Message)-[:REPLY_OF*0..]->(post:Post)<-[:CONTAINER_OF]-(popularForum:TopForum)
+WITH person, message
+WHERE message.creationDate > $date
 WITH
   person.id AS personId,
   person.firstName AS personFirstName,
