@@ -20,7 +20,7 @@ print()
 print("============ Creating materialized views ============")
 for query_variant in ["2d", "2m", "8d", "8m"]:
     print(f"- Q{query_variant}")
-    with open(f"paramgen-queries/pq-{query_variant}.sql", "r") as parameter_query_file:
+    with open(f"paramgen-queries/pg-{query_variant}.sql", "r") as parameter_query_file:
         parameter_query = parameter_query_file.read()
         con.execute(parameter_query)
 
@@ -28,6 +28,6 @@ print()
 print("============ Generating parameters ============")
 for query_variant in ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "15a", "15b", "16a", "16b", "17", "18", "19a", "19b", "20"]:
     print(f"- Q{query_variant}")
-    with open(f"paramgen-queries/pq-{query_variant}.sql", "r") as parameter_query_file:
+    with open(f"paramgen-queries/pg-{query_variant}.sql", "r") as parameter_query_file:
         parameter_query = parameter_query_file.read()
         con.execute(f"COPY ( {parameter_query} ) TO '../parameters/bi-{query_variant}.csv' WITH (HEADER, DELIMITER '|');")
