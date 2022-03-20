@@ -6,16 +6,16 @@ MATCH (country:Country)<-[:IS_PART_OF]-(:City)<-[:IS_LOCATED_IN]-(person:Person)
 WHERE forum.creationDate > $date
 WITH country, forum, count(person) AS numberOfMembers
 ORDER BY numberOfMembers DESC, forum.id ASC, country.id
-WITH DISTINCT forum
+WITH DISTINCT forum AS topForum
 LIMIT 100
-SET forum:TopForum
+SET topForum:TopForum
 
 WITH count(*) AS dummy
 
 MATCH
-  (forum:TopForum)-[:HAS_MEMBER]->(person:Person)
+  (topForum2:TopForum)-[:HAS_MEMBER]->(person:Person)
 OPTIONAL MATCH
-  (person)<-[:HAS_CREATOR]-(message:Message)-[:REPLY_OF*0..]->(post:Post)<-[:CONTAINER_OF]-(popularForum:TopForum)
+  (person)<-[:HAS_CREATOR]-(message:Message)-[:REPLY_OF*0..]->(post:Post)<-[:CONTAINER_OF]-(topForum1:TopForum)
 WITH person, message
 WHERE message.creationDate > $date
 WITH
@@ -38,8 +38,8 @@ WITH
     messageCount: messageCount
   }) AS results
 
-MATCH (forum:TopForum)
-REMOVE forum:TopForum
+MATCH (topForum:TopForum)
+REMOVE topForum:TopForum
 
 WITH
   count(*) AS dummy,
