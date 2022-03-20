@@ -1,5 +1,5 @@
 SELECT
-    countryName AS 'countryName:STRING',
+    countryName AS 'country:STRING',
     creationDay::date + INTERVAL (-15 + salt*37 % 30) DAY AS 'startDate:DATE',
     creationDay::date + INTERVAL (-15 + salt*37 % 30 + 92 + salt*47 % 18) DAY AS 'endDate:DATE'
 FROM
