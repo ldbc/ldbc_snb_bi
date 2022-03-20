@@ -30,7 +30,7 @@ result_mapping = {
     15: ["ID[]", "FLOAT32"],
     16: ["ID", "INT32", "INT32"],
     17: ["ID", "INT32"],
-    18: ["ID", "INT32"],
+    18: ["ID", "ID", "INT32"],
     19: ["ID", "ID", "FLOAT32"],
     20: ["ID", "INT64"],
 }
