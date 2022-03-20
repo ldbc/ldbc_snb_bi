@@ -33,10 +33,12 @@ SELECT au.id AS "person.id"
               ON au.id = Message.CreatorPersonId
              AND Message.ContainerForumId IN (SELECT id FROM Top100_Popular_Forums)
              AND Message.creationDate > :date
-  WHERE EXISTS (SELECT * FROM Top100_Popular_Forums INNER JOIN
-                Forum_hasMember_Person ON Top100_Popular_Forums.id =
-                Forum_hasMember_Person.ForumId WHERE Forum_hasMember_Person.PersonId = au.id
-)
+  WHERE EXISTS (SELECT 1
+                FROM Top100_Popular_Forums
+                INNER JOIN Forum_hasMember_Person
+                        ON Forum_hasMember_Person.ForumId = Top100_Popular_Forums.id
+                WHERE Forum_hasMember_Person.PersonId = au.id
+               )
 GROUP BY au.id, au.firstName, au.lastName, au.creationDate
 ORDER BY messageCount DESC, au.id
 LIMIT 100
