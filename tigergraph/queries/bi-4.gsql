@@ -28,7 +28,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi4 (DATETIME date) SYNTAX v2 {
   tmp =
     SELECT p
     FROM popularForums -(CONTAINER_OF>)- Post -(<REPLY_OF*)- Comment:m -(HAS_CREATOR>)- Person:p
-    WHERE p.@inForum
+    WHERE p.@inForum AND m.creationDate > date
     PER(m, p)
     ACCUM p.@messageCount += 1
     POST-ACCUM @@result += RESULT(p.id, p.firstName, p.lastName, p.creationDate, p.@messageCount);
