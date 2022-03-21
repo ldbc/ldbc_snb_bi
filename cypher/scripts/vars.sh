@@ -1,3 +1,5 @@
+pushd . > /dev/null
+
 cd "$( cd "$( dirname "${BASH_SOURCE[0]:-${(%):-%x}}" )" >/dev/null 2>&1 && pwd )"
 cd ..
 
@@ -17,3 +19,5 @@ if [[ `uname -m` == "arm64" ]]; then
 else
     export NEO4J_DOCKER_PLATFORM_FLAG=""
 fi
+
+popd
