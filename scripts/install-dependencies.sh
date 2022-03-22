@@ -10,8 +10,10 @@ paramgen/scripts/install-dependencies.sh
 cypher/scripts/install-dependencies.sh
 umbra/scripts/install-dependencies.sh
 
+# install numdiff
+
 if [[ ! -z $(which yum) ]]; then
-    sudo dnf install -y make automake gcc texinfo-tex
+    sudo dnf install -y make automake gcc texinfo-tex texlive-collection-fontsrecommended
     git clone https://github.com/tjhei/numdiff
     cd numdiff
     git checkout db19fceea94a3a13976b3d2e3d7539eb25bf9441
