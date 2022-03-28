@@ -100,6 +100,7 @@ def run_query(session, query_num, query_variant, query_spec, query_parameters, t
         print(f"-> {results}")
     return (results, duration)
 
+
 sf = os.environ.get("SF")
 test = False
 if len(sys.argv) > 1:

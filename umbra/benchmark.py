@@ -7,7 +7,7 @@ import psycopg2
 import time
 import sys
 
-# Usage: queries.py [--test]
+# Usage: benchmark.py [--test|--pgtuning]
 
 result_mapping = {
      1: ["INT32", "BOOL", "INT32", "INT32", "FLOAT32", "INT32", "FLOAT32"],
@@ -148,6 +148,8 @@ def run_queries(pg_con, sf, test, pgtuning):
             # - paramgen tuning: 50 queries
             if (test) or (not pgtuning and i == 10) or (pgtuning and i == 100):
                 break
+
+        query_file.close()
 
 
 def run_batch_updates(pg_con, data_dir, batch_start_date):

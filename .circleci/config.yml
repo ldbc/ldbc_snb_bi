@@ -46,18 +46,13 @@ jobs:
           command: |
             export NEO4J_CSV_DIR=`pwd`/cypher/social-network-sf0.003-bi-composite-projected-fk-neo4j/graphs/csv/bi/composite-projected-fk/
             cypher/scripts/load-in-one-step.sh
-            cypher/scripts/batches.sh
+            cypher/scripts/benchmark.sh
       - run:
           name: Test Cypher toolchain with compressed CSVs
           command: |
+            # the sample data set contains compressed CSVs
             . cypher/scripts/use-sample-data-set.sh
             cypher/scripts/load-in-one-step.sh
             cypher/scripts/backup-database.sh
-            cypher/scripts/batches.sh
-      - run:
-          name: Test Cypher BI script
-          command: |
-            . cypher/scripts/use-sample-data-set.sh
-            cypher/scripts/restore-database.sh
-            cypher/scripts/queries.sh --test
+            cypher/scripts/benchmark.sh
       - slack/status
