@@ -8,17 +8,17 @@ WITH country, forum, count(person) AS numberOfMembers
 ORDER BY numberOfMembers DESC, forum.id ASC, country.id
 WITH DISTINCT forum AS topForum
 LIMIT 100
-SET topForum:TopForum
 
-WITH count(*) AS dummy
+WITH collect(topForum) AS topForums
 
-MATCH
-  (topForum2:TopForum)-[:HAS_MEMBER]->(person:Person)
-OPTIONAL MATCH
-  (person)<-[:HAS_CREATOR]-(message:Message)-[:REPLY_OF*0..]->(post:Post)<-[:CONTAINER_OF]-(topForum1:TopForum)
-WITH person, message
+UNWIND topForums AS topForum1
+
+OPTIONAL MATCH (topForum1)-[:CONTAINER_OF]->(post:Post)<-[:REPLY_OF*0..]-(message:Message)-[:HAS_CREATOR]->(person:Person)<-[:HAS_MEMBER]-(topForum2:Forum)
+WITH person, message, topForum2
 WHERE message.creationDate > $date
-WITH
+  AND topForum2 IN topForums
+
+RETURN
   person.id AS personId,
   person.firstName AS personFirstName,
   person.lastName AS personLastName,
@@ -28,27 +28,3 @@ ORDER BY
   messageCount DESC,
   person.id ASC
 LIMIT 100
-
-WITH
-  collect({
-    personId: personId,
-    personFirstName: personFirstName,
-    personLastName: personLastName,
-    personCreationDate: personCreationDate,
-    messageCount: messageCount
-  }) AS results
-
-MATCH (topForum:TopForum)
-REMOVE topForum:TopForum
-
-WITH
-  count(*) AS dummy,
-  results
-
-UNWIND results AS r
-RETURN
-  r.personId AS personId,
-  r.personFirstName AS personFirstName,
-  r.personLastName AS personLastName,
-  r.personCreationDate AS personCreationDate,
-  r.messageCount AS messageCount
