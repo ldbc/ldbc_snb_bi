@@ -1,5 +1,56 @@
 -- maintain materialized views
 
+-- Comments attaching to existing Message trees
+INSERT INTO Message
+    WITH RECURSIVE Message_CTE(creationDate, MessageId, RootPostId, RootPostLanguage, content, imageFile, locationIP, browserUsed, length, CreatorPersonId, ContainerForumId, LocationCountryId, ParentMessageId, type) AS (
+        -- first half of the union: Comments attaching directly to the existing tree
+        SELECT
+            Comment.creationDate AS creationDate,
+            Comment.id AS MessageId,
+            Message.RootPostId AS RootPostId,
+            Message.RootPostLanguage AS RootPostLanguage,
+            Comment.content AS content,
+            NULL::varchar(40) AS imageFile,
+            Comment.locationIP AS locationIP,
+            Comment.browserUsed AS browserUsed,
+            Comment.length AS length,
+            Comment.CreatorPersonId AS CreatorPersonId,
+            Message.ContainerForumId AS ContainerForumId,
+            Comment.LocationCountryId AS LocationCityId,
+            coalesce(Comment.ParentPostId, Comment.ParentCommentId) AS ParentMessageId,
+            Comment.ParentPostId,
+            Comment.ParentCommentId,
+            'Comment' AS type
+        FROM Comment
+        JOIN Message
+          ON Message.MessageId = coalesce(Comment.ParentPostId, Comment.ParentCommentId)
+        UNION ALL
+        -- second half of the union: Comments attaching newly inserted Comments
+        SELECT
+            Comment.creationDate AS creationDate,
+            Comment.id AS MessageId,
+            Message_CTE.RootPostId AS RootPostId,
+            Message_CTE.RootPostLanguage AS RootPostLanguage,
+            Comment.content AS content,
+            NULL::varchar(40) AS imageFile,
+            Comment.locationIP AS locationIP,
+            Comment.browserUsed AS browserUsed,
+            Comment.length AS length,
+            Comment.CreatorPersonId AS CreatorPersonId,
+            Message_CTE.ContainerForumId AS ContainerForumId,
+            Comment.LocationCountryId AS LocationCityId,
+            coalesce(Comment.ParentPostId, Comment.ParentCommentId) AS ParentMessageId,
+            Comment.ParentPostId,
+            Comment.ParentCommentId,
+            'Comment' AS type
+        FROM Comment
+        JOIN Message_CTE
+          ON Comment.ParentCommentId = Message_CTE.MessageId
+    )
+    SELECT * FROM Message_CTE
+;
+
+-- Posts and Comments to new Message trees
 INSERT INTO Message
     WITH RECURSIVE Message_CTE(creationDate, MessageId, RootPostId, RootPostLanguage, content, imageFile, locationIP, browserUsed, length, CreatorPersonId, ContainerForumId, LocationCountryId, ParentMessageId, type) AS (
         SELECT
