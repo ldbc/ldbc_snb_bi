@@ -171,6 +171,8 @@ def run_batch_updates(pg_con, data_dir, batch_start_date):
             csv_path = f"{batch_path}/{csv_file}"
             print(f"- {csv_path}")
             cur.execute(f"COPY {entity} FROM '/data/inserts/dynamic/{entity}/{batch_dir}/{csv_file}' (DELIMITER '|', HEADER, FORMAT csv)")
+            if entity == "Person_knows_Person":
+                cur.execute(f"COPY {entity} (creationDate, Person2id, Person1id) FROM '/data/inserts/dynamic/{entity}/{batch_dir}/{csv_file}' (DELIMITER '|', HEADER, FORMAT csv)")
             pg_con.commit()
 
     print("## Deletes")
