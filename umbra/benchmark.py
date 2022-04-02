@@ -107,6 +107,7 @@ def convert_to_date(timestamp):
 def run_script(pg_con, cur, filename):
     with open(filename, "r") as f:
         queries_file = f.read()
+        queries_file = re.sub(r"\n--.*", "", queries_file)
         queries = queries_file.split(";")
         for query in queries:
             if query.isspace():
