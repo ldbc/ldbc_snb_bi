@@ -1,5 +1,5 @@
 ----------------------------------------------------------------------------------------------------
--- DEL1: Remove person and its personal forums and message (sub)threads ----------------------------
+-- DEL1: Remove Person, its personal Forums, and its Message (sub)threads --------------------------
 ----------------------------------------------------------------------------------------------------
 DELETE FROM Person
 USING Person_Delete_candidates
@@ -76,7 +76,7 @@ JOIN Comment_View
 ;
 
 ----------------------------------------------------------------------------------------------------
--- DEL2: Remove post like --------------------------------------------------------------------------
+-- DEL2: Remove Post like --------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------
 DELETE FROM Person_likes_Post
 USING Person_likes_Post_Delete_candidates
@@ -85,7 +85,7 @@ WHERE Person_likes_Post_Delete_candidates.src = Person_likes_Post.PersonId
 ;
 
 ----------------------------------------------------------------------------------------------------
--- DEL3: Remove comment like -----------------------------------------------------------------------
+-- DEL3: Remove Comment like -----------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------
 DELETE FROM Person_likes_Comment
 USING Person_likes_Comment_Delete_candidates
@@ -94,7 +94,7 @@ WHERE Person_likes_Comment_Delete_candidates.src = Person_likes_Comment.PersonId
 ;
 
 ----------------------------------------------------------------------------------------------------
--- DEL4: Remove forum and its content --------------------------------------------------------------
+-- DEL4: Remove Forum and its content --------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------
 DELETE FROM Forum
 USING Forum_Delete_candidates
@@ -115,7 +115,7 @@ JOIN Forum_Delete_candidates
 ;
 
 ----------------------------------------------------------------------------------------------------
--- DEL5: Remove forum membership -------------------------------------------------------------------
+-- DEL5: Remove Forum membership -------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------
 DELETE FROM Forum_hasMember_Person
 USING Forum_hasMember_Person_Delete_candidates
@@ -124,7 +124,7 @@ WHERE Forum_hasMember_Person_Delete_candidates.src = Forum_hasMember_Person.Foru
 ;
 
 ----------------------------------------------------------------------------------------------------
--- DEL6: Remove post thread ------------------------------------------------------------------------
+-- DEL6: Remove Post thread ------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------
 DROP TABLE IF EXISTS Post_Delete_candidates_unique;
 CREATE TABLE Post_Delete_candidates_unique(id bigint not null);
@@ -147,7 +147,7 @@ USING Post_Delete_candidates_unique
 WHERE Post_Delete_candidates_unique.id = Post_hasTag_Tag.PostId
 ;
 
--- offload cascading deletes to DEL7
+-- offload cascading Comment deletes to DEL7
 INSERT INTO Comment_Delete_candidates 
 SELECT Post_Delete_candidates.deletionDate AS deletionDate, Comment_View.id AS id
 FROM Comment_View
@@ -156,7 +156,7 @@ JOIN Post_Delete_candidates
 ;
 
 ----------------------------------------------------------------------------------------------------
--- DEL7: Remove comment subthread ------------------------------------------------------------------
+-- DEL7: Remove Comment subthread ------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------
 DROP TABLE IF EXISTS Comment_Delete_candidates_unique;
 CREATE TABLE Comment_Delete_candidates_unique(id bigint not null);
