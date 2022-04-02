@@ -61,18 +61,18 @@ WHERE Forum.title LIKE 'Album %'
 
 -- offload cascading Post deletes to DEL6
 INSERT INTO Post_Delete_candidates
-SELECT Person_Delete_candidates.deletionDate AS deletionDate, Post.id AS id
+SELECT Person_Delete_candidates.deletionDate AS deletionDate, Post_View.id AS id
 FROM Person_Delete_candidates
-JOIN Post
-  ON Post.CreatorPersonId = Person_Delete_candidates.id
+JOIN Post_View
+  ON Post_View.CreatorPersonId = Person_Delete_candidates.id
 ;
 
 -- offload cascading Comment deletes to DEL7
 INSERT INTO Comment_Delete_candidates
-SELECT Person_Delete_candidates.deletionDate AS deletionDate, Comment.id AS id
+SELECT Person_Delete_candidates.deletionDate AS deletionDate, Comment_View.id AS id
 FROM Person_Delete_candidates
-JOIN Comment
-  ON Comment.CreatorPersonId = Person_Delete_candidates.id
+JOIN Comment_View
+  ON Comment_View.CreatorPersonId = Person_Delete_candidates.id
 ;
 
 ----------------------------------------------------------------------------------------------------
@@ -108,10 +108,10 @@ WHERE Forum_Delete_candidates.id = Forum_hasMember_Person.ForumId
 
 -- offload cascading Post deletes to DEL6
 INSERT INTO Post_Delete_candidates
-SELECT Forum_Delete_candidates.deletionDate AS deletionDate, Post.id AS id
-FROM Post
+SELECT Forum_Delete_candidates.deletionDate AS deletionDate, Post_View.id AS id
+FROM Post_View
 JOIN Forum_Delete_candidates
-  ON Forum_Delete_candidates.id = Post.ContainerForumId
+  ON Forum_Delete_candidates.id = Post_View.ContainerForumId
 ;
 
 ----------------------------------------------------------------------------------------------------
@@ -149,10 +149,10 @@ WHERE Post_Delete_candidates_unique.id = Post_hasTag_Tag.PostId
 
 -- offload cascading deletes to DEL7
 INSERT INTO Comment_Delete_candidates 
-SELECT Post_Delete_candidates.deletionDate AS deletionDate, Comment.id AS id
-FROM Comment
+SELECT Post_Delete_candidates.deletionDate AS deletionDate, Comment_View.id AS id
+FROM Comment_View
 JOIN Post_Delete_candidates
-  ON Post_Delete_candidates.id = Comment.ParentPostId
+  ON Post_Delete_candidates.id = Comment_View.ParentPostId
 ;
 
 ----------------------------------------------------------------------------------------------------
