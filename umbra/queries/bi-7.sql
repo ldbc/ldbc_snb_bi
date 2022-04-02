@@ -8,7 +8,7 @@ SELECT RelatedTag.name AS "relatedTag.name"
           ON Tag.id = ParentMessage_HasTag_Tag.TagId
   -- as an optimization, we don't need message here as it's ID is in ParentMessage_HasTag_Tag
   -- so proceed to the comment directly
-  INNER JOIN Comment
+  INNER JOIN Comment_View Comment
           ON ParentMessage_HasTag_Tag.MessageId = coalesce(Comment.ParentCommentId, Comment.ParentPostId)
   -- comment's tag
   INNER JOIN Message_hasTag_Tag ct

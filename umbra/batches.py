@@ -55,7 +55,6 @@ while batch_start_date < network_end_date:
         if not os.path.exists(batch_path):
             continue
 
-        print(f"--> {entity}:")
         for csv_file in [f for f in os.listdir(batch_path) if f.endswith(".csv")]:
             csv_path = f"{batch_path}/{csv_file}"
             print(f"- {csv_path}")
@@ -73,7 +72,6 @@ while batch_start_date < network_end_date:
         if not os.path.exists(batch_path):
             continue
 
-        print(f"--> {entity}:")
         for csv_file in [f for f in os.listdir(batch_path) if f.endswith(".csv")]:
             csv_path = f"{batch_path}/{csv_file}"
             print(f"> {csv_path}")

@@ -21,3 +21,10 @@ DROP TABLE IF EXISTS Person_likes_Post;
 DROP TABLE IF EXISTS Person_studyAt_University;
 DROP TABLE IF EXISTS Person_workAt_Company;
 DROP TABLE IF EXISTS Person_knows_Person;
+
+DROP TABLE IF EXISTS Message;
+DROP TABLE IF EXISTS Message_hasTag_Tag;
+DROP TABLE IF EXISTS Person_likes_Message;
+
+DROP VIEW IF EXISTS Comment_View;
+DROP VIEW IF EXISTS Post_View;

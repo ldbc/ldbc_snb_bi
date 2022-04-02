@@ -115,8 +115,8 @@ def run_script(cur, filename):
             cur.execute(query)
 
 
-def run_queries(pg_con, sf, test, pgtuning):
-    for query_variant in ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "16a", "16b", "17", "18", "15b"]: #, "15a"
+def run_queries(query_variants, pg_con, sf, test, pgtuning):
+    for query_variant in query_variants:
         query_num = int(re.sub("[^0-9]", "", query_variant))
         query_subvariant = re.sub("[^ab]", "", query_variant)
 
@@ -164,7 +164,6 @@ def run_batch_updates(pg_con, data_dir, batch_start_date):
         if not os.path.exists(batch_path):
             continue
 
-        print(f"--> {entity}:")
         for csv_file in [f for f in os.listdir(batch_path) if f.endswith(".csv")]:
             csv_path = f"{batch_path}/{csv_file}"
             print(f"- {csv_path}")
@@ -182,10 +181,9 @@ def run_batch_updates(pg_con, data_dir, batch_start_date):
         if not os.path.exists(batch_path):
             continue
 
-        print(f"--> {entity}:")
         for csv_file in [f for f in os.listdir(batch_path) if f.endswith(".csv")]:
             csv_path = f"{batch_path}/{csv_file}"
-            print(f"> {csv_path}")
+            print(f"- {csv_path}")
             cur.execute(f"COPY {entity}_Delete_candidates FROM '/data/deletes/dynamic/{entity}/{batch_dir}/{csv_file}' (DELIMITER '|', HEADER, FORMAT csv)")
             pg_con.commit()
 
@@ -195,6 +193,9 @@ def run_batch_updates(pg_con, data_dir, batch_start_date):
     run_script(cur, "dml/snb-deletes.sql")
     print("<finished delete script>")
     print()
+
+
+query_variants = ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "15a", "15b", "16a", "16b", "17", "18"]
 
 sf = os.environ.get("SF")
 test = False
@@ -211,7 +212,6 @@ if data_dir is None:
     exit(1)
 
 print(f"- Input data directory, ${{UMBRA_CSV_DIR}}: {data_dir}")
-
 
 insert_nodes = ["Comment", "Forum", "Person", "Post"]
 insert_edges = ["Comment_hasTag_Tag", "Forum_hasMember_Person", "Forum_hasTag_Tag", "Person_hasInterest_Tag", "Person_knows_Person", "Person_likes_Comment", "Person_likes_Post", "Person_studyAt_University", "Person_workAt_Company",  "Post_hasTag_Tag"]
@@ -240,7 +240,7 @@ batch_start_date = network_start_date
 # run alternating write-read blocks
 while batch_start_date < network_end_date:
     run_batch_updates(pg_con, data_dir, batch_start_date)
-    run_queries(pg_con, sf, test, pgtuning)
+    run_queries(query_variants, pg_con, sf, test, pgtuning)
     batch_start_date = batch_start_date + batch_size
 
 
