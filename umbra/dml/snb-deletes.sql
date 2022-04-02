@@ -6,14 +6,9 @@ USING Person_Delete_candidates
 WHERE Person_Delete_candidates.id = Person.id
 ;
 
-DELETE FROM Person_likes_Comment
+DELETE FROM Person_likes_Message
 USING Person_Delete_candidates
-WHERE Person_Delete_candidates.id = Person_likes_Comment.PersonId
-;
-
-DELETE FROM Person_likes_Post
-USING Person_Delete_candidates
-WHERE Person_Delete_candidates.id = Person_likes_Post.PersonId
+WHERE Person_Delete_candidates.id = Person_likes_Message.PersonId
 ;
 
 DELETE FROM Person_workAt_Company
@@ -78,19 +73,19 @@ JOIN Comment_View
 ----------------------------------------------------------------------------------------------------
 -- DEL2: Remove Post like --------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------
-DELETE FROM Person_likes_Post
+DELETE FROM Person_likes_Message
 USING Person_likes_Post_Delete_candidates
-WHERE Person_likes_Post_Delete_candidates.src = Person_likes_Post.PersonId
-  AND Person_likes_Post_Delete_candidates.trg = Person_likes_Post.PostId
+WHERE Person_likes_Post_Delete_candidates.src = Person_likes_Message.PersonId
+  AND Person_likes_Post_Delete_candidates.trg = Person_likes_Message.MessageId
 ;
 
 ----------------------------------------------------------------------------------------------------
 -- DEL3: Remove Comment like -----------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------
-DELETE FROM Person_likes_Comment
+DELETE FROM Person_likes_Message
 USING Person_likes_Comment_Delete_candidates
-WHERE Person_likes_Comment_Delete_candidates.src = Person_likes_Comment.PersonId
-  AND Person_likes_Comment_Delete_candidates.trg = Person_likes_Comment.CommentId
+WHERE Person_likes_Comment_Delete_candidates.src = Person_likes_Message.PersonId
+  AND Person_likes_Comment_Delete_candidates.trg = Person_likes_Message.MessageId
 ;
 
 ----------------------------------------------------------------------------------------------------
@@ -137,9 +132,9 @@ USING Post_Delete_candidates_unique -- starting from the delete candidate post
 WHERE Post_Delete_candidates_unique.id = Message.MessageId
 ;
 
-DELETE FROM Person_likes_Post
+DELETE FROM Person_likes_Message
 USING Post_Delete_candidates_unique
-WHERE Post_Delete_candidates_unique.id = Person_likes_Post.PostId
+WHERE Post_Delete_candidates_unique.id = Person_likes_Message.MessageId
 ;
 
 DELETE FROM Post_hasTag_Tag
@@ -181,7 +176,7 @@ USING (
 WHERE sub.id = Message.MessageId
 ;
 
-DELETE FROM Person_likes_Comment
+DELETE FROM Person_likes_Message
 USING (
   WITH RECURSIVE MessagesToDelete AS (
       SELECT id
@@ -195,7 +190,7 @@ USING (
   SELECT id
   FROM MessagesToDelete
   ) sub
-WHERE sub.id = Person_likes_Comment.CommentId
+WHERE sub.id = Person_likes_Message.MessageId
 ;
 
 DELETE FROM Comment_hasTag_Tag
