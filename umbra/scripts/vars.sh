@@ -12,4 +12,4 @@ export UMBRA_DOCKER_IMAGE=umbra-release:533b93fd2
 
 cd scripts
 
-popd
+popd > /dev/null

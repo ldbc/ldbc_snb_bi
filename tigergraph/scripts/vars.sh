@@ -15,4 +15,4 @@ export TG_ENDPOINT=http://127.0.0.1:$TG_REST_PORT
 export TG_HEADER=false
 export TG_REFRESH_HEADER=false
 
-popd
+popd > /dev/null

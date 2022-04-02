@@ -20,4 +20,4 @@ else
     export NEO4J_DOCKER_PLATFORM_FLAG=""
 fi
 
-popd
+popd > /dev/null
