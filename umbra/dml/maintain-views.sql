@@ -1,6 +1,5 @@
 -- maintain materialized views
 
--- bidirectional Person_knows_Person edges
 INSERT INTO Message
     WITH RECURSIVE Message_CTE(creationDate, MessageId, RootPostId, RootPostLanguage, content, imageFile, locationIP, browserUsed, length, CreatorPersonId, ContainerForumId, LocationCountryId, ParentMessageId, type) AS (
         SELECT
