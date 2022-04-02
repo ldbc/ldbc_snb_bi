@@ -126,15 +126,15 @@ WHERE Forum_hasMember_Person_Delete_candidates.src = Forum_hasMember_Person.Foru
 ----------------------------------------------------------------------------------------------------
 -- DEL6 --------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------
-DROP TABLE IF exists Post_Delete_candidates_unique;
+DROP TABLE IF EXISTS Post_Delete_candidates_unique;
 CREATE TABLE Post_Delete_candidates_unique(id bigint not null);
 INSERT INTO Post_Delete_candidates_unique
   SELECT DISTINCT id
   FROM Post_Delete_candidates;
 
-DELETE FROM Post
+DELETE FROM Message
 USING Post_Delete_candidates_unique -- starting from the delete candidate post
-WHERE Post_Delete_candidates_unique.id = Post.id
+WHERE Post_Delete_candidates_unique.id = Message.MessageId
 ;
 
 DELETE FROM Person_likes_Post
@@ -158,62 +158,59 @@ JOIN Post_Delete_candidates
 ----------------------------------------------------------------------------------------------------
 -- DEL7 --------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------
-DROP TABLE IF exists Comment_Delete_candidates_unique;
+DROP TABLE IF EXISTS Comment_Delete_candidates_unique;
 CREATE TABLE Comment_Delete_candidates_unique(id bigint not null);
 INSERT INTO Comment_Delete_candidates_unique
   SELECT DISTINCT id
   FROM Comment_Delete_candidates;
 
-DELETE FROM Comment
+DELETE FROM Message
 USING (
-  WITH RECURSIVE Message AS (
+  WITH RECURSIVE MessagesToDelete AS (
       SELECT id
       FROM Comment_Delete_candidates_unique -- starting from the delete candidate comments
       UNION
-      SELECT Comment.id AS id
-      FROM Message
-      JOIN Comment
-        ON Comment.ParentCommentId = Message.id
-        OR Comment.ParentPostId = Message.id
+      SELECT ChildComment.MessageId AS id
+      FROM MessagesToDelete
+      JOIN Message ChildComment
+        ON ChildComment.ParentMessageId = MessagesToDelete.id
   )
   SELECT id
-  FROM Message
+  FROM MessagesToDelete
   ) sub
-WHERE sub.id = Comment.id
+WHERE sub.id = Message.MessageId
 ;
 
 DELETE FROM Person_likes_Comment
 USING (
-  WITH RECURSIVE Message AS (
+  WITH RECURSIVE MessagesToDelete AS (
       SELECT id
       FROM Comment_Delete_candidates_unique -- starting from the delete candidate comments
       UNION
-      SELECT Comment.id AS id
-      FROM Message
-      JOIN Comment
-        ON Comment.ParentCommentId = Message.id
-        OR Comment.ParentPostId = Message.id
+      SELECT ChildComment.MessageId AS id
+      FROM MessagesToDelete
+      JOIN Message ChildComment
+        ON ChildComment.ParentMessageId = MessagesToDelete.id
   )
   SELECT id
-  FROM Message
+  FROM MessagesToDelete
   ) sub
 WHERE sub.id = Person_likes_Comment.CommentId
 ;
 
 DELETE FROM Comment_hasTag_Tag
 USING (
-  WITH RECURSIVE Message AS (
+  WITH RECURSIVE MessagesToDelete AS (
       SELECT id
       FROM Comment_Delete_candidates_unique -- starting from the delete candidate comments
       UNION ALL
-      SELECT comment.id AS id
-      FROM Message
-      JOIN comment
-        ON comment.ParentCommentId = Message.id
-        OR comment.ParentPostId = Message.id
+      SELECT ChildComment.MessageId AS id
+      FROM MessagesToDelete
+      JOIN Message ChildComment
+        ON ChildComment.ParentMessageId = MessagesToDelete.id
   )
   SELECT id
-  FROM Message
+  FROM MessagesToDelete
   ) sub
 WHERE sub.id = Comment_hasTag_Tag.CommentId
 ;
