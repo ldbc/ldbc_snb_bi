@@ -80,4 +80,9 @@ run_script(cur, "dml/maintain-views.sql")
 pg_con.commit()
 print("Done.")
 
+print("Create static materialized views . . . ")
+run_script(cur, "dml/create-static-materialized-views.sql")
+pg_con.commit()
+print("Done.")
+
 print("Loaded initial snapshot to Umbra.")

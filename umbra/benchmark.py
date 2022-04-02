@@ -104,15 +104,17 @@ def convert_to_date(timestamp):
     return f"'{dt}'::date"
 
 
-def run_script(cur, filename):
+def run_script(pg_con, cur, filename):
     with open(filename, "r") as f:
         queries_file = f.read()
         queries = queries_file.split(";")
         for query in queries:
             if query.isspace():
                 continue
+
             #print(f"{query}")
             cur.execute(query)
+            pg_con.commit()
 
 
 def run_queries(query_variants, pg_con, sf, test, pgtuning):
@@ -187,12 +189,18 @@ def run_batch_updates(pg_con, data_dir, batch_start_date):
             cur.execute(f"COPY {entity}_Delete_candidates FROM '/data/deletes/dynamic/{entity}/{batch_dir}/{csv_file}' (DELIMITER '|', HEADER, FORMAT csv)")
             pg_con.commit()
 
+    print("Maintain materialized views . . .")
+    run_script(pg_con, cur, "dml/maintain-views.sql")
+    print("Done.")
     print()
-    print("<running delete script>")
+
+    print("Apply deletes . . .")
     # Invoke delete script which makes use of the {entity}_Delete_candidates tables
-    run_script(cur, "dml/snb-deletes.sql")
-    print("<finished delete script>")
+    run_script(pg_con, cur, "dml/snb-deletes.sql")
+    print("Done.")
     print()
+
+
 
 
 query_variants = ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "15a", "15b", "16a", "16b", "17", "18"]
@@ -229,7 +237,7 @@ timings_file.write(f"sf|q|parameters|time\n")
 pg_con = psycopg2.connect(host="localhost", user="postgres", password="mysecretpassword", port=8000)
 cur = pg_con.cursor()
 
-run_script(cur, f"ddl/schema-delete-candidates.sql");
+run_script(pg_con, cur, f"ddl/schema-delete-candidates.sql");
 
 
 network_start_date = datetime.date(2012, 11, 29)
