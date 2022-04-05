@@ -11,7 +11,7 @@ JOIN Message_hasTag_Tag Message1_hasTag_Tag
 JOIN Message Message1
   ON Message1.MessageId = Message1_hasTag_Tag.MessageId
 -- (message1)-[:REPLY_OF*0..]->(post1)
-JOIN Post Post1
+JOIN Post_View Post1
   ON Post1.id = Message1.RootPostId
 -- (tag)<-[:HAS_TAG]-(message2)
 JOIN Message_hasTag_Tag Message2_hasTag_Tag
@@ -24,11 +24,11 @@ JOIN Message Message2
 JOIN Message_hasTag_Tag Comment_hasTag_Tag
   ON Comment_hasTag_Tag.TagId = Tag.id
 -- (comment)-[:REPLY_OF]->(message2)
-JOIN Comment
+JOIN Comment_View Comment
   ON Comment.id = Comment_hasTag_Tag.MessageId
  AND coalesce(Comment.ParentPostId, Comment.ParentCommentId) = Message2.MessageId
 -- (message2)-[:REPLY_OF*0..]-(post2)
-JOIN Post Post2
+JOIN Post_View Post2
   ON Post2.id = Message2.RootPostId
  AND Post2.ContainerForumId != Post1.ContainerForumId -- forum2 != forum1
 -- (forum1)-[:Has_MEMBER]->(person2)

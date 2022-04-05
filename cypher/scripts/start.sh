@@ -18,6 +18,7 @@ docker run --rm \
     --publish=7474:7474 \
     --publish=7687:7687 \
     --detach \
+    --ulimit nofile=40000:40000 \
     ${NEO4J_ENV_VARS} \
     --volume=${NEO4J_DATA_DIR}:/data:z \
     --volume=${NEO4J_CSV_DIR}:/import \
@@ -34,4 +35,5 @@ until docker exec --interactive --tty ${NEO4J_CONTAINER_NAME} cypher-shell "RETU
     echo -n " ."
     sleep 1
 done
+echo
 echo "Database started."

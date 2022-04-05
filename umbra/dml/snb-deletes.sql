@@ -1,19 +1,14 @@
 ----------------------------------------------------------------------------------------------------
--- DEL1 --------------------------------------------------------------------------------------------
+-- DEL1: Remove Person, its personal Forums, and its Message (sub)threads --------------------------
 ----------------------------------------------------------------------------------------------------
 DELETE FROM Person
 USING Person_Delete_candidates
 WHERE Person_Delete_candidates.id = Person.id
 ;
 
-DELETE FROM Person_likes_Comment
+DELETE FROM Person_likes_Message
 USING Person_Delete_candidates
-WHERE Person_Delete_candidates.id = Person_likes_Comment.PersonId
-;
-
-DELETE FROM Person_likes_Post
-USING Person_Delete_candidates
-WHERE Person_Delete_candidates.id = Person_likes_Post.PersonId
+WHERE Person_Delete_candidates.id = Person_likes_Message.PersonId
 ;
 
 DELETE FROM Person_workAt_Company
@@ -61,40 +56,40 @@ WHERE Forum.title LIKE 'Album %'
 
 -- offload cascading Post deletes to DEL6
 INSERT INTO Post_Delete_candidates
-SELECT Person_Delete_candidates.deletionDate AS deletionDate, Post.id AS id
+SELECT Person_Delete_candidates.deletionDate AS deletionDate, Post_View.id AS id
 FROM Person_Delete_candidates
-JOIN Post
-  ON Post.CreatorPersonId = Person_Delete_candidates.id
+JOIN Post_View
+  ON Post_View.CreatorPersonId = Person_Delete_candidates.id
 ;
 
 -- offload cascading Comment deletes to DEL7
 INSERT INTO Comment_Delete_candidates
-SELECT Person_Delete_candidates.deletionDate AS deletionDate, Comment.id AS id
+SELECT Person_Delete_candidates.deletionDate AS deletionDate, Comment_View.id AS id
 FROM Person_Delete_candidates
-JOIN Comment
-  ON Comment.CreatorPersonId = Person_Delete_candidates.id
+JOIN Comment_View
+  ON Comment_View.CreatorPersonId = Person_Delete_candidates.id
 ;
 
 ----------------------------------------------------------------------------------------------------
--- DEL2 --------------------------------------------------------------------------------------------
+-- DEL2: Remove Post like --------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------
-DELETE FROM Person_likes_Post
+DELETE FROM Person_likes_Message
 USING Person_likes_Post_Delete_candidates
-WHERE Person_likes_Post_Delete_candidates.src = Person_likes_Post.PersonId
-  AND Person_likes_Post_Delete_candidates.trg = Person_likes_Post.PostId
+WHERE Person_likes_Post_Delete_candidates.src = Person_likes_Message.PersonId
+  AND Person_likes_Post_Delete_candidates.trg = Person_likes_Message.MessageId
 ;
 
 ----------------------------------------------------------------------------------------------------
--- DEL3 --------------------------------------------------------------------------------------------
+-- DEL3: Remove Comment like -----------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------
-DELETE FROM Person_likes_Comment
+DELETE FROM Person_likes_Message
 USING Person_likes_Comment_Delete_candidates
-WHERE Person_likes_Comment_Delete_candidates.src = Person_likes_Comment.PersonId
-  AND Person_likes_Comment_Delete_candidates.trg = Person_likes_Comment.CommentId
+WHERE Person_likes_Comment_Delete_candidates.src = Person_likes_Message.PersonId
+  AND Person_likes_Comment_Delete_candidates.trg = Person_likes_Message.MessageId
 ;
 
 ----------------------------------------------------------------------------------------------------
--- DEL4 --------------------------------------------------------------------------------------------
+-- DEL4: Remove Forum and its content --------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------
 DELETE FROM Forum
 USING Forum_Delete_candidates
@@ -108,14 +103,14 @@ WHERE Forum_Delete_candidates.id = Forum_hasMember_Person.ForumId
 
 -- offload cascading Post deletes to DEL6
 INSERT INTO Post_Delete_candidates
-SELECT Forum_Delete_candidates.deletionDate AS deletionDate, Post.id AS id
-FROM Post
+SELECT Forum_Delete_candidates.deletionDate AS deletionDate, Post_View.id AS id
+FROM Post_View
 JOIN Forum_Delete_candidates
-  ON Forum_Delete_candidates.id = Post.ContainerForumId
+  ON Forum_Delete_candidates.id = Post_View.ContainerForumId
 ;
 
 ----------------------------------------------------------------------------------------------------
--- DEL5 --------------------------------------------------------------------------------------------
+-- DEL5: Remove Forum membership -------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------
 DELETE FROM Forum_hasMember_Person
 USING Forum_hasMember_Person_Delete_candidates
@@ -124,22 +119,22 @@ WHERE Forum_hasMember_Person_Delete_candidates.src = Forum_hasMember_Person.Foru
 ;
 
 ----------------------------------------------------------------------------------------------------
--- DEL6 --------------------------------------------------------------------------------------------
+-- DEL6: Remove Post thread ------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------
-DROP TABLE IF exists Post_Delete_candidates_unique;
+DROP TABLE IF EXISTS Post_Delete_candidates_unique;
 CREATE TABLE Post_Delete_candidates_unique(id bigint not null);
 INSERT INTO Post_Delete_candidates_unique
   SELECT DISTINCT id
   FROM Post_Delete_candidates;
 
-DELETE FROM Post
+DELETE FROM Message
 USING Post_Delete_candidates_unique -- starting from the delete candidate post
-WHERE Post_Delete_candidates_unique.id = Post.id
+WHERE Post_Delete_candidates_unique.id = Message.MessageId
 ;
 
-DELETE FROM Person_likes_Post
+DELETE FROM Person_likes_Message
 USING Post_Delete_candidates_unique
-WHERE Post_Delete_candidates_unique.id = Person_likes_Post.PostId
+WHERE Post_Delete_candidates_unique.id = Person_likes_Message.MessageId
 ;
 
 DELETE FROM Post_hasTag_Tag
@@ -147,79 +142,76 @@ USING Post_Delete_candidates_unique
 WHERE Post_Delete_candidates_unique.id = Post_hasTag_Tag.PostId
 ;
 
--- offload cascading deletes to DEL7
+-- offload cascading Comment deletes to DEL7
 INSERT INTO Comment_Delete_candidates 
-SELECT Post_Delete_candidates.deletionDate AS deletionDate, Comment.id AS id
-FROM Comment
+SELECT Post_Delete_candidates.deletionDate AS deletionDate, Comment_View.id AS id
+FROM Comment_View
 JOIN Post_Delete_candidates
-  ON Post_Delete_candidates.id = Comment.ParentPostId
+  ON Post_Delete_candidates.id = Comment_View.ParentPostId
 ;
 
 ----------------------------------------------------------------------------------------------------
--- DEL7 --------------------------------------------------------------------------------------------
+-- DEL7: Remove Comment subthread ------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------
-DROP TABLE IF exists Comment_Delete_candidates_unique;
+DROP TABLE IF EXISTS Comment_Delete_candidates_unique;
 CREATE TABLE Comment_Delete_candidates_unique(id bigint not null);
 INSERT INTO Comment_Delete_candidates_unique
   SELECT DISTINCT id
   FROM Comment_Delete_candidates;
 
-DELETE FROM Comment
+DELETE FROM Message
 USING (
-  WITH RECURSIVE Message AS (
+  WITH RECURSIVE MessagesToDelete AS (
       SELECT id
       FROM Comment_Delete_candidates_unique -- starting from the delete candidate comments
       UNION
-      SELECT Comment.id AS id
-      FROM Message
-      JOIN Comment
-        ON Comment.ParentCommentId = Message.id
-        OR Comment.ParentPostId = Message.id
+      SELECT ChildComment.MessageId AS id
+      FROM MessagesToDelete
+      JOIN Message ChildComment
+        ON ChildComment.ParentMessageId = MessagesToDelete.id
   )
   SELECT id
-  FROM Message
+  FROM MessagesToDelete
   ) sub
-WHERE sub.id = Comment.id
+WHERE sub.id = Message.MessageId
 ;
 
-DELETE FROM Person_likes_Comment
+DELETE FROM Person_likes_Message
 USING (
-  WITH RECURSIVE Message AS (
+  WITH RECURSIVE MessagesToDelete AS (
       SELECT id
       FROM Comment_Delete_candidates_unique -- starting from the delete candidate comments
       UNION
-      SELECT Comment.id AS id
-      FROM Message
-      JOIN Comment
-        ON Comment.ParentCommentId = Message.id
-        OR Comment.ParentPostId = Message.id
+      SELECT ChildComment.MessageId AS id
+      FROM MessagesToDelete
+      JOIN Message ChildComment
+        ON ChildComment.ParentMessageId = MessagesToDelete.id
   )
   SELECT id
-  FROM Message
+  FROM MessagesToDelete
   ) sub
-WHERE sub.id = Person_likes_Comment.CommentId
+WHERE sub.id = Person_likes_Message.MessageId
 ;
 
 DELETE FROM Comment_hasTag_Tag
 USING (
-  WITH RECURSIVE Message AS (
+  WITH RECURSIVE MessagesToDelete AS (
       SELECT id
       FROM Comment_Delete_candidates_unique -- starting from the delete candidate comments
       UNION ALL
-      SELECT comment.id AS id
-      FROM Message
-      JOIN comment
-        ON comment.ParentCommentId = Message.id
-        OR comment.ParentPostId = Message.id
+      SELECT ChildComment.MessageId AS id
+      FROM MessagesToDelete
+      JOIN Message ChildComment
+        ON ChildComment.ParentMessageId = MessagesToDelete.id
   )
   SELECT id
-  FROM Message
+  FROM MessagesToDelete
   ) sub
 WHERE sub.id = Comment_hasTag_Tag.CommentId
 ;
 
 ----------------------------------------------------------------------------------------------------
--- DEL8 --------------------------------------------------------------------------------------------
+-- DEL8: Remove friendship -------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------
 DELETE FROM Person_knows_Person
 USING Person_knows_Person_Delete_candidates

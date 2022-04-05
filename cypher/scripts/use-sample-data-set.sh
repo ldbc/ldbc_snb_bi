@@ -1,6 +1,6 @@
 #!/bin/bash
 
-pushd .
+pushd . > /dev/null
 
 cd "$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 cd ..
@@ -8,4 +8,4 @@ cd ..
 export NEO4J_CSV_DIR=`pwd`/social-network-sf0.003-bi-composite-projected-fk-neo4j-compressed/graphs/csv/bi/composite-projected-fk/
 export NEO4J_CSV_FLAGS="--compressed"
 
-popd
+popd > /dev/null

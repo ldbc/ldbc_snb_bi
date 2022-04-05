@@ -158,3 +158,76 @@ CREATE TABLE Person_knows_Person (
     Person2id bigint NOT NULL
     --, PRIMARY KEY(Person1id, Person2id)
 ) WITH (storage = paged);
+
+
+-- Materialized views
+
+-- A recursive materialized view containing the root Post of each Message (for Posts, themselves, for Comments, traversing up the Message thread to the root Post of the tree)
+CREATE TABLE Message (
+    creationDate timestamp with time zone not null,
+    MessageId bigint primary key,
+    RootPostId bigint not null,
+    RootPostLanguage varchar(40),
+    content varchar(2000),
+    imageFile varchar(40),
+    locationIP varchar(40) not null,
+    browserUsed varchar(40) not null,
+    length int not null,
+    CreatorPersonId bigint not null,
+    ContainerForumId bigint,
+    LocationCountryId bigint not null,
+    ParentMessageId bigint,
+    ParentPostId bigint,
+    ParentCommentId bigint,
+    type varchar(7)
+) WITH (storage = paged);
+
+CREATE TABLE Person_likes_Message (
+    creationDate timestamp with time zone NOT NULL,
+    PersonId bigint NOT NULL,
+    MessageId bigint NOT NULL
+) WITH (storage = paged);
+
+CREATE TABLE Message_hasTag_Tag (
+    creationDate timestamp with time zone NOT NULL,
+    MessageId bigint NOT NULL,
+    TagId bigint NOT NULL
+) WITH (storage = paged);
+
+CREATE TABLE Country (
+    id bigint primary key,
+    name varchar(256) not null,
+    url varchar(256) not null,
+    PartOfContinentId bigint
+) WITH (storage = paged);
+
+CREATE TABLE City (
+    id bigint primary key,
+    name varchar(256) not null,
+    url varchar(256) not null,
+    PartOfCountryId bigint
+) WITH (storage = paged);
+
+CREATE TABLE Company (
+    id bigint primary key,
+    name varchar(256) not null,
+    url varchar(256) not null,
+    LocationPlaceId bigint not null
+) WITH (storage = paged);
+
+CREATE TABLE University (
+    id bigint primary key,
+    name varchar(256) not null,
+    url varchar(256) not null,
+    LocationPlaceId bigint not null
+) WITH (storage = paged);
+
+CREATE VIEW Comment_View AS
+    SELECT creationDate, MessageId AS id, locationIP, browserUsed, content, length, CreatorPersonId, LocationCountryId, ParentPostId, ParentCommentId
+    FROM Message
+    WHERE ParentMessageId IS NOT NULL;
+
+CREATE VIEW Post_View AS
+    SELECT creationDate, MessageId AS id, imageFile, locationIP, browserUsed, RootPostLanguage, content, length, CreatorPersonId, ContainerForumId, LocationCountryId
+    From Message
+    WHERE ParentMessageId IS NULL;

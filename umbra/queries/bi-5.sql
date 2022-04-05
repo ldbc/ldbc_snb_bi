@@ -12,7 +12,7 @@ SELECT CreatorPerson.id AS CreatorPersonId
     ON Message_hasTag_Tag.TagId = Tag.id
   JOIN Message
     ON Message.MessageId = Message_hasTag_Tag.MessageId
-  LEFT JOIN Comment
+  LEFT JOIN Comment_View Comment
          ON Message.MessageId = coalesce(Comment.ParentPostId, Comment.ParentCommentId)
   LEFT JOIN Person_likes_Message
          ON Message.MessageId = Person_likes_Message.MessageId

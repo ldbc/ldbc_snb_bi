@@ -19,12 +19,19 @@ def run_update(session, query_spec, batch, csv_file):
     return num_changes
 
 
-if len(sys.argv) < 2:
-    print("Usage: batches.py <NEO4J_DATA_DIR> [--compressed]")
+data_dir = os.environ.get("NEO4J_CSV_DIR")
+if data_dir is None:
+    print("${NEO4J_CSV_DIR} environment variable must be set")
     exit(1)
 
-data_dir = sys.argv[1]
-compressed = len(sys.argv) == 3 and sys.argv[2] == "--compressed"
+neo4j_csv_flags = os.environ.get("NEO4J_CSV_FLAGS")
+if neo4j_csv_flags is None:
+    print("${NEO4J_CSV_FLAGS} environment variable must be set")
+    exit(1)
+
+print(f"- Input data directory, ${{NEO4J_CSV_DIR}}: {data_dir}")
+print(f"- Neo4j flags, ${{NEO4J_CSV_FLAGS}}: {neo4j_csv_flags}")
+compressed = "--compressed" in neo4j_csv_flags
 
 if compressed:
     csv_extension = ".csv.gz"
