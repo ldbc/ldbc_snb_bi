@@ -6,8 +6,14 @@ import re
 import psycopg2
 import time
 import sys
+from queue import Queue
+from concurrent.futures import ThreadPoolExecutor
+from time import sleep
 
 # Usage: benchmark.py [--test|--pgtuning]
+
+num_threads = 4
+query_variants = ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "15a", "15b", "16a", "16b", "17", "18"]
 
 result_mapping = {
      1: ["INT32", "BOOL", "INT32", "INT32", "FLOAT32", "INT32", "FLOAT32"],
@@ -47,7 +53,7 @@ def convert_value_to_string(value, result_type, input):
     elif result_type == "DATETIME":
         return f"{datetime.datetime.strftime(value, '%Y-%m-%dT%H:%M:%S.%f')[:-3]}+00:00"
     elif result_type == "DATE":
-        return datetime.datetime.strftime(value, '%Y-%m-%d')
+        return datetime.datetime.strftime(value, "%Y-%m-%d")
     elif result_type == "BOOL":
         return str(bool(value))
     else:
@@ -60,7 +66,7 @@ def cast_parameter_to_driver_input(value, parameter_type):
     elif parameter_type == "ID" or parameter_type == "INT64":
         return f"{value}::bigint"
     elif parameter_type == "STRING[]":
-        return "(" + ', '.join([f"'{e}'" for e in value.split(';') ]) + ")"
+        return "(" + ", ".join([f"'{e}'" for e in value.split(";") ]) + ")"
     elif parameter_type == "STRING":
         return f"'{value}'"
     elif parameter_type == "DATETIME":
@@ -71,16 +77,41 @@ def cast_parameter_to_driver_input(value, parameter_type):
         raise ValueError(f"Parameter type {parameter_type} not found")
 
 
-def run_query(pg_con, query_num, query_spec, query_parameters):
-    for key in query_parameters.keys():
-        query_spec = query_spec.replace(f":{key}", query_parameters[key])
+def task(message):
+   print(message)
+   return message
 
+def run_query(pg_con, sf, query_num, query_variant, query_spec, parameters, query_parameters, test, timings_file, results_file):
+    print(f"Run query: {query_num}")
+
+    query_parameters_converted = {k.split(":")[0]: cast_parameter_to_driver_input(v, k.split(":")[1]) for k, v in query_parameters.items()}
+    query_parameters_split = {k.split(":")[0]: v for k, v in query_parameters.items()}
+    query_parameters_in_order = f'<{";".join([query_parameters_split[parameter["name"]] for parameter in parameters])}>'
+
+    print(query_parameters_converted)
+    for key in query_parameters_converted.keys():
+        query_spec = query_spec.replace(f":{key}", query_parameters_converted[key])
+
+    # each thread should create its own cursor
+    # https://www.psycopg.org/docs/cursor.html
     cur = pg_con.cursor()
+
+    print(f"Start query")
+
     start = time.time()
+    #print(query_spec)
+    # note that if the query has an error (typo, unsubstituted parameter, etc.), Umbra hangs
     cur.execute(query_spec)
-    results = cur.fetchall()
     end = time.time()
+
+    print(f"Query finished")
+    results = cur.fetchall()
+    print(f"Results fetched ----------------------------")
+    print(results)
+    print(f"Results printed ----------------------------")
     duration = end - start
+
+    cur.close()
 
     mapping = result_mapping[query_num]
     result_tuples = "[" + ";".join([
@@ -88,10 +119,16 @@ def run_query(pg_con, query_num, query_spec, query_parameters):
             for result in results
         ]) + "]"
 
+    print("xxxx ========================================")
+
+    timings_file.write(f"{sf}|{query_variant}|{query_parameters_in_order}|{duration}\n")
+    timings_file.flush()
+    results_file.write(f"{query_num}|{query_variant}|{query_parameters_in_order}|{results}\n")
+    results_file.flush()
+
     if test:
         print(f"-> {duration:.4f} seconds")
         print(f"-> {result_tuples}")
-    return (result_tuples, duration)
 
 
 def convert_to_datetime(timestamp):
@@ -100,7 +137,7 @@ def convert_to_datetime(timestamp):
 
 
 def convert_to_date(timestamp):
-    dt = datetime.datetime.strptime(timestamp, '%Y-%m-%d')
+    dt = datetime.datetime.strptime(timestamp, "%Y-%m-%d")
     return f"'{dt}'::date"
 
 
@@ -118,46 +155,39 @@ def run_script(pg_con, cur, filename):
             pg_con.commit()
 
 
-def run_queries(query_variants, pg_con, sf, test, pgtuning):
-    for query_variant in query_variants:
-        query_num = int(re.sub("[^0-9]", "", query_variant))
-        query_subvariant = re.sub("[^ab]", "", query_variant)
+def run_queries(query_variants, pg_con, sf, num_threads, timings_file, results_file, test, pgtuning):
 
-        print(f"========================= Q {query_num:02d}{query_subvariant.rjust(1)} =========================")
-        query_file = open(f'queries/bi-{query_num}.sql', 'r')
-        query_spec = query_file.read()
+    with ThreadPoolExecutor(num_threads) as executor:
+        for query_variant in query_variants:
+            query_num = int(re.sub("[^0-9]", "", query_variant))
+            query_subvariant = re.sub("[^ab]", "", query_variant)
 
-        parameters_csv = csv.DictReader(open(f'../parameters/bi-{query_variant}.csv'), delimiter='|')
-        parameters = [{"name": t[0], "type": t[1]} for t in [f.split(":") for f in parameters_csv.fieldnames]]
+            #print(f"========================= Q {query_num:02d}{query_subvariant.rjust(1)} =========================")
+            query_file = open(f"queries/bi-{query_num}.sql", "r")
+            query_spec = query_file.read()
 
-        i = 0
-        for query_parameters in parameters_csv:
-            i = i + 1
+            parameters_csv = csv.DictReader(open(f"../parameters/bi-{query_variant}.csv"), delimiter="|")
+            parameters = [{"name": t[0], "type": t[1]} for t in [f.split(":") for f in parameters_csv.fieldnames]]
 
-            query_parameters_converted = {k.split(":")[0]: cast_parameter_to_driver_input(v, k.split(":")[1]) for k, v in query_parameters.items()}
+            i = 0
+            for query_parameters in parameters_csv:
+                i = i + 1
 
-            query_parameters_split = {k.split(":")[0]: v for k, v in query_parameters.items()}
-            query_parameters_in_order = f'<{";".join([query_parameters_split[parameter["name"]] for parameter in parameters])}>'
+                executor.submit(run_query, pg_con, sf, query_num, query_variant, query_spec, parameters, query_parameters, test, timings_file, results_file)
 
-            (results, duration) = run_query(pg_con, query_num, query_spec, query_parameters_converted)
+                # - test run: 1 query
+                # - regular run: 10 queries
+                # - paramgen tuning: 50 queries
+                if (test) or (not pgtuning and i == 10) or (pgtuning and i == 100):
+                    break
 
-            timings_file.write(f"{sf}|{query_variant}|{query_parameters_in_order}|{duration}\n")
-            timings_file.flush()
-            results_file.write(f"{query_num}|{query_variant}|{query_parameters_in_order}|{results}\n")
-            results_file.flush()
-
-            # - test run: 1 query
-            # - regular run: 10 queries
-            # - paramgen tuning: 50 queries
-            if (test) or (not pgtuning and i == 10) or (pgtuning and i == 100):
-                break
-
-        query_file.close()
+            query_file.close()
+    print("All threads have finished (?)")
 
 
-def run_batch_updates(pg_con, data_dir, batch_start_date):
+def run_batch_updates(pg_con, cur, data_dir, batch_start_date, insert_entities, delete_entities):
     # format date to yyyy-mm-dd
-    batch_id = batch_start_date.strftime('%Y-%m-%d')
+    batch_id = batch_start_date.strftime("%Y-%m-%d")
     batch_dir = f"batch_id={batch_id}"
     print(f"#################### {batch_dir} ####################")
 
@@ -204,59 +234,58 @@ def run_batch_updates(pg_con, data_dir, batch_start_date):
     print()
 
 
+def main():
+    sf = os.environ.get("SF")
+    test = False
+    pgtuning = False
+    if len(sys.argv) > 1:
+        if sys.argv[1] == "--test":
+            test = True
+        if sys.argv[1] == "--pgtuning":
+            pgtuning = True
 
+    data_dir = sf = os.environ.get("UMBRA_CSV_DIR")
+    if data_dir is None:
+        print("${UMBRA_CSV_DIR} environment variable must be set")
+        exit(1)
 
-query_variants = ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "15a", "15b", "16a", "16b", "17", "18"]
+    print(f"- Input data directory, ${{UMBRA_CSV_DIR}}: {data_dir}")
 
-sf = os.environ.get("SF")
-test = False
-pgtuning = False
-if len(sys.argv) > 1:
-    if sys.argv[1] == "--test":
-        test = True
-    if sys.argv[1] == "--pgtuning":
-        pgtuning = True
+    insert_nodes = ["Comment", "Forum", "Person", "Post"]
+    insert_edges = ["Comment_hasTag_Tag", "Forum_hasMember_Person", "Forum_hasTag_Tag", "Person_hasInterest_Tag", "Person_knows_Person", "Person_likes_Comment", "Person_likes_Post", "Person_studyAt_University", "Person_workAt_Company",  "Post_hasTag_Tag"]
+    insert_entities = insert_nodes + insert_edges
 
-data_dir = sf = os.environ.get("UMBRA_CSV_DIR")
-if data_dir is None:
-    print("${UMBRA_CSV_DIR} environment variable must be set")
-    exit(1)
+    # set the order of deletions to reflect the dependencies between node labels (:Comment)-[:REPLY_OF]->(:Post)<-[:CONTAINER_OF]-(:Forum)-[:HAS_MODERATOR]->(:Person)
+    delete_nodes = ["Comment", "Post", "Forum", "Person"]
+    delete_edges = ["Forum_hasMember_Person", "Person_knows_Person", "Person_likes_Comment", "Person_likes_Post"]
+    delete_entities = delete_nodes + delete_edges
 
-print(f"- Input data directory, ${{UMBRA_CSV_DIR}}: {data_dir}")
+    results_file = open(f"output/results.csv", "w")
+    results_file.write(f"q|variant|parameters|results\n")
+    timings_file = open(f"output/timings.csv", "w")
+    timings_file.write(f"sf|q|parameters|time\n")
 
-insert_nodes = ["Comment", "Forum", "Person", "Post"]
-insert_edges = ["Comment_hasTag_Tag", "Forum_hasMember_Person", "Forum_hasTag_Tag", "Person_hasInterest_Tag", "Person_knows_Person", "Person_likes_Comment", "Person_likes_Post", "Person_studyAt_University", "Person_workAt_Company",  "Post_hasTag_Tag"]
-insert_entities = insert_nodes + insert_edges
+    pg_con = psycopg2.connect(host="localhost", user="postgres", password="mysecretpassword", port=8000)
+    cur = pg_con.cursor()
 
-# set the order of deletions to reflect the dependencies between node labels (:Comment)-[:REPLY_OF]->(:Post)<-[:CONTAINER_OF]-(:Forum)-[:HAS_MODERATOR]->(:Person)
-delete_nodes = ["Comment", "Post", "Forum", "Person"]
-delete_edges = ["Forum_hasMember_Person", "Person_knows_Person", "Person_likes_Comment", "Person_likes_Post"]
-delete_entities = delete_nodes + delete_edges
+    #run_script(pg_con, cur, f"ddl/schema-delete-candidates.sql");
 
-results_file = open(f'output/results.csv', 'w')
-timings_file = open(f'output/timings.csv', 'w')
-timings_file.write(f"sf|q|parameters|time\n")
+    network_start_date = datetime.date(2012, 11, 29)
+    network_end_date = datetime.date(2012, 12, 2)
+    batch_size = relativedelta(days=1)
+    batch_start_date = network_start_date
 
-pg_con = psycopg2.connect(host="localhost", user="postgres", password="mysecretpassword", port=8000)
-cur = pg_con.cursor()
+    # run alternating write-read blocks
+    while batch_start_date < network_end_date:
+        #run_batch_updates(pg_con, cur, data_dir, batch_start_date, insert_entities, delete_entities)
+        run_queries(query_variants, pg_con, sf, num_threads, timings_file, results_file, test, pgtuning)
+        batch_start_date = batch_start_date + batch_size
 
-run_script(pg_con, cur, f"ddl/schema-delete-candidates.sql");
+    results_file.close()
+    timings_file.close()
 
+    cur.close()
+    pg_con.close()
 
-network_start_date = datetime.date(2012, 11, 29)
-network_end_date = datetime.date(2012, 12, 2)
-batch_size = relativedelta(days=1)
-batch_start_date = network_start_date
-
-# run alternating write-read blocks
-while batch_start_date < network_end_date:
-    run_batch_updates(pg_con, data_dir, batch_start_date)
-    run_queries(query_variants, pg_con, sf, test, pgtuning)
-    batch_start_date = batch_start_date + batch_size
-
-
-results_file.close()
-timings_file.close()
-
-cur.close()
-pg_con.close()
+if __name__ == "__main__":
+    main()
