@@ -12,12 +12,15 @@ echo "--------------------------------------------------------------------------
 echo "DATA_PATH: ${DATA_PATH}"
 echo "QUERY_PATH: ${QUERY_PATH}"
 echo "==============================================================================="
-
+t0=$SECONDS
 #gsql drop all
 gsql create_schema.gsql
-
 gsql --graph ldbc_snb tmp.gsql
 
+echo "==============================================================================="
+echo "Load Data"
+echo "-------------------------------------------------------------------------------"
+t1=$SECONDS
 STATIC_PATH=$DATA_PATH/initial_snapshot/static
 DYNAMIC_PATH=$DATA_PATH/initial_snapshot/dynamic
 
@@ -56,6 +59,10 @@ gsql --graph ldbc_snb RUN LOADING JOB load_dynamic USING \
   file_Post_hasTag_Tag=\"$DYNAMIC_PATH/Post_hasTag_Tag\", \
   file_Post_isLocatedIn_Country=\"$DYNAMIC_PATH/Post_isLocatedIn_Country\"
 
+echo "==============================================================================="
+echo "Install Query"
+echo "-------------------------------------------------------------------------------"
+t2=$SECONDS
 gsql --graph ldbc_snb PUT ExprFunctions FROM \"$QUERY_PATH/ExprFunctions.hpp\"
 
 for i in $(seq 1 20); do
@@ -72,13 +79,32 @@ gsql --graph ldbc_snb $DML_PATH/del_Post.gsql
 
 gsql --graph ldbc_snb 'INSTALL QUERY *'
 
-echo '================== Pre-computation for BI 19 and 20 =========================='
+echo "==============================================================================="
+echo "Precompute BI19 and BI20 weights"
+echo "-------------------------------------------------------------------------------"
+t3=$SECONDS
 gsql -g ldbc_snb 'RUN QUERY pre19()'
 gsql -g ldbc_snb 'RUN QUERY pre20()'
+t4=$SECONDS
 
-echo '====================== Data Statistics (optional) ============================'
+echo "==============================================================================="
+echo "Data Statisitcs Check (Optional): Please ensure all the entries are nonzero"
+echo "-------------------------------------------------------------------------------"
 echo 'update delta ...'
 curl -s -H "GSQL-TIMEOUT:2500000" "http://127.0.0.1:9000/rebuildnow"
+echo "Vertex statistics:"
 curl -X POST "http://127.0.0.1:9000/builtins/ldbc_snb" -d  '{"function":"stat_vertex_number","type":"*"}'
+echo
+echo
+echo "Edge statistics:"
 curl -X POST "http://127.0.0.1:9000/builtins/ldbc_snb" -d  '{"function":"stat_edge_number","type":"*"}'
 echo
+
+echo
+echo "====================================================================================="
+echo "TigerGraph database is ready for benchmark"
+echo "Schema setup:       $((t1-t0)) s"
+echo "Load Data:          $((t2-t1)) s"
+echo "Query install:      $((t3-t2)) s"
+echo "Precompute BI19 BI20: $((t4-t3)) s"
+echo "====================================================================================="
