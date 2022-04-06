@@ -81,7 +81,7 @@ WITH PersonPairCandidates AS (
          , PersonPairCandidates.Person2Id
          , City.name AS cityName
          , coalesce(s.score, 0) AS score
-         , row_number() OVER (PARTITION BY City.id ORDER BY s.score DESC NULLS LAST, s.Person1Id, s.Person2Id) AS rownum
+         , row_number() OVER (PARTITION BY City.id ORDER BY s.score DESC NULLS LAST, PersonPairCandidates.Person1Id, PersonPairCandidates.Person2Id) AS rownum
       FROM Country
       JOIN City
         ON City.PartOfCountryId = Country.id
