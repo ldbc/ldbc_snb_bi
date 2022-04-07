@@ -44,13 +44,9 @@ unzip -q social-network-sf0.003-bi-composite-projected-fk.zip
 export TG_DATA_DIR=`pwd`/social-network-sf0.003-bi-composite-projected-fk/graphs/csv/bi/composite-projected-fk/
 ```
 
-In the default setting, the driver assumes that the CSV files do not have headers. **If your CSVs have headers,** set:
+In the default setting, the driver assumes that the CSV files do not have headers. If your CSVs have headers, please modify TG_HEADER in `scripts/vars.sh`.
 
-```bash
-export TG_HEADER=true
-```
-
-Start the TigerGraph Docker container. For data larger than 50G, you need a license. If you work on a cluster, you can install TigerGraph manually and skip this step.
+Start the TigerGraph Docker container. For data larger than 50G, a license need to be applied after running `start.sh`. If you work on a cluster, refer to the k8s setup in `k8s/`.
 
 ```bash
 scripts/stop-docker.sh #if there is an existing container
@@ -63,6 +59,11 @@ Load the data. This step may take a while (several minutes), as it is responsibl
 scripts/setup.sh
 ```
 
+The above scripts can be executed with a single command:
+```bash
+scripts/load-in-one-step.sh
+```
+
 ## Microbatches
 
 Test loading the microbatches:
@@ -71,12 +72,19 @@ Test loading the microbatches:
 scripts/batches.sh
 ```
 
+:warning: Note that this script uses the data sets in the `${TG_DATA_DIR}` directory on the host machine. The data is modified here. Therefore, **the database needs to be reloaded or restored from backup before each run**. Use the provided `scripts/backup-database.sh` and `scripts/restore-database.sh` scripts to achieve this.
 ## Queries
 
-To run and validate the queries.
+To run the queries, issue:
 
 ```bash
-scripts/validate.sh
+scripts/queries.sh
 ```
 
-Results are written to `results/validation_params.csv`.
+For a test run, use:
+
+```bash
+scripts/queries.sh --test
+```
+
+Results are written to `output/results.csv` and `output/time.csv`.
