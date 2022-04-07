@@ -27,7 +27,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi4 (DATETIME date) SYNTAX v2 {
   P = SELECT p FROM popularForums -(HAS_MEMBER>)- Person:p ACCUM p.@inForum += true;
   tmp =
     SELECT p
-    FROM popularForums -(CONTAINER_OF>)- Post -(<REPLY_OF*)- Comment:m -(HAS_CREATOR>)- Person:p
+    FROM popularForums -(CONTAINER_OF>)- Post -(<REPLY_OF*)- (Comment|Post):m -(HAS_CREATOR>)- Person:p
     WHERE p.@inForum AND m.creationDate > date
     PER(m, p)
     ACCUM p.@messageCount += 1
@@ -39,4 +39,6 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi4 (DATETIME date) SYNTAX v2 {
   PRINT @@result as result;
 }
 
+#INSTALL QUERY bi4
+#RUN QUERY bi4("2011-10-10")
 #INTERPRET QUERY bi4("2012-09-01T00:00:00")

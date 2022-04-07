@@ -53,7 +53,7 @@ scripts/stop-docker.sh #if there is an existing container
 scripts/start-docker.sh
 ```
 
-Load the data. This step may take a while (several minutes), as it is responsible for defining the queries, loading jobs, loading the data, installing (optimizing and compiling on the server) queries and pre-compute the edge weights for BI 19 and 20.
+Load the data. This step may take a while (several minutes), as it is responsible for defining the queries, loading jobs, loading the data, installing queries and pre-compute the edge weights for BI 19 and 20. After the database is ready, you can explore the graph using TigerGraph GraphStudio in the browser: `http://localhost:14240/`. By default, the docker terminal can be accessed via `ssh tigergraph@localhost -p 14022` with password tigergraph, or using Docker command `docker exec --user tigergraph -it snb-interactive-tigergraph bash`.
 
 ```bash
 scripts/setup.sh
