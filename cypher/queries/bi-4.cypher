@@ -15,8 +15,7 @@ UNWIND topForums AS topForum1
 
 OPTIONAL MATCH (topForum1)-[:CONTAINER_OF]->(post:Post)<-[:REPLY_OF*0..]-(message:Message)-[:HAS_CREATOR]->(person:Person)<-[:HAS_MEMBER]-(topForum2:Forum)
 WITH person, message, topForum2
-WHERE message.creationDate > $date
-  AND topForum2 IN topForums
+WHERE topForum2 IN topForums
 
 RETURN
   person.id AS personId,
