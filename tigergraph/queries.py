@@ -7,7 +7,7 @@ import re
 from datetime import datetime, timedelta
 
 parser = argparse.ArgumentParser(description='BI query driver')
-parser.add_argument('mode', type=str, choices=['benchmark', 'validate'], help='mode of the driver')
+parser.add_argument('--test', action='store_true', help='test mode only run one time')
 parser.add_argument('--endpoint', type=str, default='http://127.0.0.1:9000',help='tigergraph endpoints')
 args = parser.parse_args()
 
@@ -89,27 +89,29 @@ def run_query(query_num, parameters):
     ]) + "]"
     return results, duration
 
-res = Path('results')
+res = Path('output')
 res.mkdir(exist_ok = True)
-if args.mode == 'validate':
-    res_file = res / 'validation_params.csv'
-elif args.mode == 'benchmark':
-    res_file = res / 'results.csv'
-if res_file.exists(): res_file.unlink()
-fout = open(res_file, 'a')
-
-for query_variant in ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "15a", "15b", "16a", "16b", "17", "18", "19a", "19b", "20"]:
+results_file = open(res / 'results.csv', 'w')
+timings_file = open(res / 'timings.csv', 'w')
+query_variants = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20"]
+for query_variant in query_variants:
     print(f"========================= Q{query_variant} =========================")
     query_num = int(re.sub("[^0-9]", "", query_variant))
     parameters_csv = csv.DictReader(open(f'../parameters/bi-{query_variant}.csv'), delimiter='|')
     parameters = [{"name": t[0], "type": t[1]} for t in [f.split(":") for f in parameters_csv.fieldnames]]
     
-    for query_parameters in parameters_csv:
+    for i,query_parameters in enumerate(parameters_csv):
+        query_parameters_split = {k.split(":")[0]: v for k, v in query_parameters.items()}
+        query_parameters_in_order = f'<{";".join([query_parameters_split[parameter["name"]] for parameter in parameters])}>'
+
         query_parameters = {k.split(":")[0]: cast_parameter_to_driver_input(v, k.split(":")[1]) for k, v in query_parameters.items()}
-        query_parameters_in_order = f'<{";".join([convert_value_to_string(query_parameters[parameter["name"]], parameter["type"]) for parameter in parameters])}>'
         if query_num == 1: query_parameters = {'date': query_parameters['datetime']}
         results, duration = run_query(query_num, query_parameters)
-        fout.write(f"{query_num}|{query_variant}|{query_parameters_in_order}|{results}\n")
-        fout.flush()
-        break
+        if query_num == 10: results = f"[<{results}>]"
+        results_file.write(f"{query_num}|{query_variant}|{query_parameters_in_order}|{results}\n")
+        results_file.flush()
+        timings_file.write(f"{query_num}|{query_variant}|{query_parameters_in_order}|{duration}\n")
+        timings_file.flush()
+        if args.test or i == 10:
+            break
         
