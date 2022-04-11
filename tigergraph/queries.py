@@ -5,6 +5,7 @@ import csv
 import requests
 import re
 from datetime import datetime, timedelta
+import os
 
 parser = argparse.ArgumentParser(description='BI query driver')
 parser.add_argument('--test', action='store_true', help='test mode only run one time')
@@ -37,7 +38,7 @@ result_mapping = {
 
 def convert_value_to_string(value, type):
     if type == "ID[]" or type == "INT[]" or type == "INT32[]" or type == "INT64[]":
-        return ";".join([str(int(x)) for x in value])
+        return "[" + ",".join([str(int(x)) for x in value]) + "]"
     elif type == "ID" or type == "INT" or type == "INT32" or type == "INT64":
         return str(int(value))
     elif type == "FLOAT" or type == "FLOAT32" or type == "FLOAT64":
@@ -89,10 +90,12 @@ def run_query(query_num, parameters):
     ]) + "]"
     return results, duration
 
+sf = os.environ.get("SF")
 res = Path('output')
 res.mkdir(exist_ok = True)
 results_file = open(res / 'results.csv', 'w')
 timings_file = open(res / 'timings.csv', 'w')
+timings_file.write(f"sf|q|parameters|time\n")
 query_variants = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20"]
 for query_variant in query_variants:
     print(f"========================= Q{query_variant} =========================")
@@ -107,10 +110,10 @@ for query_variant in query_variants:
         query_parameters = {k.split(":")[0]: cast_parameter_to_driver_input(v, k.split(":")[1]) for k, v in query_parameters.items()}
         if query_num == 1: query_parameters = {'date': query_parameters['datetime']}
         results, duration = run_query(query_num, query_parameters)
-        if query_num == 10: results = f"[<{results}>]"
+        if query_num == 11: results = f"[<{results}>]"
         results_file.write(f"{query_num}|{query_variant}|{query_parameters_in_order}|{results}\n")
         results_file.flush()
-        timings_file.write(f"{query_num}|{query_variant}|{query_parameters_in_order}|{duration}\n")
+        timings_file.write(f"{sf}|{query_variant}|{query_parameters_in_order}|{duration}\n")
         timings_file.flush()
         if args.test or i == 10:
             break

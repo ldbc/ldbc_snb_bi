@@ -30,7 +30,7 @@ tools/run.py \
 
 ## Loading the data
 
-Set the `${TG_DATA_DIR}` environment variable. E.g., assuming that your `${LDBC_SNB_DATAGEN_DIR}` and `${SF}` environment variables are set, run:
+Set the `${TG_DATA_DIR}` environment variable via terminal or in `var.sh`:
 
 ```bash
 export TG_DATA_DIR=${LDBC_SNB_DATAGEN_DIR}/out-sf${SF}/csv/bi/composite-projected-fk/
@@ -53,7 +53,7 @@ scripts/stop-docker.sh #if there is an existing container
 scripts/start-docker.sh
 ```
 
-Load the data. This step may take a while (several minutes), as it is responsible for defining the queries, loading jobs, loading the data, installing queries and pre-compute the edge weights for BI 19 and 20. After the database is ready, you can explore the graph using TigerGraph GraphStudio in the browser: `http://localhost:14240/`. By default, the docker terminal can be accessed via `ssh tigergraph@localhost -p 14022` with password tigergraph, or using Docker command `docker exec --user tigergraph -it snb-interactive-tigergraph bash`.
+Load the data. This step may take a while (several minutes), as it is responsible for defining the queries, loading jobs, loading the data, installing queries and pre-compute the edge weights for BI 19 and 20. After the database is ready, you can explore the graph using TigerGraph GraphStudio in the browser: `http://localhost:14240/`. By default, the docker terminal can be accessed via `ssh tigergraph@localhost -p 14022` with password tigergraph, or using Docker command `docker exec --user tigergraph -it snb-bi-tg bash`.
 
 ```bash
 scripts/setup.sh

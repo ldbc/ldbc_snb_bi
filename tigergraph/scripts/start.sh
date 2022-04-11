@@ -61,6 +61,7 @@ until docker exec --user tigergraph --interactive --tty ${TG_CONTAINER_NAME} /ho
   sleep 1
 done
 
+echo
 echo "=============================================="
 echo "Trial license is used. Note: for SF-100 and larger you need to provide a license using: "
 echo "docker exec --user tigergraph --interactive --tty ${TG_CONTAINER_NAME} /home/tigergraph/tigergraph/app/cmd/gadmin license set [license_string]"
