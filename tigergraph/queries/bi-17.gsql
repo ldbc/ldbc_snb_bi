@@ -8,7 +8,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi17(STRING tag, INT delta) SYNTAX v2 {
   # On the other hand, creator and forum have many messages
   SetAccum<VERTEX> @messages;
   # forum1 Id -> (person1 Id -> smallest message1 creationdate)  
-  MapAccum<VERTEX<Forum>, MapAccum<VERTEX<Person>, MinAccum<DATETIME>>> @@Forum2Creator;
+  MapAccum<VERTEX<Forum>, MapAccum<VERTEX<Person>, MinAccum<INT>>> @@Forum2Creator;
   # comment id -> creator forum id 
   SetAccum<VERTEX<Forum>> @CreatorForums, @Forum1;
   # MapAccum<VERTEX<Forum>, SetAccum<VERTEX<Person>>> @@hasMember;
@@ -16,6 +16,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi17(STRING tag, INT delta) SYNTAX v2 {
   # person1 id in message2
   SetAccum<UINT> @person1Id;
   MapAccum<UINT, SumAccum<UINT>> @@messageCount;
+  UINT deltaInMs = delta * 60 * 60 * 1000;
   messagesWithTag =
     SELECT m
     FROM Tag:t -(<HAS_TAG)- (Comment|Post):m
@@ -59,9 +60,8 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi17(STRING tag, INT delta) SYNTAX v2 {
     ACCUM 
       FOREACH f IN m2.@Forum1 DO
         FOREACH (p1,m1date) IN @@Forum2Creator.get(f) DO
-          IF datetime_add(m1date, INTERVAL delta HOUR) < m2.creationDate 
-               AND (NOT m2.@hasMember.contains(p1))   
-              THEN 
+          IF m1date + deltaInMs < m2.creationDate 
+              AND (NOT m2.@hasMember.contains(p1)) THEN 
               m2.@person1Id += p1.id
           END
         END

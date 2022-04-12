@@ -5,6 +5,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi12(DATETIME startDate, INT lengthThreshold
   HeapAccum<RESULT>(0, personCount DESC, messageCount DESC) @@result;
   SumAccum<UINT> @messageCount;
   INT diff;
+  INT startEpoch = datetime_to_epoch(startDate) * 1000;
 
   persons =
     SELECT person
@@ -12,7 +13,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi12(DATETIME startDate, INT lengthThreshold
     WHERE
       m.content != "" AND
       m.length < lengthThreshold AND
-      m.creationDate > startDate AND
+      m.creationDate > startEpoch AND
       p.language IN languages
     ACCUM person.@messageCount += 1
     POST-ACCUM @@personCount += (person.@messageCount -> 1);

@@ -69,6 +69,18 @@ namespace UDIMPL {
     sprintf(result, "%Ld", val);
     return string(result);
   }
+
+  inline string ms_to_string (int64_t val) {
+    char buffer[36];
+    size_t i;
+    time_t rawtime = val / (int64_t) 1000;
+    int64_t ms = val % 1000;
+    struct tm timeinfo;
+    localtime_r(&rawtime, &timeinfo); // localtime is not thead safe
+    i = strftime(buffer, 36, "%Y-%m-%dT%H:%M:%S", &timeinfo);
+    i = sprintf(buffer+i, ".%03d+00:00", ms);
+    return string(buffer);
+  }
 }
 /****************************************/
 

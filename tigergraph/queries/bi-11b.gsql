@@ -1,6 +1,9 @@
 CREATE OR REPLACE DISTRIBUTED QUERY bi11(STRING country, DATETIME startDate) SYNTAX v2 {
   OrAccum<BOOL> @selected;
   SumAccum<UINT> @@count;
+  INT startEpoch = datetime_to_epoch(startDate) * 1000;
+  INT endEpoch = datetime_to_epoch(endDate) * 1000;
+  
   persons = SELECT p FROM Country:cn -(<IS_PART_OF.<IS_LOCATED_IN)- Person:p 
     WHERE cn.name == country
     ACCUM p.@selected += True;
@@ -10,7 +13,9 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi11(STRING country, DATETIME startDate) SYN
     WHERE
       p2.@selected AND p3.@selected AND
       p1.id < p2.id AND p2.id < p3.id AND
-      k12.creationDate > startDate AND k23.creationDate > startDate AND k31.creationDate > startDate
+      (k12.creationDate BETWEEN startEpoch AND endEpoch) AND 
+      (k23.creationDate BETWEEN startEpoch AND endEpoch) AND 
+      (k31.creationDate BETWEEN startEpoch AND endEpoch)
     PER (p1, p2, p3)
     ACCUM @@count += 1;
 

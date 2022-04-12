@@ -5,7 +5,9 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi9(DATETIME startDate, DATETIME endDate) SY
   SumAccum<UINT> @messageCount;
   SumAccum<UINT> @threadCount;
 
-  threads = SELECT p FROM Post:p WHERE p.creationDate BETWEEN startDate AND endDate;
+  INT startEpoch = datetime_to_epoch(startDate) * 1000;
+  INT endEpoch = datetime_to_epoch(endDate) * 1000;
+  threads = SELECT p FROM Post:p WHERE p.creationDate BETWEEN startEpoch AND endEpoch;
   persons =
     SELECT p
     FROM threads:t -(HAS_CREATOR>)- Person:p
@@ -17,7 +19,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi9(DATETIME startDate, DATETIME endDate) SY
   M(ANY) = threads;
   WHILE M.size() > 0 DO
     M = SELECT t FROM M:s -(<REPLY_OF)- Comment:t
-      WHERE t.creationDate BETWEEN startDate AND endDate
+      WHERE t.creationDate BETWEEN startEpoch AND endEpoch
       ACCUM t.@root += s.@root,
         FOREACH p IN s.@root DO # t.@root may not be updated here
           p.@messageCount += 1

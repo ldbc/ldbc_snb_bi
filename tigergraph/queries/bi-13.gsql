@@ -6,28 +6,30 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi13(STRING country, DATETIME endDate) SYNTA
   SumAccum<UINT> @messageCount;
   SumAccum<UINT> @totalLikeCount;
   SumAccum<UINT> @zombieLikeCount;
+  INT endEpoch = datetime_to_epoch(endDate) * 1000;
 
   zombieCandidates =
     SELECT p
     FROM Country:cn -(<IS_PART_OF.<IS_LOCATED_IN)- Person:p
-    WHERE cn.name == country AND p.creationDate < endDate;
+    WHERE cn.name == country AND p.creationDate < endEpoch;
 
   zombieMessages =
     SELECT m
     FROM zombieCandidates:p -(<HAS_CREATOR)- (Comment|Post):m
-    WHERE m.creationDate < endDate
+    WHERE m.creationDate < endEpoch
     ACCUM p.@messageCount += 1;
 
   zombies =
     SELECT p
     FROM zombieCandidates:p
-    WHERE p.@messageCount < (year(endDate) - year(p.creationDate)) * 12 + (month(endDate) - month(p.creationDate)) + 1
+    WHERE p.@messageCount < (year(endDate) - year(epoch_to_datetime(p.creationDate/1000))) * 12 + 
+        (month(endDate) - month(epoch_to_datetime(p.creationDate/1000))) + 1
     POST-ACCUM @@zombies += p;
 
   liker =
     SELECT z
     FROM zombies:z -(<HAS_CREATOR)- (Comment|Post):m -(<LIKES)- Person:p
-    WHERE p.creationDate < endDate
+    WHERE p.creationDate < endEpoch
     ACCUM
       z.@totalLikeCount += 1,
       IF p IN @@zombies THEN

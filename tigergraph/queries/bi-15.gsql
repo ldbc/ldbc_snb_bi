@@ -7,6 +7,8 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi15(VERTEX<Person> person1Id, VERTEX<Person
   ListAccum<ListAccum<VERTEX<Person>>> @paths;
   ListAccum<ListAccum<VERTEX<Person>>> @@shortestPaths;
   OrAccum @visited1, @visited2;
+  INT startEpoch = datetime_to_epoch(startDate) * 1000;
+  INT endEpoch = datetime_to_epoch(endDate) * 1000;
 
   SetAccum<VERTEX<Person>> @@PersonInShortestPath;
   SumAccum<UINT> @creatorId;
@@ -81,10 +83,10 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi15(VERTEX<Person> person1Id, VERTEX<Person
   comments = SELECT m FROM persons:p -(<HAS_CREATOR)- Comment:m ACCUM m.@creatorId = p.id;
   commentsInForum = SELECT m 
     FROM comments:m -(REPLY_OF>*)- Post -(<CONTAINER_OF)- Forum:f 
-    WHERE f.creationDate BETWEEN startDate AND endDate;
+    WHERE f.creationDate BETWEEN startEpoch AND endEpoch;
   postsInForum = SELECT p 
     FROM persons:c -(<HAS_CREATOR)- Post:p -(<CONTAINER_OF)- Forum:f 
-    WHERE f.creationDate BETWEEN startDate AND endDate
+    WHERE f.creationDate BETWEEN startEpoch AND endEpoch
     ACCUM p.@creatorId = c.id;
   tmp = SELECT m2
     FROM comments:m1 -(REPLY_OF>)- postsInForum:m2

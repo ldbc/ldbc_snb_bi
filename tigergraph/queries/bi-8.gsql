@@ -3,9 +3,10 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi8(STRING tag, DATETIME startDate, DATETIME
   TYPEDEF TUPLE <UINT personId, UINT score, UINT friendsScore, UINT totalScore> RESULT;
 
   HeapAccum<RESULT>(100, totalScore DESC, personId ASC) @@result;
-
   SumAccum<UINT> @score;
   SumAccum<UINT> @friendsScore;
+  INT startEpoch = datetime_to_epoch(startDate) * 1000;
+  INT endEpoch = datetime_to_epoch(endDate) * 1000;
 
   tagWithName = SELECT t FROM Tag:t WHERE t.name == tag;
 
@@ -17,7 +18,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi8(STRING tag, DATETIME startDate, DATETIME
   personsWithMessages =
     SELECT p
     FROM tagWithName -(<HAS_TAG)- (Comment|Post):m -(HAS_CREATOR>)- Person:p
-    WHERE m.creationDate BETWEEN startDate AND endDate
+    WHERE m.creationDate BETWEEN startEpoch AND endEpoch
     ACCUM p.@score += 1;
 
   personsWithScore = personsWithInterest UNION personsWithMessages;

@@ -15,7 +15,9 @@ echo "==========================================================================
 t0=$SECONDS
 #gsql drop all
 gsql create_schema.gsql
-gsql --graph ldbc_snb tmp.gsql
+gsql PUT TokenBank FROM \"/ddl/TokenBank.cpp\"
+gsql PUT ExprFunctions FROM \"/ddl/ExprFunctions.hpp\"
+gsql --graph ldbc_snb load.gsql
 
 echo "==============================================================================="
 echo "Load Data"
@@ -63,7 +65,6 @@ echo "==========================================================================
 echo "Install Query"
 echo "-------------------------------------------------------------------------------"
 t2=$SECONDS
-gsql --graph ldbc_snb PUT ExprFunctions FROM \"$QUERY_PATH/ExprFunctions.hpp\"
 
 for i in $(seq 1 20); do
   gsql --graph ldbc_snb $QUERY_PATH/bi-${i}.gsql
@@ -77,7 +78,7 @@ gsql --graph ldbc_snb $DML_PATH/del_Forum.gsql
 gsql --graph ldbc_snb $DML_PATH/del_Person.gsql
 gsql --graph ldbc_snb $DML_PATH/del_Post.gsql
 
-gsql --graph ldbc_snb 'INSTALL QUERY *'
+gsql --graph ldbc_snb INSTALL QUERY ALL
 
 echo "==============================================================================="
 echo "Precompute BI19 and BI20 weights"
