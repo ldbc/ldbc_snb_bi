@@ -32,7 +32,6 @@ SELECT au.id AS "person.id"
        LEFT JOIN Message
               ON au.id = Message.CreatorPersonId
              AND Message.ContainerForumId IN (SELECT id FROM Top100_Popular_Forums)
-             AND Message.creationDate > :date
   WHERE EXISTS (SELECT 1
                 FROM Top100_Popular_Forums
                 INNER JOIN Forum_hasMember_Person
