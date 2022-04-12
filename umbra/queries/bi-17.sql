@@ -40,6 +40,8 @@ JOIN Forum_hasMember_Person Forum_hasMember_Person3
   ON Forum_hasMember_Person3.ForumId = Post1.ContainerForumId -- forum1
  AND Forum_hasMember_Person3.PersonId = Message2.CreatorPersonId -- person3
 WHERE Tag.name = :tag
+  -- person2 != person3
+  AND Comment.CreatorPersonId != Message2.CreatorPersonId
   -- NOT (forum2)-[:HAS_MEMBER]->(person1)
   AND NOT EXISTS (SELECT 1
                   FROM Forum_hasMember_Person Forum_hasMember_Person1
