@@ -31,12 +31,19 @@ jobs:
       - run:
           name: Download data sets
           command: |
+            # Cypher
             cd cypher
-            # uncompressed CSVs
+            ## compressed CSVs for Cypher
+            scripts/get-sample-data-set.sh
+            ## uncompressed CSVs for Cypher
             wget -q https://ldbcouncil.org/ldbc_snb_datagen_spark/social-network-sf0.003-bi-composite-projected-fk-neo4j.zip
             unzip -q social-network-sf0.003-bi-composite-projected-fk-neo4j.zip
-            # compressed CSVs
+            cd ..
+            # Umbra
+            cd umbra
+            ## uncompressed CSVs for Umbra
             scripts/get-sample-data-set.sh
+            cd ..
       - run:
           name: Download factors
           command: |
