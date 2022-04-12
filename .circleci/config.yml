@@ -15,6 +15,12 @@ jobs:
     steps:
       - checkout
       - run:
+          name: Load Umbra Docker image
+          command: |
+            . umbra/scripts/vars.sh
+            # ${UMBRA_URL_PREFIX} should be set as a sercet variable
+            curl -s ${UMBRA_URL_PREFIX}${UMBRA_VERSION}.tar.gz | docker load
+      - run:
           name: Setup
           command: |
             export DEBIAN_FRONTEND=noninteractive
