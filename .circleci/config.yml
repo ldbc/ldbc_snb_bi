@@ -72,6 +72,7 @@ jobs:
             scripts/load-in-one-step.sh
             scripts/benchmark.sh
             cd ..
+            scripts/cross-validate.sh
       - run:
           name: Test Cypher toolchain with compressed CSVs
           command: |
@@ -83,4 +84,5 @@ jobs:
             scripts/restore-database.sh
             scripts/benchmark.sh
             cd ..
+            scripts/cross-validate.sh
       - slack/status
