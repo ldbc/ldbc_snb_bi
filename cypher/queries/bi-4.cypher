@@ -13,7 +13,8 @@ WITH collect(topForum) AS topForums
 
 UNWIND topForums AS topForum1
 
-OPTIONAL MATCH (topForum1)-[:CONTAINER_OF]->(post:Post)<-[:REPLY_OF*0..]-(message:Message)-[:HAS_CREATOR]->(person:Person)<-[:HAS_MEMBER]-(topForum2:Forum)
+MATCH (person:Person)<-[:HAS_MEMBER]-(topForum2:Forum)
+OPTIONAL MATCH (topForum1)-[:CONTAINER_OF]->(post:Post)<-[:REPLY_OF*0..]-(message:Message)-[:HAS_CREATOR]->(person)
 WITH person, message, topForum2
 WHERE topForum2 IN topForums
 
