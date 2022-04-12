@@ -8,10 +8,10 @@ SELECT Person.id AS "person.id"
      , count(DISTINCT Message.RootPostId) AS threadCount
      , count(DISTINCT Message.MessageId) AS messageCount
   FROM Person
-  LEFT JOIN Post_View Post
+  JOIN Post_View Post
     ON Person.id = Post.CreatorPersonId
    AND Post.creationDate BETWEEN :startDate AND :endDate
-  LEFT JOIN Message
+  JOIN Message
     ON Post.id = Message.RootPostId
    AND Message.creationDate BETWEEN :startDate AND :endDate
  GROUP BY Person.id, Person.firstName, Person.lastName
