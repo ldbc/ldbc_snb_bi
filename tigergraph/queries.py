@@ -96,7 +96,7 @@ res.mkdir(exist_ok = True)
 results_file = open(res / 'results.csv', 'w')
 timings_file = open(res / 'timings.csv', 'w')
 timings_file.write(f"sf|q|parameters|time\n")
-query_variants = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20"]
+query_variants = ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "15a", "15b", "16a", "16b", "17", "18", "19a", "19b", "20"]
 for query_variant in query_variants:
     print(f"========================= Q{query_variant} =========================")
     query_num = int(re.sub("[^0-9]", "", query_variant))
