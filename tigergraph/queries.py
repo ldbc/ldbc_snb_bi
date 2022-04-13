@@ -115,6 +115,7 @@ for query_variant in query_variants:
         results_file.flush()
         timings_file.write(f"{sf}|{query_variant}|{query_parameters_in_order}|{duration}\n")
         timings_file.flush()
-        if args.test or i == 10:
+        # test run: 1 query, regular run: 10 queries
+        if args.test or i == 9:
             break
         
