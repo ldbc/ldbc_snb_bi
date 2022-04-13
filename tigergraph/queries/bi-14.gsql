@@ -77,11 +77,12 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi14(STRING country1, STRING country2) SYNTA
       END;
 
   City1 = SELECT c1 FROM P1:p1 -(IS_LOCATED_IN>)- City:c1
-    ACCUM c1.@cityresults += pairScore(p1.id, p1.@pScore.top().pid, c1.name, p1.@pScore.top().score);
-
-  zeroCity1 = SELECT c1 FROM City1:c1 -(<IS_LOCATED_IN)- Person:p1
-    WHERE c1.@cityresults.size() == 0
-    ACCUM c1.@cityresults += pairScore(p1.id, p1.@min_pid2, c1.name, 0);
+    ACCUM 
+      IF p1.@pScore.size() > 0 THEN
+        c1.@cityresults += pairScore(p1.id, p1.@pScore.top().pid, c1.name, p1.@pScore.top().score)
+      ELSE
+        c1.@cityresults += pairScore(p1.id, p1.@min_pid2, c1.name, 0)
+      END; 
   
   @@result.resize(City1.size());
   City1 = SELECT c1 FROM City1:c1

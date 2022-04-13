@@ -31,11 +31,10 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi4 (DATETIME date) SYNTAX v2 {
     FROM popularForums -(CONTAINER_OF>)- Post -(<REPLY_OF*)- (Comment|Post):m -(HAS_CREATOR>)- Person:p
     WHERE p.@inForum AND m.creationDate > epoch
     PER(m, p)
-    ACCUM p.@messageCount += 1
-    POST-ACCUM @@result += RESULT(p.id, p.firstName, p.lastName, ms_to_string(p.creationDate), p.@messageCount);
+    ACCUM p.@messageCount += 1;
   tmp = 
-    SELECT p FROM P:p WHERE p.@messageCount == 0
-    POST-ACCUM @@result += RESULT(p.id, p.firstName, p.lastName, ms_to_string(p.creationDate), p.@messageCount);
+    SELECT p FROM P:p
+    ACCUM @@result += RESULT(p.id, p.firstName, p.lastName, ms_to_string(p.creationDate), p.@messageCount);
 
   PRINT @@result as result;
 }
