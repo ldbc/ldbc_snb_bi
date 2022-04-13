@@ -81,14 +81,6 @@ gsql --graph ldbc_snb $DML_PATH/del_Post.gsql
 gsql --graph ldbc_snb INSTALL QUERY ALL
 
 echo "==============================================================================="
-echo "Precompute BI19 and BI20 weights"
-echo "-------------------------------------------------------------------------------"
-t3=$SECONDS
-gsql -g ldbc_snb 'RUN QUERY pre19()'
-gsql -g ldbc_snb 'RUN QUERY pre20()'
-t4=$SECONDS
-
-echo "==============================================================================="
 echo "Data Statisitcs Check (Optional): Please ensure all the entries are nonzero"
 echo "-------------------------------------------------------------------------------"
 echo 'update delta ...'
@@ -107,5 +99,4 @@ echo "TigerGraph database is ready for benchmark"
 echo "Schema setup:       $((t1-t0)) s"
 echo "Load Data:          $((t2-t1)) s"
 echo "Query install:      $((t3-t2)) s"
-echo "Precompute BI19 BI20: $((t4-t3)) s"
 echo "====================================================================================="

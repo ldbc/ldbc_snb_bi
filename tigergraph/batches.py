@@ -65,7 +65,7 @@ def run_query(name, parameters):
 """
 Load data using restpp endpoints
 """ 
-def load_restpp(job, data_dir, names, batch_dir):
+def load_by_restpp(job, data_dir, names, batch_dir):
     endpoint = f'{args.endpoint}/ddl/ldbc_snb/'
     for name in names:
         print(f'{name}:')
@@ -114,8 +114,8 @@ while batch_start_date < network_end_date:
 
     print("## Inserts")
     t0 = time.time()
-    load_restpp(f'insert_vertex{header}', args.data_dir/'inserts', VERTICES, batch_dir)
-    load_restpp(f'insert_edge{header}', args.data_dir/'inserts', EDGES, batch_dir)
+    load_by_restpp(f'insert_vertex{header}', args.data_dir/'inserts', VERTICES, batch_dir)
+    load_by_restpp(f'insert_edge{header}', args.data_dir/'inserts', EDGES, batch_dir)
     t1 = time.time()
     tot_ins_time += t1-t0
     print(f'insert time: {tot_ins_time} s')
@@ -135,7 +135,7 @@ while batch_start_date < network_end_date:
                 print(f'> {result} changes')
         tot_del_time += duration
     t0 = time.time()
-    load_restpp(f'delete_edge{header}', args.data_dir/'deletes', DEL_EDGES, batch_dir)
+    load_by_restpp(f'delete_edge{header}', args.data_dir/'deletes', DEL_EDGES, batch_dir)
     t1 = time.time()
     tot_del_time += t1 - t0
     batch_start_date = batch_start_date + batch_size

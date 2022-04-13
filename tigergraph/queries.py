@@ -97,6 +97,15 @@ results_file = open(res / 'results.csv', 'w')
 timings_file = open(res / 'timings.csv', 'w')
 timings_file.write(f"sf|q|parameters|time\n")
 query_variants = ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "15a", "15b", "16a", "16b", "17", "18", "19a", "19b", "20"]
+
+if "19a" in query_variants or "19b" in query_variants:
+    print("Creating graph (precomputing weights) for Q19")
+    response = requests.get(f'{args.endpoint}/query/ldbc_snb/pre19', headers={'GSQL-TIMEOUT': '36000000'}).json()
+
+if "20" in query_variants:
+    print("Creating graph (precomputing weights) for Q20")
+    response = requests.get(f'{args.endpoint}/query/ldbc_snb/pre20', headers={'GSQL-TIMEOUT': '36000000'}).json()
+
 for query_variant in query_variants:
     print(f"========================= Q{query_variant} =========================")
     query_num = int(re.sub("[^0-9]", "", query_variant))
