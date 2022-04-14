@@ -13,7 +13,7 @@ export TG_SSH_PORT=14022
 export TG_WEB_PORT=14240
 export TG_ENDPOINT=http://127.0.0.1:$TG_REST_PORT
 export TG_HEADER=false
-export TG_PARAMETER=/home/yuchen.zhang/data/bi/parameters-sf100 #../parameters
+export TG_PARAMETER=../parameters #../parameters
 
 # data directory: required
 export TG_DATA_DIR=
