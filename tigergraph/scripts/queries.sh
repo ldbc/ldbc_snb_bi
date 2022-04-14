@@ -8,4 +8,9 @@ cd ..
 
 . scripts/vars.sh
 
-python3 queries.py $@
+if [ ! -d "${TG_PARAMETER}" ]; then
+    echo "Parameter directory ${TG_PARAMETER} does not exist."
+    exit 1
+fi
+
+python3 queries.py --para ${TG_PARAMETER} $@

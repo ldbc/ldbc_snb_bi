@@ -1,4 +1,4 @@
-CREATE OR REPLACE QUERY pre19() syntax v2 {
+CREATE OR REPLACE QUERY bi19precompute() syntax v2 {
   MinAccum<VERTEX<Person>> @creator, @replyto;
   SetAccum<VERTEX<Person>> @neighbor;
   MapAccum<VERTEX<Person>, SumAccum<UINT>> @replyToCount;  
@@ -19,5 +19,6 @@ CREATE OR REPLACE QUERY pre19() syntax v2 {
     SELECT p2
     FROM Person:p1 -(KNOWS:e)- Person:p2
     WHERE p1.id<p2.id AND (p1.@replyToCount.get(p2) > 0 OR p2.@replyToCount.get(p1) > 0)
-    ACCUM e.weight1 = 1.0 / (p1.@replyToCount.get(p2) + p2.@replyToCount.get(p1));
+    ACCUM
+      INSERT INTO KNOWS19 (FROM, TO, weight) VALUES (p1, p2, 1.0 / (p1.@replyToCount.get(p2) + p2.@replyToCount.get(p1)));
 }

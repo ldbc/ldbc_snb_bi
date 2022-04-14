@@ -12,7 +12,12 @@ export TG_REST_PORT=9000
 export TG_SSH_PORT=14022
 export TG_WEB_PORT=14240
 export TG_ENDPOINT=http://127.0.0.1:$TG_REST_PORT
-export TG_HEADER=false
-export TG_REFRESH_HEADER=false
+export TG_HEADER=true
+export TG_PARAMETER=/home/yuchen.zhang/data/bi/parameters-sf100 #../parameters
+
+# data directory: required
+export TG_DATA_DIR=
+# TigerGraph license: required for SF-100 and larger
+export TG_LICENSE=
 
 popd > /dev/null

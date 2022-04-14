@@ -90,26 +90,26 @@ def run_query(endpoint, query_num, parameters):
 
 def run_queries(query_variants, results_file, timings_file, args):
     sf = os.environ.get("SF")
-    if "19a" in query_variants or "19b" in query_variants:
-        print("Creating graph (precomputing weights) for Q19")
+    if not args.skip and ("19a" in query_variants or "19b" in query_variants):
+        print("Precomputing weights for Q19")
         start = time.time()
-        response = requests.get(f'{args.endpoint}/query/ldbc_snb/pre19', headers=HEADERS).json()
+        response = requests.get(f'{args.endpoint}/query/ldbc_snb/bi19precompute', headers=HEADERS).json()
         duration = time.time() - start
-        timings_file.write(f"{sf}|pre19||{duration:.6f}\n")
+        timings_file.write(f"{sf}|bi19precompute||{duration:.6f}\n")
         timings_file.flush()
 
-    if "20" in query_variants:
-        print("Creating graph (precomputing weights) for Q20")
+    if not args.skip and "20" in query_variants:
+        print("Precomputing weights for Q20")
         start = time.time()
-        response = requests.get(f'{args.endpoint}/query/ldbc_snb/pre19', headers=HEADERS).json()
+        response = requests.get(f'{args.endpoint}/query/ldbc_snb/bi20precompute', headers=HEADERS).json()
         duration = time.time() - start
-        timings_file.write(f"{sf}|pre19||{duration:.6f}\n")
+        timings_file.write(f"{sf}|bi20precompute||{duration:.6f}\n")
         timings_file.flush()
 
     for query_variant in query_variants:
         print(f"========================= Q{query_variant} =========================")
         query_num = int(re.sub("[^0-9]", "", query_variant))
-        parameters_csv = csv.DictReader(open(f'../parameters/bi-{query_variant}.csv'), delimiter='|')
+        parameters_csv = csv.DictReader(open(args.para / f'bi-{query_variant}.csv'), delimiter='|')
         parameters = [{"name": t[0], "type": t[1]} for t in [f.split(":") for f in parameters_csv.fieldnames]]
         
         for i,query_parameters in enumerate(parameters_csv):
@@ -127,10 +127,28 @@ def run_queries(query_variants, results_file, timings_file, args):
             # test run: 1 query, regular run: 10 queries
             if args.test or i == 9:
                 break
+    
+    if not args.skip and ("19a" in query_variants or "19b" in query_variants):
+        print("Clean weights for Q19")
+        start = time.time()
+        response = requests.get(f'{args.endpoint}/query/ldbc_snb/bi19cleanup', headers=HEADERS).json()
+        duration = time.time() - start
+        timings_file.write(f"{sf}|bi19cleanup||{duration:.6f}\n")
+        timings_file.flush()
+
+    if not args.skip and "20" in query_variants:
+        print("Clean weights for Q20")
+        start = time.time()
+        response = requests.get(f'{args.endpoint}/query/ldbc_snb/bi20cleanup', headers=HEADERS).json()
+        duration = time.time() - start
+        timings_file.write(f"{sf}|bi20cleanup||{duration:.6f}\n")
+        timings_file.flush()
 
 # main functions
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='BI query driver')
+    parser.add_argument('--para', type=Path, default=Path('../parameters'), help='parameter folder')
+    parser.add_argument('--skip', action='store_true', help='skip precompute')
     parser.add_argument('--test', action='store_true', help='test mode only run one time')
     parser.add_argument('--endpoint', type=str, default='http://127.0.0.1:9000',help='tigergraph endpoints')
     args = parser.parse_args()
@@ -139,6 +157,7 @@ if __name__ == '__main__':
     timings_file = open('output/timings.csv', 'w')
     timings_file.write(f"sf|q|parameters|time\n")
     query_variants = ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "15a", "15b", "16a", "16b", "17", "18", "19a", "19b", "20"]
+    query_variants = ["4"]
     run_queries(query_variants, results_file, timings_file, args)
     results_file.close()
     timings_file.close()

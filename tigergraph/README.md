@@ -28,14 +28,7 @@ tools/run.py \
     --format-options header=false
 ```
 
-## Loading the data
-
-Set the `${TG_DATA_DIR}` environment variable via terminal or in `var.sh`:
-
-```bash
-export TG_DATA_DIR=${LDBC_SNB_DATAGEN_DIR}/out-sf${SF}/csv/bi/composite-projected-fk/
-```
-
+## Use th sample data set
 To download and use the sample data set, run:
 
 ```bash
@@ -44,25 +37,24 @@ unzip -q social-network-sf0.003-bi-composite-projected-fk.zip
 export TG_DATA_DIR=`pwd`/social-network-sf0.003-bi-composite-projected-fk/graphs/csv/bi/composite-projected-fk/
 ```
 
-In the default setting, the driver assumes that the CSV files do not have headers. If your CSVs have headers, please modify TG_HEADER in `scripts/vars.sh`.
 
-Start the TigerGraph Docker container. For data larger than 50G, a license need to be applied after running `start.sh`. If you work on a cluster, refer to the k8s setup in `k8s/`.
+## Loading the data
 
+If you work on a cluster, refer to the k8s setup in `k8s/`. This section is for single-node benchmark.
+
+Edit `scripts/var.sh`, and set the `TG_DATA_DIR` to your data directory:
 ```bash
-scripts/stop-docker.sh #if there is an existing container
-scripts/start-docker.sh
+export TG_DATA_DIR=${LDBC_SNB_DATAGEN_DIR}/out-sf${SF}/csv/bi/composite-projected-fk/
 ```
 
-Load the data. This step may take a while (several minutes), as it is responsible for defining the queries, loading jobs, loading the data, installing queries and pre-compute the edge weights for BI 19 and 20. After the database is ready, you can explore the graph using TigerGraph GraphStudio in the browser: `http://localhost:14240/`. By default, the docker terminal can be accessed via `ssh tigergraph@localhost -p 14022` with password tigergraph, or using Docker command `docker exec --user tigergraph -it snb-bi-tg bash`.
+In the default setting, TigerGraph uses trial license and this license can hold at most 100GB data. For SF-100 and larger, please set `$TG_LICENSE` to the license string in `scripts/var.sh`. 
+In the default setting, the driver assumes that the CSV files do not have headers. If your CSVs have headers, please modify `$TG_HEADER` in `scripts/vars.sh`. To load data
 
 ```bash
-scripts/setup.sh
+./load-in-one-step.sh
 ```
 
-The above scripts can be executed with a single command:
-```bash
-scripts/load-in-one-step.sh
-```
+This step may take a while, as it starts a TigerGraph server container in docker. In the container, we define the schema, load data, and install queries. By default, the container's terminal can be accessed via using Docker command `docker exec --user tigergraph -it snb-bi-tg bash`. If web browser is availble, you can explore the graph using TigerGraph GraphStudio in the browser: `http://localhost:14240/`.
 
 ## Microbatches
 
@@ -73,6 +65,7 @@ scripts/batches.sh
 ```
 
 :warning: Note that this script uses the data sets in the `${TG_DATA_DIR}` directory on the host machine. The data is modified here. Therefore, **the database needs to be reloaded or restored from backup before each run**. Use the provided `scripts/backup-database.sh` and `scripts/restore-database.sh` scripts to achieve this.
+
 ## Queries
 
 To run the queries, issue:
