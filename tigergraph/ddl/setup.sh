@@ -84,7 +84,7 @@ gsql --graph ldbc_snb INSTALL QUERY ALL
 t3=$SECONDS
 
 echo "==============================================================================="
-echo "Data Statisitcs Check (Optional): Please ensure all the entries are nonzero"
+echo "Data Statisitcs Check (Optional)"
 echo "-------------------------------------------------------------------------------"
 echo 'update delta ...'
 curl -s -H "GSQL-TIMEOUT:2500000" "http://127.0.0.1:9000/rebuildnow"
