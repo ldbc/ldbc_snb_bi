@@ -14,7 +14,7 @@ echo "QUERY_PATH: ${QUERY_PATH}"
 echo "==============================================================================="
 t0=$SECONDS
 #gsql drop all
-gsql create_schema.gsql
+gsql schema.gsql
 gsql PUT TokenBank FROM \"/ddl/TokenBank.cpp\"
 gsql PUT ExprFunctions FROM \"/ddl/ExprFunctions.hpp\"
 gsql --graph ldbc_snb load.gsql
@@ -66,17 +66,10 @@ echo "Install Query"
 echo "-------------------------------------------------------------------------------"
 t2=$SECONDS
 
-for i in $(seq 1 20); do
-  gsql --graph ldbc_snb $QUERY_PATH/bi-${i}.gsql
+# read all gsql file in queries/ and all delete operations in dml/
+for f in $QUERY_PATH/*.gsql $DML_PATH/del_*.gsql; do
+  gsql --graph ldbc_snb $f
 done
-
-gsql --graph ldbc_snb $QUERY_PATH/pre-19.gsql
-gsql --graph ldbc_snb $QUERY_PATH/pre-20.gsql
-
-gsql --graph ldbc_snb $DML_PATH/del_Comment.gsql
-gsql --graph ldbc_snb $DML_PATH/del_Forum.gsql
-gsql --graph ldbc_snb $DML_PATH/del_Person.gsql
-gsql --graph ldbc_snb $DML_PATH/del_Post.gsql
 
 gsql --graph ldbc_snb INSTALL QUERY ALL
 t3=$SECONDS
