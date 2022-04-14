@@ -79,6 +79,7 @@ gsql --graph ldbc_snb $DML_PATH/del_Person.gsql
 gsql --graph ldbc_snb $DML_PATH/del_Post.gsql
 
 gsql --graph ldbc_snb INSTALL QUERY ALL
+t3=$SECONDS
 
 echo "==============================================================================="
 echo "Data Statisitcs Check (Optional): Please ensure all the entries are nonzero"

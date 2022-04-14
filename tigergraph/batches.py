@@ -67,7 +67,7 @@ def run_batch_updates(start_date, end_date, timing_file, args):
         load_by_restpp(f'insert_edge{header}', args.data_dir/'inserts', EDGES, batch_dir, args.endpoint)
         t1 = time.time()
         tot_ins_time += t1-t0
-        timing_file.write(f'insert total|{tot_ins_time:.6f}\n')
+        timing_file.write(f'{batch_date}|insert|{tot_ins_time:.6f}\n')
         timing_file.flush()
         print("## Deletes")
         for vertex in VERTICES:
@@ -89,7 +89,7 @@ def run_batch_updates(start_date, end_date, timing_file, args):
         t1 = time.time()
         tot_del_time += t1 - t0
         batch_date = batch_date + batch_size
-        timing_file.write(f'delete total|{tot_del_time:.6f}\n')
+        timing_file.write(f'{batch_date}|delete|{tot_del_time:.6f}\n')
         timing_file.flush()
 
 # main functions
@@ -101,6 +101,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     timing_file = open('output/batch_timing.csv', 'w')
+    timing_file.write(f'date|operation|time\n')
     network_start_date = date(2012, 11, 29)
     network_end_date = date(2013, 1, 1)
     run_batch_updates(network_start_date, network_end_date, timing_file, args)
