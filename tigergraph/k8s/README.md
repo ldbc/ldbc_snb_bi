@@ -37,7 +37,7 @@ tigergraph-0      1/1     Running   0          5m24s
 tigergraph-1      1/1     Running   0          3m11s
 ``` 
 ## Download data
-The following scripts start a background process in each pod to download data 
+Fill in the parameters in `vars.sh`. Run the following script to start a background process in each pod to download data 
 ```bash
 ./download.sh
 ```
@@ -49,7 +49,6 @@ grun all 'du -sh  ~/tigergraph/data/sf100/' # The data should be in correct size
 ```
 
 ## Run benchmark 
-
 First log into the k8s cluster 
 ```bash
 kubectl exec -it tigergraph-0 -- bash
@@ -60,6 +59,15 @@ In the container, run (It is recommended to run scripts in the background becaus
 nohup ./k8s/setup.sh > log.setup 2>&1 < /dev/null &
 ```
 
+To run queries
+```bash
+nohup ./k8s/queries.sh > log.queries 2>&1 < /dev/null &
+```
+
+To run batch updates
+```bash
+nohup ./k8s/batches.sh > log.queries 2>&1 < /dev/null &
+```
 
 
 ## Clean up

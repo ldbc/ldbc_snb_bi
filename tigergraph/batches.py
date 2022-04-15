@@ -29,6 +29,12 @@ def run_query(name, parameters, endpoint):
     duration = end - start
     return response['results'][0]['result'], duration
 
+def load(job, data_dir, names, batch_dir, args):
+    if args.cluster:
+        load_by_gsql(job, data_dir, names, batch_dir)
+    else:
+        load_by_gsql(job, data_dir, names, batch_dir, args.endpoint)
+
 """
 Load data using restpp endpoints
 """ 
@@ -36,7 +42,7 @@ def load_by_restpp(job, data_dir, names, batch_dir, endpoint):
     for name in names:
         print(f'{name}:')
         folder = (data_dir/'dynamic'/name/batch_dir)
-        if not folder.is_dir(): 
+        if not folder.is_dir():
             print("!!! No changes occured")
             continue
         for f in folder.iterdir():
@@ -48,8 +54,16 @@ def load_by_restpp(job, data_dir, names, batch_dir, endpoint):
             nlines = res["results"][0]["statistics"]["validLine"]
             print(f'> {nlines} changes')
 
+"""
+Load data using gsql command 
+for concurrent insert/deletes on K8S cluster
+""" 
+def load_by_gsql(job, data_dir, names, batch_dir):
+    gsql = f'RUN LOADING JOB {job} USING '
+    gsql += ', '.join([f'file_{name}=\\"ANY:{data_dir}/dynamic/{name}/{batch_dir}\\"' for name in names])
+    subprocess.run(f'gsql -g ldbc_snb {gsql}', shell=True)
+
 def run_batch_updates(start_date, end_date, timing_file, args):
-    header = '_with_header' if args.header else ''
     docker_data = Path('/data')
     batch_size = timedelta(days=1)
     batch_date = start_date
@@ -63,8 +77,8 @@ def run_batch_updates(start_date, end_date, timing_file, args):
 
         print("## Inserts")
         t0 = time.time()
-        load_by_restpp(f'insert_vertex{header}', args.data_dir/'inserts', VERTICES, batch_dir, args.endpoint)
-        load_by_restpp(f'insert_edge{header}', args.data_dir/'inserts', EDGES, batch_dir, args.endpoint)
+        load(f'insert_vertex', args.data_dir/'inserts', VERTICES, batch_dir, args)
+        load(f'insert_edge', args.data_dir/'inserts', EDGES, batch_dir, args)
         t1 = time.time()
         tot_ins_time += t1-t0
         timing_file.write(f'{batch_date}|insert|{tot_ins_time:.6f}\n')
@@ -85,7 +99,7 @@ def run_batch_updates(start_date, end_date, timing_file, args):
                     print(f'> {result} changes')
             tot_del_time += duration
         t0 = time.time()
-        load_by_restpp(f'delete_edge{header}', args.data_dir/'deletes', DEL_EDGES, batch_dir, args.endpoint)
+        load(f'delete_edge', args.data_dir/'deletes', DEL_EDGES, batch_dir, args)
         t1 = time.time()
         tot_del_time += t1 - t0
         batch_date = batch_date + batch_size
@@ -97,10 +111,13 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Batch updates for TigerGraph BI workloads')
     parser.add_argument('data_dir', type=Path, help='The directory to load data from')
     parser.add_argument('--header', action='store_true', help='whether data has the header')
+    parser.add_argument('--cluster', action='store_true', help='load currently on cluster')
     parser.add_argument('--endpoint', type=str, default = 'http://127.0.0.1:9000', help='tigergraph rest port')
     args = parser.parse_args()
 
-    timing_file = open('output/batch_timing.csv', 'w')
+    output = Path('output')
+    output.mkdir(exist_ok=True)
+    timing_file = open(output/'batch_timing.csv', 'w')
     timing_file.write(f'date|operation|time\n')
     network_start_date = date(2012, 11, 29)
     network_end_date = date(2013, 1, 1)
