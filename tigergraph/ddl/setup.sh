@@ -1,23 +1,23 @@
 #!/bin/bash
-PARAM1=$1
-DATA_PATH=${PARAM1:="/data"}
-PARAM2=$2
-QUERY_PATH=${PARAM2:="/queries"}
-PARAM2=$3
-DML_PATH=${PARAM2:="/dml"}
+DDL_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+DATA_PATH=${1:-"/data"}
+QUERY_PATH=${2:-"/queries"}
+DML_PATH=${3:-"/dml"}
 
 echo "==============================================================================="
 echo "Setting up the TigerGraph database"
 echo "-------------------------------------------------------------------------------"
+echo "DDL_PATH: ${DDL_PATH}"
 echo "DATA_PATH: ${DATA_PATH}"
 echo "QUERY_PATH: ${QUERY_PATH}"
+echo "QUERY_PATH: ${DML_PATH}"
 echo "==============================================================================="
 t0=$SECONDS
 #gsql drop all
-gsql schema.gsql
-gsql PUT TokenBank FROM \"/ddl/TokenBank.cpp\"
-gsql PUT ExprFunctions FROM \"/ddl/ExprFunctions.hpp\"
-gsql --graph ldbc_snb load.gsql
+gsql $DDL_PATH/schema.gsql
+gsql PUT TokenBank FROM \"$DDL_PATH/TokenBank.cpp\"
+gsql PUT ExprFunctions FROM \"$DDL_PATH/ExprFunctions.hpp\"
+gsql --graph ldbc_snb $DDL_PATH/load.gsql
 
 echo "==============================================================================="
 echo "Load Data"

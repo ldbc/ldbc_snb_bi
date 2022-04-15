@@ -5,7 +5,7 @@ import argparse
 from multiprocessing import Pool, cpu_count
 import os
 parser = argparse.ArgumentParser(description='Download one partition of data from GCS bucket.')
-parser.add_argument('data',  type=str, choices=['1k', '10k', '30k'], help='data scale factor.')
+parser.add_argument('data',  type=str, choices=['100', '1k', '10k', '30k'], help='data scale factor.')
 parser.add_argument('index', type=int, help='index of the node')
 parser.add_argument('nodes', type=int, help='the total number of nodes')
 parser.add_argument('--thread','-t', type=int, default=4, help='number of threads')
@@ -14,12 +14,14 @@ args = parser.parse_args()
 
 if args.key:
   os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = args.key
-
+"""
 buckets = {
+    '100': 'ldbc_bi',
     '1k': 'ldbc_snb_1t',
     '10k': 'ldbc_snb_10t_v2',
     '30k': 'ldbc_snb_30t_v2',}
 roots = {
+  '100': 'sf100-with-header/',
   '1k': 'sf1k/',
   '10k':'composite-projected-fk/',
   '30k':'composite-projected-fk/'}
@@ -132,3 +134,20 @@ if args.thread > 1:
   with Pool(processes=args.thread) as pool:
     pool.map(download,jobs2)
   print("downloading is done")
+"""
+# download parameter
+if args.data not in ['100'] and args.index != 0:
+  exit()
+
+print("download parameters")
+client = storage.Client()  
+gcs_bucket = client.bucket('ldbc_bi')
+blobs = gcs_bucket.list_blobs(prefix=f'parameters-sf{args.data}')  # Get list of files
+for blob in blobs:
+    if blob.name.endswith("/"):
+      continue
+    file_split = blob.name.split("/")
+    directory = "/".join(file_split[0:-1])
+    Path(directory).mkdir(parents=True, exist_ok=True)
+    blob.download_to_filename(blob.name) 
+print("download parameters done")

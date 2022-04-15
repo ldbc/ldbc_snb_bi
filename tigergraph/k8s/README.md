@@ -7,25 +7,21 @@ Pre-requisites on local destop
 * command line tool for GCP or AWS: `gcloud` or `aws-cli`. 
 
 ## Create the cluster
-On GKE, 
+On GKE, [create a container cluster](https://cloud.google.com/sdk/gcloud/reference/container/clusters/create) specifying machine type, number of nodes, disk size and disk type. For example, the following create a 2-node cluster, 
 ```bash
-gcloud container clusters create [cluster name] -m [machine type] --num-nodes=[number of nodes] --disk-size [disk size in GB] --disk-type=[disk type]
+gcloud container clusters create snb-bi-tg --machine-type n2-highmem-32 --num-nodes=2 --disk-size 300 --disk-type=pd-ssd
 ```
-For example, the following create a 2-node cluster,
-```bash
-gcloud container clusters create snb-tg -m n2-highmem-16 --num-nodes=2 --disk-size 100 --disk-type=pd-ssd
-```
-On EKS 
+On EKS, 
 ```bash
 eksctl create cluster --name test --region us-east-2 --nodegroup-name tgtest --node-type r5.xlarge --nodes 2 --instance-prefix tg --instance-name eks-test 
 ```
 
 ## deploy the containers
-First, deply the containers on the cluter using a script `tg` from `tigergraph/ecosys` repo. The usage of the script can be listed using `tg` command. Here, we used the default namesapce, which is `default`.
+First, deply the containers on the cluter using the script `tg` from `tigergraph/ecosys` repo. The cpu and memory here is used to depoly pods across different vms, we suggest persistent volume, cpu and memory are ~20% smaller than a single vm, so each vm has one pod. The usage of the script can be listed using `./tg` command. Here, we used the default namesapce `default`.
 ```bash
 git clone https://github.com/tigergraph/ecosys.git
 cd ecosys/k8s
-./tg gke kustomize -s 2 --pv 200 --cpu 8 --mem 80 -l [license string]
+./tg gke kustomize -s 2 --pv 280 --cpu 30 --mem 200 -l [license string]
 # for GKE
 kubectl apply -f ./deploy/tigergraph-gke.yaml 
 # for EKS
@@ -35,41 +31,33 @@ kubectl apply -f ./deploy/tigergraph-eks.yaml
 ## Verify deployment
 Depolyment can take several minutes. Use `kubectl get pod` to verify the deployment. An example output is
 ```
-NAME               READY   STATUS    RESTARTS   AGE
-pod/tigergraph-0   1/1     Running   0          11m
-pod/tigergraph-1   1/1     Running   0          9m20s
+NAME              READY   STATUS    RESTARTS   AGE
+installer-cztjf   1/1     Running   0          5m23s
+tigergraph-0      1/1     Running   0          5m24s
+tigergraph-1      1/1     Running   0          3m11s
 ``` 
 ## Download data
 The following scripts start a background process in each pod to download data 
 ```bash
-export n=2 #number of pods or nodes
-export sf=1k 
-export thread=1
-cd ..
-tar -cf tmp.tar queries ddl dml k8s bi.py batches.py
-cd k8s
-
-for i in $( seq 0 $((n-1)) ); do
-  echo "tigergraph-$i: Upload scripts"
-  kubectl cp ../tmp.tar tigergraph-${i}:tmp.tar 
-  echo "tigergraph-$i: Start download"  
-  kubectl exec tigergraph-${i} -- bash -c "tar -xf tmp.tar; bash download.sh  $sf $i $n $thread > log.download 2> /dev/null &"  
-done
+./download.sh
 ```
-
-To check the data downloading status use
+To check if the data is downloaded successfully 
 ```bash
-for i in $( seq 0 $((n-1)) ); do
-  echo "tigergraph-$i:"
-  kubectl exec tigergraph-${i} -- bash -c "tail -1 log.download"
-done
+kubectl exec -it tigergraph-0 -- bash
+grun all 'tail ~/log.download' # last line should be 'download and decompress finished'
+grun all 'du -sh  ~/tigergraph/data/sf100/' # The data should be in correct size
 ```
 
 ## Run benchmark 
 
-First log into the 
+First log into the k8s cluster 
 ```bash
-kubectl exec -i --tty tigergraph-0 -- bash
+kubectl exec -it tigergraph-0 -- bash
+```
+
+In the container, run (It is recommended to run scripts in the background because it usualy takes long time for large scale factors)
+```bash
+nohup ./k8s/setup.sh > log.setup 2>&1 < /dev/null &
 ```
 
 
@@ -81,5 +69,5 @@ kubectl delete all -l app=tigergraph
 kubectl delete pvc -l app=tigergraph
 kubectl delete namespace -n default
 # to delete GKE cluster
-gcloud container clusters delete snb-tg
+gcloud container clusters delete snb-bi-tg
 ```
