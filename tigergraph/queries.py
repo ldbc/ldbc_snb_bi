@@ -7,7 +7,7 @@ import re
 from datetime import datetime, timedelta
 import os
 
-# query timeout value in seconds
+# query timeout value in miliseconds
 HEADERS = {'GSQL-TIMEOUT': '36000000'}
 
 # ================ BEGIN: Variables and Functions from Cypher ========================
