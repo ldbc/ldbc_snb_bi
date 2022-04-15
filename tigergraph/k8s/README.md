@@ -66,11 +66,20 @@ nohup ./k8s/queries.sh > log.queries 2>&1 < /dev/null &
 
 To run batch updates
 ```bash
-nohup ./k8s/batches.sh > log.queries 2>&1 < /dev/null &
+nohup ./k8s/batches.sh > log.batches 2>&1 < /dev/null &
 ```
 
+To run benchmark
+```bash
+nohup ./k8s/benchmark.sh > log.benchmark 2>&1 < /dev/null &
+```
 
-## Clean up
+To reset database
+```bash
+gsql drop all
+```
+
+## Release the cluter
 ```bash
 # to delete the K8S pods and volumes
 kubectl delete all -l app=tigergraph
