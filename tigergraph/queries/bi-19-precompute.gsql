@@ -1,4 +1,4 @@
-CREATE OR REPLACE QUERY bi19precompute() syntax v2 {
+CREATE OR REPLACE DISTRIBUTED QUERY bi19precompute() syntax v2 {
   MinAccum<VERTEX<Person>> @creator, @replyto;
   SetAccum<VERTEX<Person>> @neighbor;
   MapAccum<VERTEX<Person>, SumAccum<UINT>> @replyToCount;  
