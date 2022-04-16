@@ -1,8 +1,8 @@
 # TigerGraph implementation on cluster using K8S
 ## Overview
-The benchmark for SF-1k and larger are performed in cluster mode and impletemented using (kubernetes)[https://kubernetes.io] (K8S). The cluster can be easily created on Google Kubernetes Engine (GKE) on Google Cloud Platform (GCP),  or Amazon Elastic Kubernetes Service (EKS) on Amazon Web Service (AWS). 
+The benchmark for SF-100 and larger can be performed on clusters using [kubernetes (k8s)](https://kubernetes.io). The current setup uses GKE (Google Kubernetes Engine) on Google Cloud. The scripts also support EKS on AWS, and Azure cloud. 
 
-Pre-requisites on local destop
+Pre-requisites on local desktop
 * `kubectl`
 * command line tool for GCP or AWS: `gcloud` or `aws-cli`. 
 
@@ -16,8 +16,8 @@ On EKS,
 eksctl create cluster --name test --region us-east-2 --nodegroup-name tgtest --node-type r5.xlarge --nodes 2 --instance-prefix tg --instance-name eks-test 
 ```
 
-## deploy the containers
-First, deply the containers on the cluter using the script `tg` from `tigergraph/ecosys` repo. The cpu and memory here is used to depoly pods across different vms, we suggest persistent volume, cpu and memory are ~20% smaller than a single vm, so each vm has one pod. The usage of the script can be listed using `./tg` command. Here, we used the default namesapce `default`.
+## Deploy TG containers
+First, deply the containers using the script `tg` from [tigergraph/ecosys](https://github.com/tigergraph/ecosys.git). We suggest the allocation of persistent volume, cpu and memory to be ~20% smaller than a single machine, so each machine has exactly one pod. The usage of script `tg` can be shown by running it without any arguments.
 ```bash
 git clone https://github.com/tigergraph/ecosys.git
 cd ecosys/k8s
@@ -41,9 +41,8 @@ Fill in the parameters in `vars.sh`. Run the following script to start a backgro
 ```bash
 ./download.sh
 ```
-To check if the data is downloaded successfully 
+To check if the data is downloaded successfully, log into the cluster using `kubectl exec -it tigergraph-0 -- bash` and then run
 ```bash
-kubectl exec -it tigergraph-0 -- bash
 grun all 'tail ~/log.download' # last line should be 'download and decompress finished'
 grun all 'du -sh  ~/tigergraph/data/sf100/' # The data should be in correct size
 ```
