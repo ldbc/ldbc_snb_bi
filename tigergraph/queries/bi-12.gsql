@@ -1,4 +1,4 @@
-CREATE OR REPLACE DISTRIBUTED QUERY bi12(DATETIME startDate, INT lengthThreshold, SET<STRING> languages) SYNTAX _v2 {
+CREATE OR REPLACE DISTRIBUTED QUERY bi12(DATETIME startDate, INT lengthThreshold, SET<STRING> languages) SYNTAX v2 {
 
   TYPEDEF TUPLE <UINT messageCount, UINT personCount> RESULT;
   MapAccum<UINT, UINT> @@personCount;
