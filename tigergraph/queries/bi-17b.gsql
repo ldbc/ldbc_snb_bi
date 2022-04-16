@@ -1,3 +1,4 @@
+// This query is sub-optimal
 CREATE OR REPLACE DISTRIBUTED QUERY bi17(STRING tag, INT delta) SYNTAX v2 {
   TYPEDEF TUPLE <UINT messageCount, UINT person1Id> RESULT;
   HeapAccum<RESULT>(10, messageCount DESC, person1Id ASC) @@result;

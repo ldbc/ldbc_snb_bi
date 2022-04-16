@@ -1,4 +1,4 @@
-CREATE OR REPLACE DISTRIBUTED QUERY bi12(DATETIME startDate, INT lengthThreshold, SET<STRING> languages) SYNTAX v2 {
+CREATE OR REPLACE DISTRIBUTED QUERY bi12(DATETIME startDate, INT lengthThreshold, SET<STRING> languages) SYNTAX _v2 {
 
   TYPEDEF TUPLE <UINT messageCount, UINT personCount> RESULT;
   MapAccum<UINT, UINT> @@personCount;
@@ -7,16 +7,17 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi12(DATETIME startDate, INT lengthThreshold
   INT diff;
   INT startEpoch = datetime_to_epoch(startDate) * 1000;
 
-  persons =
-    SELECT person
-    FROM Person:person -(<HAS_CREATOR)- (Comment|Post):m -(REPLY_OF>*)- Post:p
-    WHERE
+  posts = SELECT p FROM Post:p WHERE p.language IN languages;
+  M = SELECT m FROM posts:p-(<REPLY_OF*)- (Comment|Post):m;
+  M = SELECT m FROM M:m WHERE
       m.content != "" AND
       m.length < lengthThreshold AND
-      m.creationDate > startEpoch AND
-      p.language IN languages
-    ACCUM person.@messageCount += 1
-    POST-ACCUM @@personCount += (person.@messageCount -> 1);
+      m.creationDate > startEpoch;
+  persons =
+    SELECT p
+    FROM M -(HAS_CREATOR>)- Person:p 
+    ACCUM p.@messageCount += 1
+    POST-ACCUM @@personCount += (p.@messageCount -> 1);
 
   allPersons = {Person.*};
   diff = allPersons.size() - persons.size();

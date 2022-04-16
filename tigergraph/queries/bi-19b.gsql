@@ -1,3 +1,4 @@
+# Without precomputation
 # exact solution - lazy Dijkstra
 CREATE OR REPLACE DISTRIBUTED QUERY bi19(VERTEX<City> city1Id, VERTEX<City> city2Id) SYNTAX v2 {
   TYPEDEF TUPLE <UINT person1Id, UINT person2Id, DOUBLE totalWeight> RESULT;
