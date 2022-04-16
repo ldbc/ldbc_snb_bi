@@ -32,19 +32,21 @@
     ```bash
     wget -q https://ldbcouncil.org/ldbc_snb_datagen_spark/social-network-sf0.003-bi-composite-projected-fk.zip
     unzip -q social-network-sf0.003-bi-composite-projected-fk.zip
-    export TG_DATA_DIR=`pwd`/social-network-sf0.003-bi-composite-projected-fk/graphs/csv/bi/composite-projected-fk/
     ```
 
 ## Load data
 
-1. Set `${TG_DATA_DIR}`, `${SF}`(optional), `${TG_LICENSE}` (optional, required for SF-100 and larger) in `scripts/var.sh`. If your CSVs have headers, change `${TG_HEADER}` to `true`.
-
+1. In `scripts/var.sh`, set 
+    * `TG_DATA_DIR` - for sample data, is ``pwd`/social-network-sf0.003-bi-composite-projected-fk/graphs/csv/bi/composite-projected-fk/`
+    * `TG_LICENSE` - optional, trial license is sufficient for SF-30 and smaller. 
+    * `SF` - optional
+    * If your CSVs have headers, set `TG_HEADER` to `true`.
+    
 2. Load the data 
     ```bash
     ./load-in-one-step.sh
     ```
-
-This step may take a while. This step is responisble for defining the schema, loading data, and installing queries. The tigergraph container's terminal can be accessed via using Docker command `docker exec --user tigergraph -it snb-bi-tg bash`. If web browser is availble, you can explore the graph using TigerGraph GraphStudio in the browser: `http://localhost:14240/`.
+    This step may take a while. This step is responisble for defining the schema, loading data, and installing queries. The tigergraph container's terminal can be accessed via using Docker command `docker exec --user tigergraph -it snb-bi-tg bash`. If web browser is availble, you can explore the graph using TigerGraph GraphStudio in the browser: `http://localhost:14240/`.
 
 ## Microbatches
 
