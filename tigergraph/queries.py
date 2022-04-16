@@ -112,10 +112,13 @@ def run_queries(query_variants, results_file, timings_file, args):
         parameters_csv = csv.DictReader(open(args.para / f'bi-{query_variant}.csv'), delimiter='|')
         parameters = [{"name": t[0], "type": t[1]} for t in [f.split(":") for f in parameters_csv.fieldnames]]
         
+        # Q6 use outdegress function, need to make sure rebuild is done
+        if query_num == 6: requests.get(f'{args.endpoint}/rebuildnow', headers=HEADERS)
         for i,query_parameters in enumerate(parameters_csv):
             query_parameters_split = {k.split(":")[0]: v for k, v in query_parameters.items()}
             query_parameters_in_order = f'<{";".join([query_parameters_split[parameter["name"]] for parameter in parameters])}>'
             query_parameters = {k.split(":")[0]: cast_parameter_to_driver_input(v, k.split(":")[1]) for k, v in query_parameters.items()}
+            # Q1 parameter name is conflict with TG data type keyword 'datetime' 
             if query_num == 1: query_parameters = {'date': query_parameters['datetime']}
 
             results, duration = run_query(args.endpoint, query_num, query_parameters)
