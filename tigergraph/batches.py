@@ -64,7 +64,7 @@ def load_by_gsql(job, data_dir, names, batch_dir):
     subprocess.run(f'gsql -g ldbc_snb {gsql}', shell=True)
 
 def run_batch_updates(start_date, end_date, timing_file, args):
-    docker_data = Path('/data')
+    docker_data = Path('/data') if not args.cluster else args.data_dir
     batch_size = timedelta(days=1)
     batch_date = start_date
     while batch_date < end_date:
@@ -111,7 +111,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Batch updates for TigerGraph BI workloads')
     parser.add_argument('data_dir', type=Path, help='The directory to load data from')
     parser.add_argument('--header', action='store_true', help='whether data has the header')
-    parser.add_argument('--cluster', action='store_true', help='load currently on cluster')
+    parser.add_argument('--cluster', action='store_true', help='load concurrently on cluster')
     parser.add_argument('--endpoint', type=str, default = 'http://127.0.0.1:9000', help='tigergraph rest port')
     args = parser.parse_args()
 
