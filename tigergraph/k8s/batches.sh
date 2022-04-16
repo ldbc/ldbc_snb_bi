@@ -11,4 +11,5 @@ else
     HEADER_STR=""
 fi
 
-python3 -u ../batches.py ~/tigergraph/data/sf${SF} --cluster $HEADER_STR
+cd ..
+python3 -u batches.py ~/tigergraph/data/sf${SF} --cluster $HEADER_STR

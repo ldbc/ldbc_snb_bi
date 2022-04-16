@@ -11,4 +11,5 @@ else
     HEADER_STR=""
 fi
 
-python3 -u ../benchmark.py ~/tigergraph/data/sf${SF} --cluster $HEADER_STR --para ~/tigergraph/data/parameters-sf${SF}
+cd ..
+python3 -u benchmark.py ~/tigergraph/data/sf${SF} --cluster $HEADER_STR --para ~/tigergraph/data/parameters-sf${SF}

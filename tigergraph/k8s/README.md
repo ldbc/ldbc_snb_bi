@@ -69,10 +69,12 @@ To run batch updates
 nohup ./k8s/batches.sh > log.batches 2>&1 < /dev/null &
 ```
 
-To run benchmark
+To run benchmark (queries and batch updates)
 ```bash
 nohup ./k8s/benchmark.sh > log.benchmark 2>&1 < /dev/null &
 ```
+
+The outputs are in `~/output` on pod `tigergraph-0`. To download, first compress using tar `tar -cvf output.tar log.benchmark output/` then `kubectl cp tigergraph-0:output.tar output.tar`
 
 To reset database
 ```bash
