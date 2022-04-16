@@ -37,8 +37,10 @@
 ## Load data
 
 1. In `scripts/var.sh`, set 
-    * `TG_DATA_DIR` - a folder containing `initial_snapshot`, `inserts` and `deletes`. 
-        - for the sample data, is `[Download Location]/social-network-sf0.003-bi-composite-projected-fk/graphs/csv/bi/composite-projected-fk/`
+    * `TG_DATA_DIR` - a folder containing `initial_snapshot`, `inserts` and `deletes`. For the sample data, is 
+    ```
+    [Download Location]/social-network-sf0.003-bi-composite-projected-fk/graphs/csv/bi/composite-projected-fk/
+    ```
     * `TG_LICENSE` - optional, trial license is sufficient for SF-30 and smaller.
     * `SF` - optional
     * If your CSVs have headers, set `TG_HEADER` to `true`.
