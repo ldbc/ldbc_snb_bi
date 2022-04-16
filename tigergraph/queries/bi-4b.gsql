@@ -1,3 +1,4 @@
+// sub-optimal
 CREATE OR REPLACE DISTRIBUTED QUERY bi4 (DATETIME date) SYNTAX v2 {
   TYPEDEF TUPLE <UINT personId, STRING personFirstName, STRING personLastName,
     STRING personCreationDate, UINT messageCount> RESULT;
@@ -26,10 +27,14 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi4 (DATETIME date) SYNTAX v2 {
     LIMIT 100;
 
   P = SELECT p FROM popularForums -(HAS_MEMBER>)- Person:p ACCUM p.@inForum += true;
-  M = SELECT m FROM popularForums -(CONTAINER_OF>)- Post -(<REPLY_OF*)- (Comment|Post):m;
-  M = SELECT m FROM M:m WHERE m.creationDate > epoch;
-  tmp = SELECT p FROM M-(HAS_CREATOR>)- Person:p WHERE p.@inForum ACCUM p.@messageCount += 1;
-  tmp = SELECT p FROM P:p
+  tmp =
+    SELECT p
+    FROM popularForums -(CONTAINER_OF>)- Post -(<REPLY_OF*)- (Comment|Post):m -(HAS_CREATOR>)- Person:p
+    WHERE p.@inForum AND m.creationDate > epoch
+    PER(m, p)
+    ACCUM p.@messageCount += 1;
+  tmp = 
+    SELECT p FROM P:p
     ACCUM @@result += RESULT(p.id, p.firstName, p.lastName, ms_to_string(p.creationDate), p.@messageCount);
 
   PRINT @@result as result;
