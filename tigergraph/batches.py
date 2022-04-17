@@ -33,7 +33,7 @@ def load(job, data_dir, names, batch_dir, args):
     if args.cluster:
         load_by_gsql(job, data_dir, names, batch_dir)
     else:
-        load_by_gsql(job, data_dir, names, batch_dir, args.endpoint)
+        load_by_restpp(job, data_dir, names, batch_dir, args.endpoint)
 
 """
 Load data using restpp endpoints

@@ -19,4 +19,4 @@ else
     HEADER_STR=""
 fi
 
-python3 batches.py ${TG_DATA_DIR} ${HEADER_STR}
+python3 batches.py ${TG_DATA_DIR} ${HEADER_STR} --endpoint ${TG_ENDPOINT}

@@ -66,8 +66,9 @@ if [ -z ${TG_LICENSE} ]; then
 else
   echo "Setting the license."
   until docker exec --user tigergraph --interactive --tty ${TG_CONTAINER_NAME} bash -c "export PATH=/home/tigergraph/tigergraph/app/cmd:\$PATH; gadmin license set $TG_LICENSE; gadmin start ctrl; gadmin config apply -y; gadmin restart -y" >/dev/null 2>&1; do
-  echo -n " ."
-  sleep 1
+    echo -n " ."
+    sleep 1
+  done
 fi
 
 echo

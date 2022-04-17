@@ -11,11 +11,11 @@ cd ..
 echo "==============================================================================="
 echo "Restore the TIGERGRAPH database"
 echo "-------------------------------------------------------------------------------"
-echo "TIGERGRAPH_VERSION: ${TIGERGRAPH_VERSION}"
-echo "TIGERGRAPH_CONTAINER_NAME: ${TIGERGRAPH_CONTAINER_NAME}"
+echo "TIGERGRAPH_VERSION: ${TG_VERSION}"
+echo "TIGERGRAPH_CONTAINER_NAME: ${TG_CONTAINER_NAME}"
 echo "==============================================================================="
 
-docker exec --user tigergraph --interactive --tty ${TIGERGRAPH_CONTAINER_NAME} bash -c \
+docker exec --user tigergraph --interactive --tty ${TG_CONTAINER_NAME} bash -c \
   "export PATH=/home/tigergraph/tigergraph/app/cmd:\$PATH; \
   export GSQL_USERNAME=tigergraph; \
   export GSQL_PASSWORD=tigergraph; \

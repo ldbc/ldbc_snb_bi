@@ -13,4 +13,4 @@ if [ ! -d "${TG_PARAMETER}" ]; then
     exit 1
 fi
 
-python3 queries.py --para ${TG_PARAMETER} $@
+python3 queries.py --para ${TG_PARAMETER} --endpoint ${TG_ENDPOINT} $@

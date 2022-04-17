@@ -1,7 +1,7 @@
-export TG_DATA_DIR=`pwd`/social-network-sf0.003-bi-composite-projected-fk/graphs/csv/bi/composite-projected-fk/
-export TG_LICENSE=
-export SF=0.003
-export TG_HEADER=true
+pushd . > /dev/null
+
+cd "$( cd "$( dirname "${BASH_SOURCE[0]:-${(%):-%x}}" )" >/dev/null 2>&1 && pwd )"
+cd ..
 
 export TG_VERSION=latest
 export TG_CONTAINER_NAME=snb-bi-tg
@@ -14,7 +14,4 @@ export TG_WEB_PORT=14240
 export TG_ENDPOINT=http://127.0.0.1:$TG_REST_PORT
 export TG_PARAMETER=../parameters
 
-if [ -z ${TG_DATA_DIR} ]; then
-  echo "Please specify TG_DATA_DIR in scripts/vars.sh!"
-  exit 1
-fi
+popd > /dev/null

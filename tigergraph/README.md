@@ -28,20 +28,19 @@
         --generate-factors \
     ```
 
-2. Or download and use the sample data set:
-
-    ```bash
-    wget -q https://ldbcouncil.org/ldbc_snb_datagen_spark/social-network-sf0.003-bi-composite-projected-fk.zip
-    unzip -q social-network-sf0.003-bi-composite-projected-fk.zip
-    ```
-
 ## Load data
 
-1. In `scripts/var.sh`, set (default is for sample data set)
-    * `TG_DATA_DIR` - required, a folder containing `initial_snapshot`, `inserts` and `deletes`.
+1. Set the `$TG_DATA_DIR`, `$TG_HEADER`, `$TG_LICENSE` environment variables.
+    * `TG_DATA_DIR` - a folder containing `initial_snapshot`, `inserts` and `deletes`.
+    * If your CSVs have headers, set `export TG_HEADER=true`, otherwise set to `false`.
     * `TG_LICENSE` - optional, trial license is used if not specified, sufficient for SF-30 and smaller.
-    * `SF` - optional
-    * If your CSVs have headers, set `TG_HEADER` to `true`.
+    * To download and use the sample data set, run:
+
+        ```bash
+        wget -q https://ldbcouncil.org/ldbc_snb_datagen_spark/social-network-sf0.003-bi-composite-projected-fk.zip
+        unzip -q social-network-sf0.003-bi-composite-projected-fk.zip    
+        . scripts/use-sample-data-set.sh
+        ```
     
 2. Load the data 
     ```bash
