@@ -1,31 +1,36 @@
-# TigerGraph implementation on cluster using K8S
+# benchmark on K8S cluster
 ## Overview
-The benchmark for SF-100 and larger can be performed on clusters using [kubernetes (k8s)](https://kubernetes.io). The current setup uses GKE (Google Kubernetes Engine) on Google Cloud. The scripts also support EKS on AWS, and Azure cloud. 
+Benchmarks on clusters are performed using [kubernetes (k8s)](https://kubernetes.io). The setup uses GKE (Google Kubernetes Engine) on Google Cloud, and also support EKS on AWS. 
 
-Pre-requisites on local desktop
+Pre-requisites on local desktop are
 * `kubectl`
 * command line tool for GCP or AWS: `gcloud` or `aws-cli`. 
 
 ## Create the cluster
-On GKE, [create a container cluster](https://cloud.google.com/sdk/gcloud/reference/container/clusters/create) specifying machine type, number of nodes, disk size and disk type. For example, the following create a 2-node cluster, 
-```bash
-gcloud container clusters create snb-bi-tg --machine-type n2-highmem-32 --num-nodes=2 --disk-size 300 --disk-type=pd-ssd
-```
-On EKS, 
-```bash
+1. [Create GKE container cluster](https://cloud.google.com/sdk/gcloud/reference/container/clusters/create) specifying machine type, number of nodes, disk size and disk type. For example,  
+  ```bash
+  gcloud container clusters create snb-bi-tg --machine-type n2-highmem-32 --num-nodes=2 --disk-size 300 --disk-type=pd-ssd
+  ```
+2. or [create EKS cluster](https://docs.aws.amazon.com/eks/latest/userguide/create-cluster.html),
+  ```bash
+  eksctl create cluster --name test --region us-east-2 --nodegroup-name tgtest --node-type r5.xlarge --nodes 2 --instance-prefix tg --instance-name eks-test 
 eksctl create cluster --name test --region us-east-2 --nodegroup-name tgtest --node-type r5.xlarge --nodes 2 --instance-prefix tg --instance-name eks-test 
-```
+  eksctl create cluster --name test --region us-east-2 --nodegroup-name tgtest --node-type r5.xlarge --nodes 2 --instance-prefix tg --instance-name eks-test 
+  ```
 
 ## Deploy TG containers
-First, deply the containers using the script `tg` from [tigergraph/ecosys](https://github.com/tigergraph/ecosys.git). We suggest the allocation of persistent volume, cpu and memory to be ~20% smaller than a single machine, so each machine has exactly one pod. The usage of script `tg` can be shown by running it without any arguments.
+Deply the containers using the script `k8s/tg` from [tigergraph/ecosys](https://github.com/tigergraph/ecosys.git). The recommended value for persistent volume, cpu and memory are ~20% smaller than those of a single machine. Thus, each machine has exactly one pod.
 ```bash
 git clone https://github.com/tigergraph/ecosys.git
 cd ecosys/k8s
 ./tg gke kustomize -s 2 --pv 280 --cpu 30 --mem 200 -l [license string]
-# for GKE
-kubectl apply -f ./deploy/tigergraph-gke.yaml 
-# for EKS
-kubectl apply -f ./deploy/tigergraph-eks.yaml 
+kubectl apply -f ./deploy/tigergraph-gke.yaml
+```
+
+Or on EKS 
+```bash
+./tg eks kustomize -s 2 --pv 280 --cpu 30 --mem 200 -l [license string]
+kubectl apply -f ./deploy/tigergraph-eks.yaml
 ```
 
 ## Verify deployment
@@ -47,7 +52,7 @@ grun all 'tail ~/log.download' # last line should be 'download and decompress fi
 grun all 'du -sh  ~/tigergraph/data/sf100/' # The data should be in correct size
 ```
 
-## Run benchmark 
+## Run Benchmark 
 First log into the k8s cluster 
 ```bash
 kubectl exec -it tigergraph-0 -- bash
@@ -58,24 +63,16 @@ In the container, run (It is recommended to run scripts in the background becaus
 nohup ./k8s/setup.sh > log.setup 2>&1 < /dev/null &
 ```
 
-To run queries
-```bash
-nohup ./k8s/queries.sh > log.queries 2>&1 < /dev/null &
-```
-
-To run batch updates
-```bash
-nohup ./k8s/batches.sh > log.batches 2>&1 < /dev/null &
-```
-
-To run benchmark (queries and batch updates)
+To run benchmark
 ```bash
 nohup ./k8s/benchmark.sh > log.benchmark 2>&1 < /dev/null &
 ```
 
-The outputs are in `~/output` on pod `tigergraph-0`. To download, first compress using tar `tar -cvf output.tar log.benchmark output/` then `kubectl cp tigergraph-0:output.tar output.tar`
+The `queries.sh` and `batches.sh` can be run in the similar approach. The outputs are in `~/output`. To download, 
+  1. compress using tar `tar -cvf output.tar log.benchmark output/` 
+  2. On local desktop, `kubectl cp tigergraph-0:output.tar output.tar`
 
-To reset database
+To reset TigerGraph database
 ```bash
 gsql drop all
 ```

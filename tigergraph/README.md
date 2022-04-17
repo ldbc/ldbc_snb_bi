@@ -1,6 +1,5 @@
 # LDBC SNB BI TigerGraph/GSQL implementation
-
-** This section is for single-node benchmark. For benchmark on cluster, refer to the k8s setup in `k8s/`.**
+**This section is for single-node benchmark. For benchmark on cluster, refer to the k8s setup in `k8s/`.**
 [TigerGraph](https://www.tigergraph.com) implementation of the [LDBC SNB benchmark](https://github.com/ldbc/ldbc_snb_docs). The scripts are modified from [Old version driver](https://github.com/tigergraph/ecosys/tree/ldbc/ldbc_benchmark/tigergraph/queries_v3)
 
 ## Generating the data set
@@ -27,7 +26,7 @@
         --format-options header=false
     ```
 
-1. To download and use the sample data set, run:
+1. Or download and use the sample data set:
 
     ```bash
     wget -q https://ldbcouncil.org/ldbc_snb_datagen_spark/social-network-sf0.003-bi-composite-projected-fk.zip
@@ -49,7 +48,7 @@
     ```bash
     ./load-in-one-step.sh
     ```
-    This step may take a while. This step is responisble for defining the schema, loading data, and installing queries. The tigergraph container's terminal can be accessed via using Docker command `docker exec --user tigergraph -it snb-bi-tg bash`. If web browser is availble, you can explore the graph using TigerGraph GraphStudio in the browser: `http://localhost:14240/`.
+    This step may take a while, as it is responisble for defining schema, loading data and installing queries. The tigergraph container terminal can be accessed via `docker exec --user tigergraph -it snb-bi-tg bash`. If web browser is availble, TigerGraph GraphStudio can be accessed via `http://localhost:14240/`.
 
 ## Microbatches
 
@@ -76,3 +75,9 @@ scripts/queries.sh --test
 ```
 
 Results are written to `output/results.csv` and `output/time.csv`.
+
+## Benchmarks
+To run Benchmark
+```bash
+scripts/benchmark.sh
+```
