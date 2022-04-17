@@ -30,18 +30,22 @@
 
 ## Load data
 
-1. Set the `$TG_DATA_DIR`, `$TG_HEADER`, `$TG_LICENSE` environment variables.
+1. To download and use the sample data set, run:
+    ```bash
+    wget -q https://ldbcouncil.org/ldbc_snb_datagen_spark/social-network-sf0.003-bi-composite-projected-fk.zip
+    unzip -q social-network-sf0.003-bi-composite-projected-fk.zip    
+    . scripts/use-sample-data-set.sh 
+    ```
+    To use other data sets, adjust variables in `scripts/use-sample-data-set.sh` and run it
     * `TG_DATA_DIR` - a folder containing `initial_snapshot`, `inserts` and `deletes`.
-    * If your CSVs have headers, set `export TG_HEADER=true`, otherwise set to `false`.
     * `TG_LICENSE` - optional, trial license is used if not specified, sufficient for SF-30 and smaller.
-    * To download and use the sample data set, run:
-
+    * If CSV files have headers, set `export TG_HEADER=true`, otherwise set to `false`.  
+    * Run
         ```bash
-        wget -q https://ldbcouncil.org/ldbc_snb_datagen_spark/social-network-sf0.003-bi-composite-projected-fk.zip
-        unzip -q social-network-sf0.003-bi-composite-projected-fk.zip    
         . scripts/use-sample-data-set.sh
         ```
-    
+
+
 2. Load the data 
     ```bash
     ./load-in-one-step.sh
