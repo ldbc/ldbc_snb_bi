@@ -76,7 +76,7 @@ For a test run, use:
 scripts/queries.sh --test
 ```
 
-Results are written to `output/results.csv` and `output/time.csv`.
+Results are written to `output/results.csv` and `output/timings.csv`.
 
 ## Benchmarks
 To run Benchmark
