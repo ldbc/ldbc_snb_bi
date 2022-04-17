@@ -1,7 +1,10 @@
 # LDBC SNB BI TigerGraph/GSQL implementation
-> **This section is for single-node benchmark. For cluster setup, refer to the folder k8s/.**
-[[Old version benhmark scripts]](https://github.com/tigergraph/ecosys/tree/ldbc/ldbc_benchmark/tigergraph/queries_v3).
+> **This section is for single-node benchmark. For cluster setup, refer to the folder k8s.**
+
 [TigerGraph](https://www.tigergraph.com) implementation of the [LDBC SNB benchmark](https://github.com/ldbc/ldbc_snb_docs). 
+
+[[Old Benhmark]](https://github.com/tigergraph/ecosys/tree/ldbc/ldbc_benchmark/tigergraph/queries_v3)
+
 ## Generating the data set
 
 1. The TigerGraph implementation expects the data to be in `composite-projected-fk` CSV layout. To generate data that confirms this requirement, run Datagen with the `--explode-edges` option.  In Datagen's directory (`ldbc_snb_datagen_spark`), issue the following commands. We assume that the Datagen project is built and the `${PLATFORM_VERSION}`, `${DATAGEN_VERSION}` environment variables are set correctly.
@@ -40,7 +43,7 @@
     ```
     [Download Location]/social-network-sf0.003-bi-composite-projected-fk/graphs/csv/bi/composite-projected-fk/
     ```
-    * `TG_LICENSE` - optional, trial license is sufficient for SF-30 and smaller.
+    * `TG_LICENSE` - optional, trial license is used if not specified, sufficient for SF-30 and smaller.
     * `SF` - optional
     * If your CSVs have headers, set `TG_HEADER` to `true`.
     
