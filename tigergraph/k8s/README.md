@@ -1,22 +1,19 @@
 # benchmark on K8S cluster
 ## Overview
-Benchmarks on clusters are performed using [kubernetes (k8s)](https://kubernetes.io). The setup uses GKE (Google Kubernetes Engine) on Google Cloud, and also support EKS on AWS. 
-
-Pre-requisites on local desktop are
+Benchmarks on clusters are performed using [kubernetes (k8s)](https://kubernetes.io). Cluster is created using GKE (Google Kubernetes Engine) on Google Cloud, or EKS on AWS. 
+Pre-requisites are
 * `kubectl`
 * command line tool for GCP or AWS: `gcloud` or `aws-cli`. 
 
 ## Create the cluster
-1. [Create GKE container cluster](https://cloud.google.com/sdk/gcloud/reference/container/clusters/create) specifying machine type, number of nodes, disk size and disk type. For example,  
-  ```bash
-  gcloud container clusters create snb-bi-tg --machine-type n2-highmem-32 --num-nodes=2 --disk-size 300 --disk-type=pd-ssd
-  ```
-2. or [create EKS cluster](https://docs.aws.amazon.com/eks/latest/userguide/create-cluster.html),
-  ```bash
-  eksctl create cluster --name test --region us-east-2 --nodegroup-name tgtest --node-type r5.xlarge --nodes 2 --instance-prefix tg --instance-name eks-test 
+Create [GKE container cluster](https://cloud.google.com/sdk/gcloud/reference/container/clusters/create) specifying machine type, number of nodes, disk size and disk type. For example,  
+```bash
+gcloud container clusters create snb-bi-tg --machine-type n2-highmem-32 --num-nodes=2 --disk-size 300 --disk-type=pd-ssd
+```
+Or create [EKS cluster](https://docs.aws.amazon.com/eks/latest/userguide/create-cluster.html),
+```bash
 eksctl create cluster --name test --region us-east-2 --nodegroup-name tgtest --node-type r5.xlarge --nodes 2 --instance-prefix tg --instance-name eks-test 
-  eksctl create cluster --name test --region us-east-2 --nodegroup-name tgtest --node-type r5.xlarge --nodes 2 --instance-prefix tg --instance-name eks-test 
-  ```
+```
 
 ## Deploy TG containers
 Deply the containers using the script `k8s/tg` from [tigergraph/ecosys](https://github.com/tigergraph/ecosys.git). The recommended value for persistent volume, cpu and memory are ~20% smaller than those of a single machine. Thus, each machine has exactly one pod.
