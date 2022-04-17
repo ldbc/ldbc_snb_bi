@@ -36,7 +36,7 @@
     unzip -q social-network-sf0.003-bi-composite-projected-fk.zip    
     . scripts/use-sample-data-set.sh 
     ```
-    To use other data sets, adjust variables in `scripts/use-sample-data-set.sh` and run it
+    To use other data sets, adjust variables in [scripts/use-sample-data-set.sh](scripts/use-sample-data-set.sh) and run it
     * `TG_DATA_DIR` - a folder containing `initial_snapshot`, `inserts` and `deletes`.
     * `TG_LICENSE` - optional, trial license is used if not specified, sufficient for SF-30 and smaller.
     * If CSV files have headers, set `export TG_HEADER=true`, otherwise set to `false`.  
