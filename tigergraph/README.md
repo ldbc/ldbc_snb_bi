@@ -1,5 +1,5 @@
 # LDBC SNB BI TigerGraph/GSQL implementation
-> **This section is for single-node benchmark. For cluster setup, refer to the folder k8s.**
+> **This section is for single-node benchmark. For cluster setup, refer to [k8s/README.md](./k8s).**
 
 [TigerGraph](https://www.tigergraph.com) implementation of the [LDBC SNB benchmark](https://github.com/ldbc/ldbc_snb_docs). 
 
