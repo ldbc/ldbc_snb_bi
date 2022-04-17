@@ -26,10 +26,9 @@
         --mode bi \
         --output-dir out-sf${SF}/ \
         --generate-factors \
-        --format-options header=false
     ```
 
-1. Or download and use the sample data set:
+2. Or download and use the sample data set:
 
     ```bash
     wget -q https://ldbcouncil.org/ldbc_snb_datagen_spark/social-network-sf0.003-bi-composite-projected-fk.zip
@@ -38,11 +37,8 @@
 
 ## Load data
 
-1. In `scripts/var.sh`, set 
-    * `TG_DATA_DIR` - a folder containing `initial_snapshot`, `inserts` and `deletes`. For the sample data, is 
-    ```
-    [Download Location]/social-network-sf0.003-bi-composite-projected-fk/graphs/csv/bi/composite-projected-fk/
-    ```
+1. In `scripts/var.sh`, set (default is for sample data set)
+    * `TG_DATA_DIR` - required, a folder containing `initial_snapshot`, `inserts` and `deletes`.
     * `TG_LICENSE` - optional, trial license is used if not specified, sufficient for SF-30 and smaller.
     * `SF` - optional
     * If your CSVs have headers, set `TG_HEADER` to `true`.
