@@ -31,26 +31,39 @@
 ## Load data
 
 1. To download and use the sample data set, run:
+
     ```bash
     wget -q https://ldbcouncil.org/ldbc_snb_datagen_spark/social-network-sf0.003-bi-composite-projected-fk.zip
-    unzip -q social-network-sf0.003-bi-composite-projected-fk.zip    
+    unzip -q social-network-sf0.003-bi-composite-projected-fk.zip
     . scripts/use-sample-data-set.sh 
     ```
-    To use other data sets, adjust variables in [scripts/use-sample-data-set.sh](scripts/use-sample-data-set.sh) and run it
+
+    To use other data sets, adjust the variables in [scripts/use-sample-data-set.sh](scripts/use-sample-data-set.sh):
+
     * `TG_DATA_DIR` - a folder containing `initial_snapshot`, `inserts` and `deletes`.
     * `TG_LICENSE` - optional, trial license is used if not specified, sufficient for SF-30 and smaller.
     * If CSV files have headers, set `export TG_HEADER=true`, otherwise set to `false`.  
-    * Run
+    * Run:
+
         ```bash
         . scripts/use-sample-data-set.sh
         ```
 
+1. Load the data:
 
-2. Load the data 
     ```bash
     ./load-in-one-step.sh
     ```
-    This step may take a while, as it is responisble for defining schema, loading data and installing queries. The tigergraph container terminal can be accessed via `docker exec --user tigergraph -it snb-bi-tg bash`. If web browser is availble, TigerGraph GraphStudio can be accessed via `http://localhost:14240/`.
+
+    This step may take a while, as it is responsible for defining the schema, loading the data and installing the queries. The TigerGraph container terminal can be accessed via:
+    
+    ```bash
+    docker exec --user tigergraph -it snb-bi-tg bash
+    ```
+
+    If a web browser is available, TigerGraph GraphStudio can be accessed via <http://localhost:14240/>.
+
+1. The substitution parameters should be generated using the [`paramgen`](../paramgen).
 
 ## Microbatches
 
@@ -79,6 +92,7 @@ scripts/queries.sh --test
 Results are written to `output/results.csv` and `output/timings.csv`.
 
 ## Benchmarks
+
 To run the benchmark, issue:
 
 ```bash

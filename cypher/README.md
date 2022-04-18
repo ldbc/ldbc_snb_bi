@@ -78,6 +78,8 @@ tools/run.py \
     scripts/load-in-one-step.sh
     ```
 
+1. The substitution parameters should be generated using the [`paramgen`](../paramgen).
+
 ## Microbatches
 
 Test loading the microbatches:
