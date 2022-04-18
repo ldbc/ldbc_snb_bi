@@ -12,7 +12,6 @@ export TG_REST_PORT=9000
 export TG_SSH_PORT=14022
 export TG_WEB_PORT=14240
 export TG_ENDPOINT=http://127.0.0.1:$TG_REST_PORT
-export TG_HEADER=false
-export TG_REFRESH_HEADER=false
+export TG_PARAMETER=../parameters
 
 popd > /dev/null

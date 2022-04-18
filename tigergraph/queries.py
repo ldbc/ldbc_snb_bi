@@ -5,11 +5,10 @@ import csv
 import requests
 import re
 from datetime import datetime, timedelta
+import os
 
-parser = argparse.ArgumentParser(description='BI query driver')
-parser.add_argument('mode', type=str, choices=['benchmark', 'validate'], help='mode of the driver')
-parser.add_argument('--endpoint', type=str, default='http://127.0.0.1:9000',help='tigergraph endpoints')
-args = parser.parse_args()
+# query timeout value in miliseconds
+HEADERS = {'GSQL-TIMEOUT': '36000000'}
 
 # ================ BEGIN: Variables and Functions from Cypher ========================
 result_mapping = {
@@ -37,7 +36,7 @@ result_mapping = {
 
 def convert_value_to_string(value, type):
     if type == "ID[]" or type == "INT[]" or type == "INT32[]" or type == "INT64[]":
-        return ";".join([str(int(x)) for x in value])
+        return "[" + ",".join([str(int(x)) for x in value]) + "]"
     elif type == "ID" or type == "INT" or type == "INT32" or type == "INT64":
         return str(int(value))
     elif type == "FLOAT" or type == "FLOAT32" or type == "FLOAT64":
@@ -66,18 +65,18 @@ def cast_parameter_to_driver_input(value, type):
         raise ValueError(f"Parameter type {type} not found")
 # ================ END: Variables and Functions from Cypher ========================
 
-def run_query(query_num, parameters):
+def run_query(endpoint, query_num, parameters):
     start = time.time()
-    response = requests.get(f'{args.endpoint}/query/ldbc_snb/bi{query_num}', 
-        headers={'GSQL-TIMEOUT': '36000000'}, 
-        params=parameters).json()
+    response = requests.get(f'{endpoint}/query/ldbc_snb/bi{query_num}', 
+        headers=HEADERS, params=parameters).json()
     end = time.time()
     if response['error']:
         print(response['message'])
-        return '<>', 0    
+        return '<>', 0
     results, duration = response['results'][0]['result'], end - start
+    # for BI-11, result is a INT
     if isinstance(results, int):
-        return results, duration
+        return f"[<{results}>]", duration
     
     #convert results from [dict()] to [[]] 
     results = [[v for k,v in res.items()] for res in results]
@@ -89,27 +88,80 @@ def run_query(query_num, parameters):
     ]) + "]"
     return results, duration
 
-res = Path('results')
-res.mkdir(exist_ok = True)
-if args.mode == 'validate':
-    res_file = res / 'validation_params.csv'
-elif args.mode == 'benchmark':
-    res_file = res / 'results.csv'
-if res_file.exists(): res_file.unlink()
-fout = open(res_file, 'a')
+def run_queries(query_variants, results_file, timings_file, args):
+    sf = os.environ.get("SF")
+    if not args.skip and ("19a" in query_variants or "19b" in query_variants):
+        print("Precomputing weights for Q19")
+        start = time.time()
+        response = requests.get(f'{args.endpoint}/query/ldbc_snb/bi19precompute', headers=HEADERS).json()
+        duration = time.time() - start
+        timings_file.write(f"{sf}|bi19precompute||{duration:.6f}\n")
+        timings_file.flush()
 
-for query_variant in ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "15a", "15b", "16a", "16b", "17", "18", "19a", "19b", "20"]:
-    print(f"========================= Q{query_variant} =========================")
-    query_num = int(re.sub("[^0-9]", "", query_variant))
-    parameters_csv = csv.DictReader(open(f'../parameters/bi-{query_variant}.csv'), delimiter='|')
-    parameters = [{"name": t[0], "type": t[1]} for t in [f.split(":") for f in parameters_csv.fieldnames]]
-    
-    for query_parameters in parameters_csv:
-        query_parameters = {k.split(":")[0]: cast_parameter_to_driver_input(v, k.split(":")[1]) for k, v in query_parameters.items()}
-        query_parameters_in_order = f'<{";".join([convert_value_to_string(query_parameters[parameter["name"]], parameter["type"]) for parameter in parameters])}>'
-        if query_num == 1: query_parameters = {'date': query_parameters['datetime']}
-        results, duration = run_query(query_num, query_parameters)
-        fout.write(f"{query_num}|{query_variant}|{query_parameters_in_order}|{results}\n")
-        fout.flush()
-        break
+    if not args.skip and "20" in query_variants:
+        print("Precomputing weights for Q20")
+        start = time.time()
+        response = requests.get(f'{args.endpoint}/query/ldbc_snb/bi20precompute', headers=HEADERS).json()
+        duration = time.time() - start
+        timings_file.write(f"{sf}|bi20precompute||{duration:.6f}\n")
+        timings_file.flush()
+
+    for query_variant in query_variants:
+        print(f"========================= Q{query_variant} =========================")
+        query_num = int(re.sub("[^0-9]", "", query_variant))
+        parameters_csv = csv.DictReader(open(args.para / f'bi-{query_variant}.csv'), delimiter='|')
+        parameters = [{"name": t[0], "type": t[1]} for t in [f.split(":") for f in parameters_csv.fieldnames]]
         
+        # Q6 use outdegress function, need to make sure rebuild is done
+        if query_num == 6: requests.get(f'{args.endpoint}/rebuildnow', headers=HEADERS)
+        for i,query_parameters in enumerate(parameters_csv):
+            query_parameters_split = {k.split(":")[0]: v for k, v in query_parameters.items()}
+            query_parameters_in_order = f'<{";".join([query_parameters_split[parameter["name"]] for parameter in parameters])}>'
+            query_parameters = {k.split(":")[0]: cast_parameter_to_driver_input(v, k.split(":")[1]) for k, v in query_parameters.items()}
+            # Q1 parameter name is conflict with TG data type keyword 'datetime' 
+            if query_num == 1: query_parameters = {'date': query_parameters['datetime']}
+
+            results, duration = run_query(args.endpoint, query_num, query_parameters)
+
+            results_file.write(f"{query_num}|{query_variant}|{query_parameters_in_order}|{results}\n")
+            results_file.flush()
+            timings_file.write(f"{sf}|{query_variant}|{query_parameters_in_order}|{duration:.6f}\n")
+            timings_file.flush()
+            # test run: 1 query, regular run: 10 queries
+            if args.test or i == 9:
+                break
+    
+    if not args.skip and ("19a" in query_variants or "19b" in query_variants):
+        print("Clean weights for Q19")
+        start = time.time()
+        response = requests.get(f'{args.endpoint}/query/ldbc_snb/bi19cleanup', headers=HEADERS).json()
+        duration = time.time() - start
+        timings_file.write(f"{sf}|bi19cleanup||{duration:.6f}\n")
+        timings_file.flush()
+
+    if not args.skip and "20" in query_variants:
+        print("Clean weights for Q20")
+        start = time.time()
+        response = requests.get(f'{args.endpoint}/query/ldbc_snb/bi20cleanup', headers=HEADERS).json()
+        duration = time.time() - start
+        timings_file.write(f"{sf}|bi20cleanup||{duration:.6f}\n")
+        timings_file.flush()
+
+# main functions
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='BI query driver')
+    parser.add_argument('--para', type=Path, default=Path('../parameters'), help='parameter folder')
+    parser.add_argument('--skip', action='store_true', help='skip precompute')
+    parser.add_argument('--test', action='store_true', help='test mode only run one time')
+    parser.add_argument('--endpoint', type=str, default='http://127.0.0.1:9000',help='tigergraph endpoints')
+    args = parser.parse_args()
+    
+    output = Path('output')
+    output.mkdir(exist_ok=True)
+    results_file = open(output/'results.csv', 'w')
+    timings_file = open(output/'timings.csv', 'w')
+    timings_file.write(f"sf|q|parameters|time\n")
+    query_variants = ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "15a", "15b", "16a", "16b", "17", "18", "19a", "19b", "20"]
+    run_queries(query_variants, results_file, timings_file, args)
+    results_file.close()
+    timings_file.close()

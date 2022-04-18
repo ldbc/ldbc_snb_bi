@@ -1,23 +1,28 @@
 #!/bin/bash
-PARAM1=$1
-DATA_PATH=${PARAM1:="/data"}
-PARAM2=$2
-QUERY_PATH=${PARAM2:="/queries"}
-PARAM2=$3
-DML_PATH=${PARAM2:="/dml"}
+DDL_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+DATA_PATH=${1:-"/data"}
+QUERY_PATH=${2:-"/queries"}
+DML_PATH=${3:-"/dml"}
 
 echo "==============================================================================="
 echo "Setting up the TigerGraph database"
 echo "-------------------------------------------------------------------------------"
+echo "DDL_PATH: ${DDL_PATH}"
 echo "DATA_PATH: ${DATA_PATH}"
 echo "QUERY_PATH: ${QUERY_PATH}"
+echo "QUERY_PATH: ${DML_PATH}"
 echo "==============================================================================="
-
+t0=$SECONDS
 #gsql drop all
-gsql create_schema.gsql
+gsql $DDL_PATH/schema.gsql
+gsql PUT TokenBank FROM \"$DDL_PATH/TokenBank.cpp\"
+gsql PUT ExprFunctions FROM \"$DDL_PATH/ExprFunctions.hpp\"
+gsql --graph ldbc_snb $DDL_PATH/load.gsql
 
-gsql --graph ldbc_snb tmp.gsql
-
+echo "==============================================================================="
+echo "Load Data"
+echo "-------------------------------------------------------------------------------"
+t1=$SECONDS
 STATIC_PATH=$DATA_PATH/initial_snapshot/static
 DYNAMIC_PATH=$DATA_PATH/initial_snapshot/dynamic
 
@@ -56,29 +61,45 @@ gsql --graph ldbc_snb RUN LOADING JOB load_dynamic USING \
   file_Post_hasTag_Tag=\"$DYNAMIC_PATH/Post_hasTag_Tag\", \
   file_Post_isLocatedIn_Country=\"$DYNAMIC_PATH/Post_isLocatedIn_Country\"
 
-gsql --graph ldbc_snb PUT ExprFunctions FROM \"$QUERY_PATH/ExprFunctions.hpp\"
+echo "==============================================================================="
+echo "Install Query"
+echo "-------------------------------------------------------------------------------"
+t2=$SECONDS
 
 for i in $(seq 1 20); do
   gsql --graph ldbc_snb $QUERY_PATH/bi-${i}.gsql
 done
 
-gsql --graph ldbc_snb $QUERY_PATH/pre-19.gsql
-gsql --graph ldbc_snb $QUERY_PATH/pre-20.gsql
+gsql --graph ldbc_snb $QUERY_PATH/bi-19-precompute.gsql
+gsql --graph ldbc_snb $QUERY_PATH/bi-20-precompute.gsql
+gsql --graph ldbc_snb $QUERY_PATH/bi-19-cleanup.gsql
+gsql --graph ldbc_snb $QUERY_PATH/bi-20-cleanup.gsql
 
 gsql --graph ldbc_snb $DML_PATH/del_Comment.gsql
 gsql --graph ldbc_snb $DML_PATH/del_Forum.gsql
 gsql --graph ldbc_snb $DML_PATH/del_Person.gsql
 gsql --graph ldbc_snb $DML_PATH/del_Post.gsql
 
-gsql --graph ldbc_snb 'INSTALL QUERY *'
+gsql --graph ldbc_snb INSTALL QUERY ALL
+t3=$SECONDS
 
-echo '================== Pre-computation for BI 19 and 20 =========================='
-gsql -g ldbc_snb 'RUN QUERY pre19()'
-gsql -g ldbc_snb 'RUN QUERY pre20()'
-
-echo '====================== Data Statistics (optional) ============================'
+echo "==============================================================================="
+echo "Data Statisitcs Check (Optional)"
+echo "-------------------------------------------------------------------------------"
 echo 'update delta ...'
 curl -s -H "GSQL-TIMEOUT:2500000" "http://127.0.0.1:9000/rebuildnow"
+echo "Vertex statistics:"
 curl -X POST "http://127.0.0.1:9000/builtins/ldbc_snb" -d  '{"function":"stat_vertex_number","type":"*"}'
+echo
+echo
+echo "Edge statistics:"
 curl -X POST "http://127.0.0.1:9000/builtins/ldbc_snb" -d  '{"function":"stat_edge_number","type":"*"}'
 echo
+
+echo
+echo "====================================================================================="
+echo "TigerGraph database is ready for benchmark"
+echo "Schema setup:       $((t1-t0)) s"
+echo "Load Data:          $((t2-t1)) s"
+echo "Query install:      $((t3-t2)) s"
+echo "====================================================================================="

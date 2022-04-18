@@ -1,0 +1,4 @@
+CREATE OR REPLACE DISTRIBUTED QUERY bi19cleanup() syntax v2 {
+    S = {Person.*};
+    DELETE e FROM S:v1 -(KNOWS19:e)- Person:v2;
+}

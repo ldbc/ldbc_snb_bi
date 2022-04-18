@@ -13,8 +13,8 @@ echo "Loading the TIGERGRAPH database"
 echo "-------------------------------------------------------------------------------"
 echo "TG_CONTAINER_NAME: ${TG_CONTAINER_NAME}"
 echo "TG_VERSION: ${TG_VERSION}"
-echo "TG_DDL_DIR: ${TG_DDL_DIR}"
 echo "TG_DATA_DIR (on the host machine): ${TG_DATA_DIR}"
+echo "TG_DDL_DIR: ${TG_DDL_DIR}"
 echo "TG_QUERIES_DIR: ${TG_QUERIES_DIR}"
 echo "TG_DML_DIR: ${TG_DML_DIR}"
 echo "==============================================================================="
@@ -60,6 +60,16 @@ until docker exec --user tigergraph --interactive --tty ${TG_CONTAINER_NAME} /ho
   echo -n " ."
   sleep 1
 done
+
+if [ -z ${TG_LICENSE} ]; then
+  echo "Trial license is used. For SF-100 and larger you need to provide a license by setting \$TG_LICENSE in scripts/vars.sh"
+else
+  echo "Setting the license."
+  until docker exec --user tigergraph --interactive --tty ${TG_CONTAINER_NAME} bash -c "export PATH=/home/tigergraph/tigergraph/app/cmd:\$PATH; gadmin license set $TG_LICENSE; gadmin start ctrl; gadmin config apply -y; gadmin restart -y" >/dev/null 2>&1; do
+    echo -n " ."
+    sleep 1
+  done
+fi
 
 echo
 echo "All done."

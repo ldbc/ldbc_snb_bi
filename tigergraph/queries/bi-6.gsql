@@ -1,3 +1,5 @@
+// outdegree function requires rebuild is done
+// To check the rebuild is done using command: curl -s -H "GSQL-TIMEOUT:2500000" "http://127.0.0.1:9000/rebuildnow"  
 CREATE OR REPLACE DISTRIBUTED QUERY bi6(STRING tag) SYNTAX v2 {
   TYPEDEF TUPLE <UINT personId, UINT authorityScore> RESULT;
   HeapAccum<RESULT>(100, authorityScore DESC, personId ASC) @@result;

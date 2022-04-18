@@ -16,9 +16,9 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi16(STRING tagA, DATETIME dateA,
     FROM Tag:t -(<HAS_TAG)- (Comment|Post):m -(HAS_CREATOR>)- Person:p
     WHERE
       t.name == tagA AND
-      year(m.creationDate) == yearA AND
-      month(m.creationDate) == monthA AND
-      day(m.creationDate) == dayA
+      year(epoch_to_datetime(m.creationDate/1000)) == yearA AND
+      month(epoch_to_datetime(m.creationDate/1000)) == monthA AND
+      day(epoch_to_datetime(m.creationDate/1000)) == dayA
     ACCUM p.@messageCountA += 1;
   tmp = SELECT p
     FROM personsA:f -(KNOWS)- personsA:p
@@ -31,9 +31,9 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi16(STRING tagA, DATETIME dateA,
     FROM Tag:t -(<HAS_TAG)- (Comment|Post):m -(HAS_CREATOR>)- Person:p
     WHERE
       t.name == tagB AND
-      year(m.creationDate) == yearB AND
-      month(m.creationDate) == monthB AND
-      day(m.creationDate) == dayB
+      year(epoch_to_datetime(m.creationDate/1000)) == yearB AND
+      month(epoch_to_datetime(m.creationDate/1000)) == monthB AND
+      day(epoch_to_datetime(m.creationDate/1000)) == dayB
     ACCUM p.@messageCountB += 1;
   tmp = SELECT p
     FROM personsB:f -(KNOWS)- personsB:p

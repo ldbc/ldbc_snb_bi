@@ -1,3 +1,4 @@
+// This query is sub-optimal
 CREATE OR REPLACE DISTRIBUTED QUERY bi17(STRING tag, INT delta) SYNTAX v2 {
   TYPEDEF TUPLE <UINT messageCount, UINT person1Id> RESULT;
   HeapAccum<RESULT>(10, messageCount DESC, person1Id ASC) @@result;
@@ -16,6 +17,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi17(STRING tag, INT delta) SYNTAX v2 {
   # person1 id in message2
   SetAccum<UINT> @person1Id;
   MapAccum<UINT, SumAccum<UINT>> @@messageCount;
+  UINT deltaInMs = delta * 60 * 60 * 1000;
   messagesWithTag =
     SELECT m
     FROM Tag:t -(<HAS_TAG)- (Comment|Post):m
@@ -54,7 +56,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi17(STRING tag, INT delta) SYNTAX v2 {
     ACCUM 
       FOREACH f IN m2.@Forum1 DO
         FOREACH (p1,m1date) IN @@Forum2Creator.get(f) DO
-          IF datetime_add(m1date, INTERVAL delta HOUR) < m2.creationDate 
+          IF m1date + deltaInMs < m2.creationDate 
                AND (NOT m2.@hasMember.contains(p1))   
               THEN 
               m2.@person1Id += p1.id
