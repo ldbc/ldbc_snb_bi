@@ -13,11 +13,14 @@ FROM
     ORDER BY diff, countryName
     LIMIT 20),
     (SELECT
-        personId,
+        personNumFriends.personId,
         frequency AS freq,
         abs(frequency - (SELECT percentile_disc(0.55) WITHIN GROUP (ORDER BY frequency) FROM personNumFriends)) AS diff
     FROM personNumFriends
-    ORDER BY diff, personId
+    -- only keep persons which exist in the benchmark's time window
+    JOIN Person_window
+      ON Person_window.personId = personNumFriends.personId
+    ORDER BY diff, personNumFriends.personId
     LIMIT 50),
     (SELECT
         tagClassName,

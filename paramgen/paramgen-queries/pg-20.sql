@@ -10,7 +10,12 @@ FROM
     FROM companyNumEmployees
     ORDER BY diff, companyId
     LIMIT 50) comp,
-    (SELECT DISTINCT person2Id FROM PersonDisjointEmployerPairs) pers2
+    (SELECT DISTINCT person2Id
+     FROM PersonDisjointEmployerPairs
+    -- only keep persons which exist in the benchmark's time window
+     JOIN Person_window
+       ON Person_window.personId = PersonDisjointEmployerPairs.person2Id
+    ) pers2
 WHERE NOT EXISTS (SELECT 1
         FROM PersonDisjointEmployerPairs aj
         WHERE aj.companyId = comp.companyId

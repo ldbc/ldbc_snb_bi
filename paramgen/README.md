@@ -38,6 +38,12 @@ The paramgen implements [parameter curation](https://research.vu.nl/en/publicati
     cp -r ${LDBC_SNB_DATAGEN_DIR}/out-sf${SF}/factors/csv/raw/composite-merged-fk/* factors/
     ```
 
+    Or, simply run:
+
+    ```bash
+    scripts/get-factors.sh
+    ```
+
     To download and use the factors of the sample data set, run:
 
     ```bash

@@ -23,12 +23,26 @@ print("============ Loading the temporal tables ============")
 print("Person")
 for parquet_file in [f for f in os.listdir(f"{temporal_parquet_path}Person/") if f.endswith(".snappy.parquet")]:
     print(f"- {parquet_file}")
-    con.execute(f"INSERT INTO person_temporal (SELECT id, to_timestamp(creationDate), to_timestamp(deletionDate) FROM read_parquet('{temporal_parquet_path}Person/{parquet_file}'));")
+    con.execute(f"""
+        INSERT INTO person_window (
+            SELECT id, to_timestamp(creationDate/1000), to_timestamp(deletionDate/1000)
+            FROM read_parquet('{temporal_parquet_path}Person/{parquet_file}')
+            WHERE to_timestamp(creationDate/1000) < TIMESTAMP '2012-11-29'
+              AND to_timestamp(deletionDate/1000) > TIMESTAMP '2013-01-01'
+        );
+        """)
 
 print("Person_knows_Person")
 for parquet_file in [f for f in os.listdir(f"{temporal_parquet_path}Person_knows_Person/") if f.endswith(".snappy.parquet")]:
     print(f"- {parquet_file}")
-    con.execute(f"INSERT INTO knows_temporal (SELECT person1Id, person2Id, to_timestamp(creationDate), to_timestamp(deletionDate) FROM read_parquet('{temporal_parquet_path}Person_knows_Person/{parquet_file}'));")
+    con.execute(f"""
+        INSERT INTO knows_window (
+            SELECT person1Id, person2Id, to_timestamp(creationDate/1000), to_timestamp(deletionDate/1000)
+            FROM read_parquet('{temporal_parquet_path}Person_knows_Person/{parquet_file}')
+            WHERE to_timestamp(creationDate/1000) < TIMESTAMP '2012-11-29'
+              AND to_timestamp(deletionDate/1000) > TIMESTAMP '2013-01-01'
+        );
+        """)
 
 print()
 print("============ Creating materialized views ============")

@@ -21,8 +21,8 @@ DROP TABLE IF EXISTS tagNumMessages;
 DROP TABLE IF EXISTS tagNumPersons;
 
 -- drop temporal entity tables
-DROP TABLE IF EXISTS Person_temporal;
-DROP TABLE IF EXISTS knows_temporal;
+DROP TABLE IF EXISTS Person_window;
+DROP TABLE IF EXISTS knows_window;
 
 -- schema of factor tables
 CREATE TABLE cityNumPersons(cityId bigint not null, cityName varchar not null, frequency bigint not null);
@@ -50,5 +50,5 @@ CREATE TABLE tagNumMessages(tagId bigint not null, tagName varchar not null, fre
 CREATE TABLE tagNumPersons(tagId bigint not null, tagName varchar not null, frequency bigint not null);
 
 -- schema of temporal entity tables
-CREATE TABLE Person_temporal(personId bigint not null, creationDate date not null, deletionDate date not null);
-CREATE TABLE knows_temporal(person1Id bigint not null, person2Id bigint not null, creationDate date not null, deletionDate date not null);
+CREATE TABLE Person_window(personId bigint not null, creationDate date not null, deletionDate date not null);
+CREATE TABLE knows_window(person1Id bigint not null, person2Id bigint not null, creationDate date not null, deletionDate date not null);
