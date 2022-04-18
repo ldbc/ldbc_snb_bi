@@ -5,6 +5,7 @@ Pre-requisites are
 * `kubectl`
 * command line tool for GCP or AWS: `gcloud` or `aws-cli`. 
 
+> Benchmark can also be performed on local clusters without k8s. But the setup is susceptible to errors and safety issues. Brief instructions are in [Section: Benchmark without k8s](##Benchmark_without_k8s)
 ## Create the cluster
 Create [GKE container cluster](https://cloud.google.com/sdk/gcloud/reference/container/clusters/create) specifying machine type, number of nodes, disk size and disk type. For example,  
 ```bash
@@ -83,3 +84,20 @@ kubectl delete namespace -n default
 # to delete GKE cluster
 gcloud container clusters delete snb-bi-tg
 ```
+
+## Benchmark without k8s
+Please refer to [the old benchmark](https://github.com/tigergraph/ecosys/tree/ldbc/ldbc_benchmark/tigergraph/queries_v3) for the details. 
+1. Manually install TigerGraph (may require configuration of the network, log-ins and install pre-requisites)
+2. Adjust the variables values in `vars.sh`
+3. On all machines, download the corresponding part of the data
+    ```bash
+    ./download_one_pod.sh [index_of_node]
+    ```
+4. On one machine, run the setup script
+    ```bash
+    nohup ./k8s/setup.sh > log.setup 2>&1 < /dev/null &
+    ```
+5. On one machine, run the benchmark script
+    ```bash
+    nohup ./k8s/benchmark.sh > log.benchmark 2>&1 < /dev/null &
+    ```
