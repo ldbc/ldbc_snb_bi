@@ -79,7 +79,8 @@ scripts/queries.sh --test
 Results are written to `output/results.csv` and `output/timings.csv`.
 
 ## Benchmarks
-To run Benchmark
+To run the benchmark, issue:
+
 ```bash
 scripts/benchmark.sh
 ```
