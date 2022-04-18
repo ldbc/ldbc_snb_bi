@@ -45,11 +45,19 @@ jobs:
             scripts/get-sample-data-set.sh
             cd ..
       - run:
-          name: Download factors
+          name: Download factors and temporal attributes
           command: |
+            cd paramgen
+            # factors
             wget -q https://ldbcouncil.org/ldbc_snb_datagen_spark/social-network-sf0.003-bi-factors.zip
-            unzip social-network-sf0.003-bi-factors.zip -d .
-            mv social-network-sf0.003-bi-factors/factors/csv/raw/composite-merged-fk/* paramgen/factors/
+            unzip -q social-network-sf0.003-bi-factors.zip
+            cp -r social-network-sf0.003-bi-factors/factors/csv/raw/composite-merged-fk/* factors/
+            # temporal attributes
+            wget -q https://ldbcouncil.org/ldbc_snb_datagen_spark/social-network-sf0.003-bi-composite-merged-fk.zip
+            unzip -q social-network-sf0.003-bi-composite-merged-fk.zip
+            cp -r social-network-sf0.003-bi-composite-merged-fk/graphs/parquet/raw/composite-merged-fk/dynamic/Person/ temporal/
+            cp -r social-network-sf0.003-bi-composite-merged-fk/graphs/parquet/raw/composite-merged-fk/dynamic/Person_knows_Person/ temporal/
+            cd ..
       - run:
           name: Generate parameters
           command: |

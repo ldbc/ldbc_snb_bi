@@ -4,6 +4,8 @@ import duckdb
 csv_path = "factors/"
 con = duckdb.connect(database='factors.duckdb')
 
+temporal_parquet_path = "temporal/"
+
 print("============ Initializing database ============")
 with open(f"paramgen-queries/ddl/schema.sql", "r") as schema_file:
     con.execute(schema_file.read())
@@ -15,6 +17,18 @@ for entity in ["cityNumPersons", "cityPairsNumFriends", "companyNumEmployees", "
     for csv_file in [f for f in os.listdir(f"{csv_path}{entity}/") if f.endswith(".csv")]:
         print(f"- {csv_file}")
         con.execute(f"COPY {entity} FROM '{csv_path}{entity}/{csv_file}' (FORMAT CSV, DELIMITER ',')")
+
+print()
+print("============ Loading the temporal tables ============")
+print("Person")
+for parquet_file in [f for f in os.listdir(f"{temporal_parquet_path}Person/") if f.endswith(".snappy.parquet")]:
+    print(f"- {parquet_file}")
+    con.execute(f"INSERT INTO person_temporal (SELECT id, to_timestamp(creationDate), to_timestamp(deletionDate) FROM read_parquet('{temporal_parquet_path}Person/{parquet_file}'));")
+
+print("Person_knows_Person")
+for parquet_file in [f for f in os.listdir(f"{temporal_parquet_path}Person_knows_Person/") if f.endswith(".snappy.parquet")]:
+    print(f"- {parquet_file}")
+    con.execute(f"INSERT INTO knows_temporal (SELECT person1Id, person2Id, to_timestamp(creationDate), to_timestamp(deletionDate) FROM read_parquet('{temporal_parquet_path}Person_knows_Person/{parquet_file}'));")
 
 print()
 print("============ Creating materialized views ============")

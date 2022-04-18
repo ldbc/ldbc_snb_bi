@@ -10,7 +10,7 @@ The paramgen implements [parameter curation](https://research.vu.nl/en/publicati
     scripts/install-dependencies.sh
     ```
 
-1. Generate factors with the Datagen. In Datagen's directory (`ldbc_snb_datagen_spark`), issue the following commands. We assume that the Datagen project is built and the `${PLATFORM_VERSION}`, `${DATAGEN_VERSION}` environment variables are set correctly.
+1. **Generating the factors and temporal entities with the Datagen:** In Datagen's directory (`ldbc_snb_datagen_spark`), issue the following commands. We assume that the Datagen project is built and the `${PLATFORM_VERSION}`, `${DATAGEN_VERSION}` environment variables are set correctly.
 
     ```bash
     export SF=desired_scale_factor
@@ -31,20 +31,14 @@ The paramgen implements [parameter curation](https://research.vu.nl/en/publicati
         --generate-factors
     ```
 
-1. Cleanup the `factors/` directory and move the factor directories from `out-sf${SF}/factors/csv/raw/composite-merged-fk/` (`cityPairsNumFriends/`, `personDisjointEmployerPairs/`, etc.) to the `factors/` directory in this directory. Assuming that your `${LDBC_SNB_DATAGEN_DIR}` and `${SF}` environment variables are set, run:
+1. **Obtaining the factors:** Cleanup the `factors/` directory and move the factor directories from `out-sf${SF}/factors/csv/raw/composite-merged-fk/` (`cityPairsNumFriends/`, `personDisjointEmployerPairs/`, etc.) to the `factors/` directory. Assuming that your `${LDBC_SNB_DATAGEN_DIR}` and `${SF}` environment variables are set, run:
 
     ```bash
     rm -rf factors/*
     cp -r ${LDBC_SNB_DATAGEN_DIR}/out-sf${SF}/factors/csv/raw/composite-merged-fk/* factors/
     ```
 
-    Or, simply run:
-
-    ```bash
-    scripts/get-factors.sh
-    ```
-
-    To download and use the factors for the sample data set, run:
+    To download and use the factors of the sample data set, run:
 
     ```bash
     rm -rf factors/*
@@ -53,7 +47,31 @@ The paramgen implements [parameter curation](https://research.vu.nl/en/publicati
     cp -r social-network-sf0.003-bi-factors/factors/csv/raw/composite-merged-fk/* factors/
     ```
 
-1. Run:
+1. **Obtaining the temporal entities:** Cleanup the `temporal/` directory and move the `Person` and `Person_knows_Person` temporal directories to the `temporal/` directory. Assuming that your `${LDBC_SNB_DATAGEN_DIR}` and `${SF}` environment variables are set, run:
+
+    ```bash
+    rm -rf temporal/*
+    cp -r ${LDBC_SNB_DATAGEN_DIR}/out-sf${SF}/graphs/parquet/raw/composite-merged-fk/dynamic/Person/ temporal/
+    cp -r ${LDBC_SNB_DATAGEN_DIR}/out-sf${SF}/graphs/parquet/raw/composite-merged-fk/dynamic/Person_knows_Person/ temporal/
+    ```
+
+    Or, simply run:
+
+    ```bash
+    scripts/get-temporal.sh
+    ```
+    
+    To download and use the temporal entities of the sample data set, run:
+
+    ```bash
+    rm -rf temporal/*
+    wget -q https://ldbcouncil.org/ldbc_snb_datagen_spark/social-network-sf0.003-bi-composite-merged-fk.zip
+    unzip -q social-network-sf0.003-bi-composite-merged-fk.zip
+    cp -r social-network-sf0.003-bi-composite-merged-fk/graphs/parquet/raw/composite-merged-fk/dynamic/Person/ temporal/
+    cp -r social-network-sf0.003-bi-composite-merged-fk/graphs/parquet/raw/composite-merged-fk/dynamic/Person_knows_Person/ temporal/
+    ```
+
+1. To run the parameter generator, issue:
 
     ```bash
     scripts/paramgen.sh
