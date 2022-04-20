@@ -4,44 +4,116 @@
 \set startDate '\'2010-11-01\''::timestamp
 \set endDate '\'2010-12-01\''::timestamp
  */
-WITH RECURSIVE
-Paths(dst, path) AS (
-  SELECT Person2id, ARRAY[Person1id, Person2id] FROM Person_knows_Person WHERE Person1id = :person1Id
-  UNION ALL
-  SELECT t.Person2id, array_append(path, t.Person2id)
-  FROM (SELECT * FROM Paths WHERE NOT EXISTS (SELECT * FROM Paths s2 WHERE s2.dst = :person2Id)) s, Person_knows_Person t
-  WHERE s.dst = t.Person1id
-    AND NOT ARRAY[t.Person2id] <@ s.path
-    AND array_length(s.path, 1) <= 4 -- hack: we terminate the recursion when the traversal's depth is > 4
+with recursive
+path(src, dst) as (
+    select Person1id, Person2id from Person_knows_Person
 ),
-SelectedPaths(dst, path) AS (
-  SELECT dst, path
-  FROM Paths
-  WHERE dst = :person2Id
+myForums as (
+  select * from Forum where Forum.creationDate between :startDate AND :endDate
 ),
-Iterator(i) AS (
-  SELECT i FROM (SELECT array_length(path, 1) v FROM SelectedPaths LIMIT 1) l(v), generate_series(1, l.v) t(i)
+shorts(cur, prev, dir, len, iter) as (
+    (
+        select dst, src, 0, 0, 0
+        from path
+        where src = :person1Id
+        union all
+        select src, dst, 1, 0, 0
+        from path
+        where dst = :person2Id
+    )
+    union all
+    (
+        with
+        ss as (select * from shorts),
+        found as (
+            select * from ss s1, ss s2
+            where s1.cur = s2.cur and s1.dir = 0 and s2.dir = 1
+        )
+        select cur, prev, dir, len, ss.iter + 1 from ss where not exists (select * from found)
+        union all
+        select p.dst, p.src, s.dir, s.len + 1, s.iter + 1
+        from path p, ss s
+        where s.dir = 0
+            and p.src = s.cur
+            and not exists (select * from found)
+            and not exists (select * from ss s2 where s2.cur = p.dst and s2.dir = s.dir and s2.len <= s.len + 1 and (s2.len < s.len + 1 or p.src = s2.prev))
+        union all
+        select p.src, p.dst, s.dir, s.len + 1, s.iter + 1
+        from path p, ss s
+        where s.dir = 1
+            and p.dst = s.cur
+            and not exists (select * from found)
+            and not exists (select * from ss s2 where s2.cur = p.src and s2.dir = s.dir and s2.len <= s.len + 1 and (s2.len < s.len + 1 or p.dst = s2.prev))
+    )
+
 ),
-MyForums AS (
-  SELECT * FROM Forum WHERE Forum.creationDate BETWEEN :startDate AND :endDate
+ss(cur, prev, dir, len) as (
+    select cur, prev, dir, len
+    from shorts
+    where iter = (select max(iter) from shorts)
 ),
-PathWeights(dst, path, Score) AS (
-  SELECT p.dst, p.path, SUM(Score)
-  FROM SelectedPaths p, Iterator it, (
-    SELECT 0.0 AS Score
-    UNION ALL
-    SELECT (case when msg.ParentMessageId IS NULL then 1.0 else 0.5 end) AS Score
-    FROM Message msg, Message reply
-    WHERE reply.ParentMessageId = msg.MessageId AND msg.CreatorPersonId = p.path[i] AND reply.CreatorPersonId = p.path[i + 1]
-      AND EXISTS (SELECT * FROM MyForums WHERE msg.ContainerForumId = MyForums.Id)
-    UNION ALL
-    SELECT (case when msg.ParentMessageId IS NULL then 1.0 else 0.5 end) AS Score
-    FROM Message msg, Message reply
-    WHERE reply.ParentMessageId = msg.MessageId AND msg.CreatorPersonId = p.path[i + 1] AND reply.CreatorPersonId = p.path[i]
-      AND EXISTS (SELECT * FROM MyForums WHERE msg.ContainerForumId = MyForums.Id)
-  ) t
-  GROUP BY p.dst, p.path
+inters2(v, l0, l1) as (
+    select s1.cur, s1.len, s2.len from ss s1, ss s2
+    where s1.cur = s2.cur and s1.dir = 0 and s2.dir = 1
+),
+-- handle paths with odd length
+-- we don't need both middle nodes of paths
+inters3(v, l0, l1) as (
+    select v, l0, l1
+    from inters2 i
+    where not exists (
+        select * from ss where ss.cur = i.v and ss.dir = 0 and exists (select * from inters2 i2 where i2.v = ss.prev)
+    )
+),
+inters(v, l0, l1) as (
+    select v, l0, l1 from inters3 where l0 + l1 = (select min(l0 + l1) from inters3)
+),
+path0(s, cur, path, l0, l1, w) as (
+    select i.v, i.v, ARRAY[i.v], l0, l1, 0 from inters i
+    union all
+    select s, ss.prev, array_prepend(ss.prev, path), l0 - 1, l1, w + coalesce(score, 0)
+    from path0 p, ss left join (
+        select sum(score) as score
+        from (
+        select (case when msg.ParentMessageId is null then 1.0 else 0.5 end) AS score
+        from Message msg, Message reply
+        where reply.ParentMessageId = msg.MessageId AND msg.CreatorPersonId = ss.prev AND reply.CreatorPersonId = ss.cur
+        and exists (select * from myForums where msg.ContainerForumId = myForums.Id)
+        union all
+        select (case when msg.ParentMessageId is null then 1.0 else 0.5 end) AS Score
+        from Message msg, Message reply
+        where reply.ParentMessageId = msg.MessageId AND msg.CreatorPersonId = ss.cur AND reply.CreatorPersonId = ss.prev
+        and exists (select * from myForums where msg.ContainerForumId = myForums.Id)
+        )
+    ) t on true
+    where p.cur = ss.cur and p.l0 = ss.len and ss.dir = 0
+),
+path0r(v, path, l, w) as (
+    select s, path, l1, w
+    from path0
+    where l0 = -1
+),
+path1(v, path, l) as (
+    select v, path, l, w from path0r
+    union all
+    select ss.prev, array_append(path, ss.prev), l - 1, w + coalesce(score, 0)
+    from path1 p, ss left join (
+        select sum(score) as score
+        from (
+        select (case when msg.ParentMessageId is null then 1.0 else 0.5 end) AS score
+        from Message msg, Message reply
+        where reply.ParentMessageId = msg.MessageId AND msg.CreatorPersonId = ss.prev AND reply.CreatorPersonId = ss.cur
+        and exists (select * from myForums where msg.ContainerForumId = myForums.Id)
+        union all
+        select (case when msg.ParentMessageId is null then 1.0 else 0.5 end) AS Score
+        from Message msg, Message reply
+        where reply.ParentMessageId = msg.MessageId AND msg.CreatorPersonId = ss.cur AND reply.CreatorPersonId = ss.prev
+        and exists (select * from myForums where msg.ContainerForumId = myForums.Id)
+        )
+    ) t on true
+    where p.v = ss.cur and p.l = ss.len and ss.dir = 1
+),
+finalPaths(path, w) as (
+    select path, w from path1 where l = -1
 )
-SELECT path, Score as Weights
-FROM PathWeights
-ORDER BY Weights DESC, path;
+select * from finalPaths;
