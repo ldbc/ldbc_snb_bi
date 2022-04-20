@@ -14,7 +14,7 @@ args = parser.parse_args()
 
 if args.key:
   os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = args.key
-"""
+
 buckets = {
     '100': 'ldbc_bi',
     '1k': 'ldbc_snb_1t',
@@ -134,7 +134,7 @@ if args.thread > 1:
   with Pool(processes=args.thread) as pool:
     pool.map(download,jobs2)
   print("downloading is done")
-"""
+
 # download parameter
 if args.data not in ['100'] and args.index != 0:
   exit()
