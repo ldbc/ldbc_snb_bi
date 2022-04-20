@@ -29,7 +29,7 @@ result_mapping = {
     12: ["INT32", "INT32"],
     13: ["ID", "INT32", "INT32", "FLOAT32"],
     14: ["ID", "ID", "STRING", "INT32"],
-    15: ["ID[]", "FLOAT32"],
+    15: ["FLOAT32"],
     16: ["ID", "INT32", "INT32"],
     17: ["ID", "INT32"],
     18: ["ID", "INT32"],
