@@ -15,7 +15,7 @@ FROM (
             max(creationDay) AS creationDay,
             tagName,
             frequency AS freq,
-            abs(frequency - (SELECT percentile_disc(0.99) WITHIN GROUP (ORDER BY frequency) FROM creationDayAndTagNumMessages)) diff
+            abs(frequency - (SELECT percentile_disc(1.00) WITHIN GROUP (ORDER BY frequency) FROM creationDayAndTagNumMessages)) diff
          FROM creationDayAndTagNumMessages
          GROUP BY tagName, freq, diff
          ORDER BY diff, md5(tagName)
@@ -25,7 +25,7 @@ FROM (
             min(creationDay) AS creationDay,
             tagName,
             frequency AS freq,
-            abs(frequency - (SELECT percentile_disc(0.98) WITHIN GROUP (ORDER BY frequency) FROM creationDayAndTagNumMessages)) diff
+            abs(frequency - (SELECT percentile_disc(0.995) WITHIN GROUP (ORDER BY frequency) FROM creationDayAndTagNumMessages)) diff
          FROM creationDayAndTagNumMessages
          GROUP BY tagName, freq, diff
          ORDER BY diff, md5(tagName)
