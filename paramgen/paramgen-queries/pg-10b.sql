@@ -12,10 +12,12 @@ FROM
     FROM countryNumPersons
     ORDER BY diff, countryName
     LIMIT 20),
-    (SELECT personId
+    (SELECT personNumFriends.personId
     FROM personNumFriends
+    JOIN Person_window
+      ON Person_window.personId = personNumFriends.personId
     WHERE frequency = 1
-    ORDER BY personId
+    ORDER BY personNumFriends.personId
     LIMIT 50),
     (SELECT
         tagClassName,
