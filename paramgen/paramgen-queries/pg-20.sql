@@ -1,6 +1,6 @@
 SELECT DISTINCT
-     comp.companyName AS 'company:STRING',
-     k3.person2Id AS 'person2Id:ID'
+    comp.companyName AS 'company:STRING',
+    k3.person2Id AS 'person2Id:ID'
 FROM
     (SELECT
         Person_workAt_Company_window.personId AS person1Id,
@@ -12,7 +12,7 @@ FROM
     JOIN Person_workAt_Company_window
       ON Person_workAt_Company_window.companyId = companyNumEmployees.companyId
     ORDER BY diff, Person_workAt_Company_window.companyId
-    LIMIT 400
+    LIMIT 200
     ) comp
 -- ensure that there is a three-hop path
 -- hop 1
@@ -34,4 +34,4 @@ WHERE NOT EXISTS (SELECT 1
           AND work.personId = k3.person2Id
         )
 ORDER BY md5(k3.person2Id), md5(comp.companyId)
-LIMIT 800
+LIMIT 400

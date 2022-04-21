@@ -54,5 +54,5 @@ CREATE TABLE tagNumPersons(tagId bigint not null, tagName varchar not null, freq
 -- schema of temporal entity tables
 CREATE TABLE Person_window(personId bigint not null, creationDate date not null, deletionDate date not null);
 CREATE TABLE Person_studyAt_Univesity_window(personId bigint not null, universityId bigint not null, creationDate date not null, deletionDate date not null);
-CREATE TABLE Person_workAt_Company_window(companyId bigint not null, personId bigint not null, creationDate date not null, deletionDate date not null);
+CREATE TABLE Person_workAt_Company_window(personId bigint not null, companyId bigint not null, creationDate date not null, deletionDate date not null);
 CREATE TABLE knows_window(person1Id bigint not null, person2Id bigint not null, creationDate date not null, deletionDate date not null);
