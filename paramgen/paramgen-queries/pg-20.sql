@@ -12,7 +12,7 @@ FROM
     JOIN Person_workAt_Company_window
       ON Person_workAt_Company_window.companyId = companyNumEmployees.companyId
     ORDER BY diff, Person_workAt_Company_window.companyId
-    LIMIT 200
+    LIMIT 300
     ) comp
 -- ensure that there is a three-hop path
 -- hop 1
