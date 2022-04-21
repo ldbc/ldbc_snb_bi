@@ -20,6 +20,30 @@ for entity in ["cityNumPersons", "cityPairsNumFriends", "companyNumEmployees", "
 
 print()
 print("============ Loading the temporal tables ============")
+print("Person_studyAt_University")
+for parquet_file in [f for f in os.listdir(f"{temporal_parquet_path}Person_studyAt_University/") if f.endswith(".snappy.parquet")]:
+    print(f"- {parquet_file}")
+    con.execute(f"""
+        INSERT INTO person_studyat_univesity_window (
+            SELECT PersonId, UniversityId, to_timestamp(creationDate/1000), to_timestamp(deletionDate/1000)
+            FROM read_parquet('{temporal_parquet_path}Person_studyAt_University/{parquet_file}')
+            WHERE to_timestamp(creationDate/1000) < TIMESTAMP '2012-11-29'
+              AND to_timestamp(deletionDate/1000) > TIMESTAMP '2013-01-01'
+        );
+        """)
+
+print("Person_workAt_Company")
+for parquet_file in [f for f in os.listdir(f"{temporal_parquet_path}Person_workAt_Company/") if f.endswith(".snappy.parquet")]:
+    print(f"- {parquet_file}")
+    con.execute(f"""
+        INSERT INTO Person_workAt_Company_window (
+            SELECT personId, companyId, to_timestamp(creationDate/1000), to_timestamp(deletionDate/1000)
+            FROM read_parquet('{temporal_parquet_path}Person_workAt_Company/{parquet_file}')
+            WHERE to_timestamp(creationDate/1000) < TIMESTAMP '2012-11-29'
+              AND to_timestamp(deletionDate/1000) > TIMESTAMP '2013-01-01'
+        );
+        """)
+
 print("Person")
 for parquet_file in [f for f in os.listdir(f"{temporal_parquet_path}Person/") if f.endswith(".snappy.parquet")]:
     print(f"- {parquet_file}")
@@ -46,7 +70,9 @@ for parquet_file in [f for f in os.listdir(f"{temporal_parquet_path}Person_knows
 
 print()
 print("============ Creating materialized views ============")
-for query_variant in ["2d", "2m", "8d", "8m"]:
+# d: drop
+# m: materialize
+for query_variant in ["2d", "2m", "8d", "8m", "20d", "20m"]:
     print(f"- Q{query_variant}")
     with open(f"paramgen-queries/pg-{query_variant}.sql", "r") as parameter_query_file:
         parameter_query = parameter_query_file.read()
