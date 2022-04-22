@@ -1,30 +1,25 @@
-/* Q15. Trusted connection paths through forums created in a given timeframe
-\set person1Id 21990232564808
-\set person2Id 26388279076936
-\set startDate '\'2010-11-01\''::timestamp
-\set endDate '\'2010-12-01\''::timestamp
+/* Q19. Interaction path between cities
+\set city1Id 608
+\set city1Id 1148
  */
 with recursive
 qs(f, t) as (
-    select :person1Id, :person2Id
+    select p1.id, p2.id
+    from Person p1, Person p2
+    where p1.locationcityid = :city1id and p2.locationcityid = :city2id
 ),
-myForums(id) as (
-    select id from Forum f where f.creationDate between :startDate and :endDate
-),
-mm as (
-    select least(msg.CreatorPersonId, reply.CreatorPersonId) as src, greatest(msg.CreatorPersonId, reply.CreatorPersonId) as dst, sum(case when msg.ParentMessageId is null then 10 else 5 end) as w
-    from Person_knows_Person pp, Message msg, Message reply
-    where true
-          and pp.person1id = msg.CreatorPersonId 
-          and pp.person2id = reply.CreatorPersonId
-          and reply.ParentMessageId = msg.MessageId
-          and exists (select * from myForums f where f.id = msg.containerforumid)
-          and exists (select * from myForums f where f.id = reply.containerforumid)
+weights(src, dst, w) as (
+    select least(m1.creatorpersonid, m2.creatorpersonid) as src,
+           greatest(m1.creatorpersonid, m2.creatorpersonid) as dst,
+           1.0::double precision / count(*)
+    from Person_knows_person pp, Message m1, Message m2
+    where pp.person1id = m1.creatorpersonid and pp.person2id = m2.creatorpersonid and m1.parentmessageid = m2.messageid and m1.creatorpersonid <> m2.creatorpersonid
     group by src, dst
 ),
 path(src, dst, w) as (
-    select pp.person1id, pp.person2id, 10::double precision / (coalesce(w, 0) + 10)
-    from Person_knows_Person pp left join mm on least(pp.person1id, pp.person2id) = mm.src and greatest(pp.person1id, pp.person2id) = mm.dst
+    select src, dst, w from weights
+    union all
+    select dst, src, w from weights
 ),
 shorts(gsrc, dst, w, dead, iter) as (
     select distinct f, f, 0, false, 0 from qs
@@ -70,4 +65,4 @@ ss(gsrc, dst, w, iter) as (
 results(f, t, w) as (
     select qs.f, qs.t , ss.w from qs left join ss on qs.f = ss.gsrc and qs.t = ss.dst
 )
-select min(w) from results;
+select * from results where w = (select min(w) from results) order by f, t;
