@@ -26,6 +26,7 @@
         --mode bi \
         --output-dir out-sf${SF}/ \
         --generate-factors \
+        --format-options compression=gzip
     ```
 
 ## Load data
