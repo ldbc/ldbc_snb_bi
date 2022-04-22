@@ -6,7 +6,7 @@ with recursive
 qs(f, t) as (
     select p1.id, p2.id
     from Person p1, Person p2
-    where p1.locationcityid = :city1id and p2.locationcityid = :city2id
+    where p1.locationcityid = :city1Id and p2.locationcityid = :city2Id
 ),
 weights(src, dst, w) as (
     select least(m1.creatorpersonid, m2.creatorpersonid) as src,
