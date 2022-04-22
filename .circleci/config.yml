@@ -55,8 +55,7 @@ jobs:
             # temporal attributes
             wget -q https://ldbcouncil.org/ldbc_snb_datagen_spark/social-network-sf0.003-bi-composite-merged-fk.zip
             unzip -q social-network-sf0.003-bi-composite-merged-fk.zip
-            cp -r social-network-sf0.003-bi-composite-merged-fk/graphs/parquet/raw/composite-merged-fk/dynamic/Person/ temporal/
-            cp -r social-network-sf0.003-bi-composite-merged-fk/graphs/parquet/raw/composite-merged-fk/dynamic/Person_knows_Person/ temporal/
+            cp -r social-network-sf0.003-bi-composite-merged-fk/graphs/parquet/raw/composite-merged-fk/dynamic/* temporal/
             cd ..
       - run:
           name: Generate parameters

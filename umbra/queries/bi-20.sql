@@ -1,30 +1,18 @@
-/* Q15. Trusted connection paths through forums created in a given timeframe
-\set person1Id 21990232564808
-\set person2Id 26388279076936
-\set startDate '\'2010-11-01\''::timestamp
-\set endDate '\'2010-12-01\''::timestamp
+/* Q20. Recruitment
+\set person2Id 32985348834889
+\set company 'Express_Air'
  */
 with recursive
 qs(f, t) as (
-    select :person1Id, :person2Id
-),
-myForums(id) as (
-    select id from Forum f where f.creationDate between :startDate and :endDate
-),
-mm as (
-    select least(msg.CreatorPersonId, reply.CreatorPersonId) as src, greatest(msg.CreatorPersonId, reply.CreatorPersonId) as dst, sum(case when msg.ParentMessageId is null then 10 else 5 end) as w
-    from Person_knows_Person pp, Message msg, Message reply
-    where true
-          and pp.person1id = msg.CreatorPersonId 
-          and pp.person2id = reply.CreatorPersonId
-          and reply.ParentMessageId = msg.MessageId
-          and exists (select * from myForums f where f.id = msg.containerforumid)
-          and exists (select * from myForums f where f.id = reply.containerforumid)
-    group by src, dst
+    select :person2Id, personid
+    from Person_workat_company pwc, Company c
+    where pwc.companyid = c.id and c.name=:company
 ),
 path(src, dst, w) as (
-    select pp.person1id, pp.person2id, 10::double precision / (coalesce(w, 0) + 10)
-    from Person_knows_Person pp left join mm on least(pp.person1id, pp.person2id) = mm.src and greatest(pp.person1id, pp.person2id) = mm.dst
+    select p1.personid, p2.personid, min(abs(p1.classYear - p2.classYear)) + 1
+    from Person_knows_person pp, Person_studyAt_University p1, Person_studyAt_University p2
+    where pp.person1id = p1.personid and pp.person2id = p2.personid and p1.universityid = p2.universityid
+    group by p1.personid, p2.personid
 ),
 shorts(gsrc, dst, w, dead, iter) as (
     select distinct f, f, 0, false, 0 from qs
@@ -70,4 +58,4 @@ ss(gsrc, dst, w, iter) as (
 results(f, t, w) as (
     select qs.f, qs.t , ss.w from qs left join ss on qs.f = ss.gsrc and qs.t = ss.dst
 )
-select coalesce(min(w), -1) from results;
+select t, w from results where w = (select min(w) from results) order by t;

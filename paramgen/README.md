@@ -77,6 +77,12 @@ The paramgen implements [parameter curation](https://research.vu.nl/en/publicati
     cp -r social-network-sf0.003-bi-composite-merged-fk/graphs/parquet/raw/composite-merged-fk/dynamic/Person_knows_Person/ temporal/
     ```
 
+    To get both the factors and the temporal entities together, run:
+
+    ```bash
+    scripts/get-all.sh
+    ```
+
 1. To run the parameter generator, issue:
 
     ```bash
