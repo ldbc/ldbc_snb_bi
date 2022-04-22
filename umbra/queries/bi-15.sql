@@ -70,4 +70,4 @@ ss(gsrc, dst, w, iter) as (
 results(f, t, w) as (
     select qs.f, qs.t , ss.w from qs left join ss on qs.f = ss.gsrc and qs.t = ss.dst
 )
-select min(w) from results;
+select coalesce(min(w), -1) from results;
