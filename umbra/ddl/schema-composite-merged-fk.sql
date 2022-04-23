@@ -185,13 +185,15 @@ CREATE TABLE Message (
 CREATE TABLE Person_likes_Message (
     creationDate timestamp with time zone NOT NULL,
     PersonId bigint NOT NULL,
-    MessageId bigint NOT NULL
+    MessageId bigint NOT NULL,
+    PRIMARY KEY (PersonId, MessageId)
 ) WITH (storage = paged);
 
 CREATE TABLE Message_hasTag_Tag (
     creationDate timestamp with time zone NOT NULL,
     MessageId bigint NOT NULL,
-    TagId bigint NOT NULL
+    TagId bigint NOT NULL,
+    PRIMARY KEY (MessageId, TagId)
 ) WITH (storage = paged);
 
 CREATE TABLE Country (
