@@ -57,8 +57,10 @@ The paramgen implements [parameter curation](https://research.vu.nl/en/publicati
 
     ```bash
     rm -rf temporal/*
-    cp -r ${LDBC_SNB_DATAGEN_DIR}/out-sf${SF}/graphs/parquet/raw/composite-merged-fk/dynamic/Person/ temporal/
-    cp -r ${LDBC_SNB_DATAGEN_DIR}/out-sf${SF}/graphs/parquet/raw/composite-merged-fk/dynamic/Person_knows_Person/ temporal/
+    cp -r ${LDBC_SNB_DATAGEN_DIR}/out-sf${SF}/graphs/parquet/raw/composite-merged-fk/dynamic/Person                    temporal/
+    cp -r ${LDBC_SNB_DATAGEN_DIR}/out-sf${SF}/graphs/parquet/raw/composite-merged-fk/dynamic/Person_knows_Person       temporal/
+    cp -r ${LDBC_SNB_DATAGEN_DIR}/out-sf${SF}/graphs/parquet/raw/composite-merged-fk/dynamic/Person_studyAt_University temporal/
+    cp -r ${LDBC_SNB_DATAGEN_DIR}/out-sf${SF}/graphs/parquet/raw/composite-merged-fk/dynamic/Person_workAt_Company     temporal/
     ```
 
     Or, simply run:
@@ -73,8 +75,10 @@ The paramgen implements [parameter curation](https://research.vu.nl/en/publicati
     rm -rf temporal/*
     wget -q https://ldbcouncil.org/ldbc_snb_datagen_spark/social-network-sf0.003-bi-composite-merged-fk.zip
     unzip -q social-network-sf0.003-bi-composite-merged-fk.zip
-    cp -r social-network-sf0.003-bi-composite-merged-fk/graphs/parquet/raw/composite-merged-fk/dynamic/Person/ temporal/
-    cp -r social-network-sf0.003-bi-composite-merged-fk/graphs/parquet/raw/composite-merged-fk/dynamic/Person_knows_Person/ temporal/
+    cp -r social-network-sf0.003-bi-composite-merged-fk/graphs/parquet/raw/composite-merged-fk/dynamic/Person                    temporal/
+    cp -r social-network-sf0.003-bi-composite-merged-fk/graphs/parquet/raw/composite-merged-fk/dynamic/Person_knows_Person       temporal/
+    cp -r social-network-sf0.003-bi-composite-merged-fk/graphs/parquet/raw/composite-merged-fk/dynamic/Person_studyAt_University temporal/
+    cp -r social-network-sf0.003-bi-composite-merged-fk/graphs/parquet/raw/composite-merged-fk/dynamic/Person_workAt_Company     temporal/
     ```
 
     To get both the factors and the temporal entities together, run:
