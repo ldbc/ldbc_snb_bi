@@ -1,3 +1,6 @@
+DELETE FROM Comment_Delete_candidates_unique;
+DELETE FROM Post_Delete_candidates_unique;
+
 ----------------------------------------------------------------------------------------------------
 -- DEL1: Remove Person, its personal Forums, and its Message (sub)threads --------------------------
 ----------------------------------------------------------------------------------------------------
@@ -121,8 +124,6 @@ WHERE Forum_hasMember_Person_Delete_candidates.src = Forum_hasMember_Person.Foru
 ----------------------------------------------------------------------------------------------------
 -- DEL6: Remove Post thread ------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------
-DROP TABLE IF EXISTS Post_Delete_candidates_unique;
-CREATE TABLE Post_Delete_candidates_unique(id bigint not null);
 INSERT INTO Post_Delete_candidates_unique
   SELECT DISTINCT id
   FROM Post_Delete_candidates;
@@ -153,8 +154,6 @@ JOIN Post_Delete_candidates
 ----------------------------------------------------------------------------------------------------
 -- DEL7: Remove Comment subthread ------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------
-DROP TABLE IF EXISTS Comment_Delete_candidates_unique;
-CREATE TABLE Comment_Delete_candidates_unique(id bigint not null);
 INSERT INTO Comment_Delete_candidates_unique
   SELECT DISTINCT id
   FROM Comment_Delete_candidates;
