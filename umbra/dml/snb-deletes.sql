@@ -181,7 +181,7 @@ USING (
   WITH RECURSIVE MessagesToDelete AS (
       SELECT id
       FROM Comment_Delete_candidates_unique -- starting from the delete candidate comments
-      UNION
+      UNION ALL
       SELECT ChildComment.MessageId AS id
       FROM MessagesToDelete
       JOIN Message ChildComment
