@@ -4,7 +4,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi15(VERTEX<Person> person1Id, VERTEX<Person
   MapAccum<VERTEX<Person>, SumAccum<UINT>> @replyCount;
   MapAccum<VERTEX<Person>, SumAccum<DOUBLE>> @weight;
   MinAccum<DOUBLE> @@result, @dis;
-  OrAccum @visited, @selected, @next;
+  OrAccum @visited, @next;
   INT startEpoch = datetime_to_epoch(startDate) * 1000;
   INT endEpoch = datetime_to_epoch(endDate) * 1000;
 
@@ -15,16 +15,15 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi15(VERTEX<Person> person1Id, VERTEX<Person
   WHILE S.size() > 0 DO
     S = SELECT t FROM S:s -(KNOWS)- Person:t
       WHERE NOT t.@visited
-      ACCUM s.@neighbor += t, t.@neighbor += s, t.@visited += true;
+      ACCUM t.@visited += true;
     persons = persons UNION S;
   END;
   
+  tmp = SELECT p1 FROM persons:p1 -(KNOWS)- Person:p2 WHERE p2.@visited ACCUM p1.@neighbor += p2;
   M = SELECT m FROM persons:p -(<HAS_CREATOR)- _:m ACCUM m.@creator += p;
   // filter messages in the taget forum 
-  forum = SELECT f FROM Forum:f WHERE f.creationDate BETWEEN startEpoch AND endEpoch ACCUM f.@selected += true;
-  M = SELECT m FROM M:m -(REPLY_OF>*.<CONTAINER_OF)- Forum:f WHERE f.@selected POST-ACCUM m.@selected += true;
+  M = SELECT m FROM M:m -(REPLY_OF>*.<CONTAINER_OF)- Forum:f WHERE f.creationDate BETWEEN startEpoch AND endEpoch;
   M1 = SELECT m1 FROM M:m1 -(<REPLY_OF)- _:m2
-    WHERE m2.@selected
     ACCUM m1.@replyCount += (m2.@creator -> 1);
 
   PersonReplied = SELECT p FROM M1:m -(HAS_CREATOR>)- Person:p    
