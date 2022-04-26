@@ -270,8 +270,8 @@ for entity in delete_entities:
         delete_queries[entity] = delete_query_file.read()
 
 
-results_file = open(f'output/results.csv', 'w')
-timings_file = open(f'output/timings.csv', 'w')
+results_file = open(f"output/results.csv", "a")
+timings_file = open(f"output/timings.csv", "a")
 timings_file.write(f"sf|q|parameters|time\n")
 
 

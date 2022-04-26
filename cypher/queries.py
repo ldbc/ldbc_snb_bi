@@ -122,8 +122,8 @@ if "20" in query_variants:
     session.write_transaction(write_query_fun, open(f'queries/bi-20-drop-graph.cypher', 'r').read())
     session.write_transaction(write_query_fun, open(f'queries/bi-20-create-graph.cypher', 'r').read())
 
-results_file = open(f'output/results.csv', 'w')
-timings_file = open(f'output/timings.csv', 'w')
+results_file = open(f"output/results.csv", "a")
+timings_file = open(f"output/timings.csv", "a")
 timings_file.write(f"sf|q|parameters|time\n")
 
 for query_variant in query_variants:
