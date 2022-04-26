@@ -134,7 +134,7 @@ def run_queries(query_variants, session, sf, test, pgtuning):
 
             (results, duration) = run_query(session, query_num, query_variant, query_spec, query_parameters_converted, test)
 
-            timings_file.write(f"{sf}|{query_variant}|{query_parameters_in_order}|{duration}\n")
+            timings_file.write(f"Neo4j|{sf}|{query_variant}|{query_parameters_in_order}|{duration}\n")
             timings_file.flush()
             results_file.write(f"{query_num}|{query_variant}|{query_parameters_in_order}|{results}\n")
             results_file.flush()

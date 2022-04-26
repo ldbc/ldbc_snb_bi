@@ -47,18 +47,17 @@ The paramgen implements [parameter curation](https://research.vu.nl/en/publicati
     To download and use the factors of the sample data set, run:
 
     ```bash
-    rm -rf factors/*
-    wget -q https://ldbcouncil.org/ldbc_snb_datagen_spark/social-network-sf0.003-bi-factors.zip
-    unzip -q social-network-sf0.003-bi-factors.zip
-    cp -r social-network-sf0.003-bi-factors/factors/csv/raw/composite-merged-fk/* factors/
+    scripts/get-sample-factors.sh
     ```
 
 1. **Obtaining the temporal entities:** Cleanup the `temporal/` directory and move the `Person` and `Person_knows_Person` temporal directories to the `temporal/` directory. Assuming that your `${LDBC_SNB_DATAGEN_DIR}` and `${SF}` environment variables are set, run:
 
     ```bash
     rm -rf temporal/*
-    cp -r ${LDBC_SNB_DATAGEN_DIR}/out-sf${SF}/graphs/parquet/raw/composite-merged-fk/dynamic/Person/ temporal/
-    cp -r ${LDBC_SNB_DATAGEN_DIR}/out-sf${SF}/graphs/parquet/raw/composite-merged-fk/dynamic/Person_knows_Person/ temporal/
+    cp -r ${LDBC_SNB_DATAGEN_DIR}/out-sf${SF}/graphs/parquet/raw/composite-merged-fk/dynamic/Person                    temporal/
+    cp -r ${LDBC_SNB_DATAGEN_DIR}/out-sf${SF}/graphs/parquet/raw/composite-merged-fk/dynamic/Person_knows_Person       temporal/
+    cp -r ${LDBC_SNB_DATAGEN_DIR}/out-sf${SF}/graphs/parquet/raw/composite-merged-fk/dynamic/Person_studyAt_University temporal/
+    cp -r ${LDBC_SNB_DATAGEN_DIR}/out-sf${SF}/graphs/parquet/raw/composite-merged-fk/dynamic/Person_workAt_Company     temporal/
     ```
 
     Or, simply run:
@@ -70,17 +69,19 @@ The paramgen implements [parameter curation](https://research.vu.nl/en/publicati
     To download and use the temporal entities of the sample data set, run:
 
     ```bash
-    rm -rf temporal/*
-    wget -q https://ldbcouncil.org/ldbc_snb_datagen_spark/social-network-sf0.003-bi-composite-merged-fk.zip
-    unzip -q social-network-sf0.003-bi-composite-merged-fk.zip
-    cp -r social-network-sf0.003-bi-composite-merged-fk/graphs/parquet/raw/composite-merged-fk/dynamic/Person/ temporal/
-    cp -r social-network-sf0.003-bi-composite-merged-fk/graphs/parquet/raw/composite-merged-fk/dynamic/Person_knows_Person/ temporal/
+    scripts/get-sample-temporal.sh
     ```
 
     To get both the factors and the temporal entities together, run:
 
     ```bash
     scripts/get-all.sh
+    ```
+
+    or, for the sample data set, run:
+
+    ```bash
+    scripts/get-sample-all.sh
     ```
 
 1. To run the parameter generator, issue:

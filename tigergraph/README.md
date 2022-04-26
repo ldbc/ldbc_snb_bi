@@ -18,7 +18,7 @@
     tools/run.py \
         --cores 4 \
         --memory 8G \
-        ./target/ldbc_snb_datagen_${PLATFORM_VERSION}-${DATAGEN_VERSION}.jar -- \
+        ./target/ldbc_snb_datagen_${PLATFORM_VERSION}-${DATAGEN_VERSION}.jar \
         -- \
         --format csv \
         --scale-factor ${SF} \
@@ -26,6 +26,7 @@
         --mode bi \
         --output-dir out-sf${SF}/ \
         --generate-factors \
+        --format-options compression=gzip
     ```
 
 ## Load data
