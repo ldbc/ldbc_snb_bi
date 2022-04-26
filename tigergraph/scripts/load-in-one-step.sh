@@ -9,6 +9,5 @@ cd ..
 . scripts/vars.sh
 
 scripts/stop.sh
-sleep 8
 scripts/start.sh
 scripts/setup.sh

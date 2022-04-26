@@ -26,7 +26,7 @@ result_mapping = {
     12: ["INT32", "INT32"],
     13: ["ID", "INT32", "INT32", "FLOAT32"],
     14: ["ID", "ID", "STRING", "INT32"],
-    15: ["ID[]", "FLOAT32"],
+    15: ["FLOAT32"],
     16: ["ID", "INT32", "INT32"],
     17: ["ID", "INT32"],
     18: ["ID", "ID", "INT32"],
@@ -74,8 +74,8 @@ def run_query(endpoint, query_num, parameters):
         print(response['message'])
         return '<>', 0
     results, duration = response['results'][0]['result'], end - start
-    # for BI-11, result is a INT
-    if isinstance(results, int):
+    # for BI-11 and BI-15, result is a single value
+    if isinstance(results, int) or isinstance(results, float):
         return f"[<{results}>]", duration
     
     #convert results from [dict()] to [[]] 

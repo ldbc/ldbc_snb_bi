@@ -35,7 +35,7 @@ if [ ! -d ${TG_DDL_DIR} ]; then
   exit 1
 fi
 
-docker run --rm \
+docker run \
   --ulimit nofile=1000000:1000000 \
   --publish=$TG_REST_PORT:9000 \
   --publish=$TG_SSH_PORT:22 \

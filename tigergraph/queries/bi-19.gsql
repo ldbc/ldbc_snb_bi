@@ -4,7 +4,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi19(VERTEX<City> city1Id, VERTEX<City> city
   GroupByAccum<UINT p1, UINT p2, MinAccum<DOUBLE> dist> @@paths;
   MapAccum<UINT, MinAccum<DOUBLE>> @dist1;  
   SumAccum<UINT> @creatorId; 
-  OrAccum @next1, @isTarget;
+  OrAccum @next, @isTarget;
   DOUBLE threshold;
   P = {Person.*};
   threshold = P.size();
@@ -22,14 +22,14 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi19(VERTEX<City> city1Id, VERTEX<City> city
           DOUBLE t_dis = dis + e.weight, 
           IF t_dis < threshold AND t_dis < t.@dist1.get(p) THEN
             t.@dist1 += (p -> t_dis),
-            t.@next1 += true, 
+            t.@next += true, 
             IF t.@isTarget THEN
               @@paths += (p, t.id->t_dis)
             END 
           END
         END
-      HAVING t.@next1;
-    S = SELECT s FROM S:s ACCUM s.@next1 = false;
+      HAVING t.@next;
+    S = SELECT s FROM S:s ACCUM s.@next = false;
 
     # Update the threshold
     IF S.size()>0 AND @@paths.size() >= 20 THEN
@@ -42,7 +42,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi19(VERTEX<City> city1Id, VERTEX<City> city
       END; 
     END;
     #PRINT S.size();
-  END; # WHILE (S1.size()>0 OR S2.size()>0)
+  END;
   FOREACH (p1,p2,dist) IN @@paths DO
     @@result += RESULT(p1,p2,dist);
   END;
