@@ -92,8 +92,8 @@ def read_query_fun(tx, query_num, query_spec, query_parameters):
     return result_tuples
 
 
-def write_query_fun(tx, query_spec):
-    tx.run(query_spec, {})
+def write_query_fun(tx, query_spec, params = {}):
+    tx.run(query_spec, params)
 
 
 def run_query(session, query_num, query_variant, query_spec, query_parameters, test):
@@ -101,6 +101,11 @@ def run_query(session, query_num, query_variant, query_spec, query_parameters, t
         print(f'Q{query_variant}: {query_parameters}')
 
     start = time.time()
+    if query_num == 15:
+        #print("Creating graph (precomputing weights) for Q15")
+        session.write_transaction(write_query_fun, open(f'queries/bi-15-drop-graph.cypher', 'r').read(), query_parameters)
+        session.write_transaction(write_query_fun, open(f'queries/bi-15-create-graph.cypher', 'r').read(), query_parameters)
+
     # some queries use temporary labels, hence the need for write_transaction
     results = session.write_transaction(read_query_fun, query_num, query_spec, query_parameters)
     end = time.time()
