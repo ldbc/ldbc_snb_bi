@@ -48,19 +48,14 @@ jobs:
           name: Download factors and temporal attributes
           command: |
             cd paramgen
-            # factors
-            wget -q https://ldbcouncil.org/ldbc_snb_datagen_spark/social-network-sf0.003-bi-factors.zip
-            unzip -q social-network-sf0.003-bi-factors.zip
-            cp -r social-network-sf0.003-bi-factors/factors/csv/raw/composite-merged-fk/* factors/
-            # temporal attributes
-            wget -q https://ldbcouncil.org/ldbc_snb_datagen_spark/social-network-sf0.003-bi-composite-merged-fk.zip
-            unzip -q social-network-sf0.003-bi-composite-merged-fk.zip
-            cp -r social-network-sf0.003-bi-composite-merged-fk/graphs/parquet/raw/composite-merged-fk/dynamic/* temporal/
+            scripts/get-sample-all.sh
             cd ..
       - run:
           name: Generate parameters
           command: |
-            paramgen/scripts/paramgen.sh
+            cd paramgen
+            scripts/paramgen.sh
+            cd ..
       - run:
           name: Test Umbra toolchain with uncompressed CSVs
           command: |

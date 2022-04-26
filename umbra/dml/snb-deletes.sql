@@ -1,3 +1,7 @@
+DELETE FROM Comment_Delete_candidates_unique;
+DELETE FROM Post_Delete_candidates_unique;
+DELETE FROM Forum_Delete_candidates_unique;
+
 ----------------------------------------------------------------------------------------------------
 -- DEL1: Remove Person, its personal Forums, and its Message (sub)threads --------------------------
 ----------------------------------------------------------------------------------------------------
@@ -91,22 +95,28 @@ WHERE Person_likes_Comment_Delete_candidates.src = Person_likes_Message.PersonId
 ----------------------------------------------------------------------------------------------------
 -- DEL4: Remove Forum and its content --------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------
+INSERT INTO Forum_Delete_candidates_unique
+  SELECT min(deletionDate), id
+  FROM Forum_Delete_candidates
+  GROUP BY id
+;
+
 DELETE FROM Forum
-USING Forum_Delete_candidates
-WHERE Forum.id = Forum_Delete_candidates.id
+USING Forum_Delete_candidates_unique
+WHERE Forum.id = Forum_Delete_candidates_unique.id
 ;
 
 DELETE FROM Forum_hasMember_Person
-USING Forum_Delete_candidates
-WHERE Forum_Delete_candidates.id = Forum_hasMember_Person.ForumId
+USING Forum_Delete_candidates_unique
+WHERE Forum_Delete_candidates_unique.id = Forum_hasMember_Person.ForumId
 ;
 
 -- offload cascading Post deletes to DEL6
 INSERT INTO Post_Delete_candidates
-SELECT Forum_Delete_candidates.deletionDate AS deletionDate, Post_View.id AS id
+SELECT Forum_Delete_candidates_unique.deletionDate AS deletionDate, Post_View.id AS id
 FROM Post_View
-JOIN Forum_Delete_candidates
-  ON Forum_Delete_candidates.id = Post_View.ContainerForumId
+JOIN Forum_Delete_candidates_unique
+  ON Forum_Delete_candidates_unique.id = Post_View.ContainerForumId
 ;
 
 ----------------------------------------------------------------------------------------------------
@@ -121,8 +131,6 @@ WHERE Forum_hasMember_Person_Delete_candidates.src = Forum_hasMember_Person.Foru
 ----------------------------------------------------------------------------------------------------
 -- DEL6: Remove Post thread ------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------
-DROP TABLE IF EXISTS Post_Delete_candidates_unique;
-CREATE TABLE Post_Delete_candidates_unique(id bigint not null);
 INSERT INTO Post_Delete_candidates_unique
   SELECT DISTINCT id
   FROM Post_Delete_candidates;
@@ -153,8 +161,6 @@ JOIN Post_Delete_candidates
 ----------------------------------------------------------------------------------------------------
 -- DEL7: Remove Comment subthread ------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------
-DROP TABLE IF EXISTS Comment_Delete_candidates_unique;
-CREATE TABLE Comment_Delete_candidates_unique(id bigint not null);
 INSERT INTO Comment_Delete_candidates_unique
   SELECT DISTINCT id
   FROM Comment_Delete_candidates;
@@ -181,7 +187,7 @@ USING (
   WITH RECURSIVE MessagesToDelete AS (
       SELECT id
       FROM Comment_Delete_candidates_unique -- starting from the delete candidate comments
-      UNION
+      UNION ALL
       SELECT ChildComment.MessageId AS id
       FROM MessagesToDelete
       JOIN Message ChildComment

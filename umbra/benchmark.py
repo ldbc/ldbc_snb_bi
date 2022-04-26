@@ -118,7 +118,9 @@ def run_script(pg_con, cur, filename):
             pg_con.commit()
 
 
-def run_queries(query_variants, pg_con, sf, test, pgtuning):
+def run_queries(query_variants, pg_con, sf, test, pgtuning, batch_id, timings_file):
+    start = time.time()
+
     for query_variant in query_variants:
         query_num = int(re.sub("[^0-9]", "", query_variant))
         query_subvariant = re.sub("[^ab]", "", query_variant)
@@ -141,7 +143,7 @@ def run_queries(query_variants, pg_con, sf, test, pgtuning):
 
             (results, duration) = run_query(pg_con, query_num, query_spec, query_parameters_converted)
 
-            timings_file.write(f"{sf}|{query_variant}|{query_parameters_in_order}|{duration}\n")
+            timings_file.write(f"Umbra|{sf}|{query_variant}|{query_parameters_in_order}|{duration}\n")
             timings_file.flush()
             results_file.write(f"{query_num}|{query_variant}|{query_parameters_in_order}|{results}\n")
             results_file.flush()
@@ -154,12 +156,18 @@ def run_queries(query_variants, pg_con, sf, test, pgtuning):
 
         query_file.close()
 
+    end = time.time()
+    duration = end - start
+    timings_file.write(f"Umbra|{sf}|reads|{batch_id}|{duration}\n")
 
-def run_batch_updates(pg_con, data_dir, batch_start_date):
+
+def run_batch_updates(pg_con, data_dir, batch_start_date, timings_file):
     # format date to yyyy-mm-dd
     batch_id = batch_start_date.strftime('%Y-%m-%d')
     batch_dir = f"batch_id={batch_id}"
     print(f"#################### {batch_dir} ####################")
+
+    start = time.time()
 
     print("## Inserts")
     for entity in insert_entities:
@@ -203,6 +211,9 @@ def run_batch_updates(pg_con, data_dir, batch_start_date):
     print("Done.")
     print()
 
+    end = time.time()
+    duration = end - start
+    timings_file.write(f"Umbra|{sf}|writes|{batch_id}|{duration}\n")
 
 
 query_variants = ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "15a", "15b", "16a", "16b", "17", "18", "19a", "19b", "20"]
@@ -249,8 +260,8 @@ batch_start_date = network_start_date
 
 # run alternating write-read blocks
 while batch_start_date < network_end_date:
-    run_batch_updates(pg_con, data_dir, batch_start_date)
-    run_queries(query_variants, pg_con, sf, test, pgtuning)
+    run_batch_updates(pg_con, data_dir, batch_start_date, timings_file)
+    run_queries(query_variants, pg_con, sf, test, pgtuning, batch_start_date, timings_file)
     batch_start_date = batch_start_date + batch_size
 
 
