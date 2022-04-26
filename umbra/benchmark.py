@@ -243,8 +243,11 @@ delete_nodes = ["Comment", "Post", "Forum", "Person"]
 delete_edges = ["Forum_hasMember_Person", "Person_knows_Person", "Person_likes_Comment", "Person_likes_Post"]
 delete_entities = delete_nodes + delete_edges
 
-results_file = open(f'output/results.csv', 'w')
-timings_file = open(f'output/timings.csv', 'w')
+open(f"output/results.csv", "w").close()
+open(f"output/timings.csv", "w").close()
+
+results_file = open(f"output/results.csv", "a")
+timings_file = open(f"output/timings.csv", "a")
 timings_file.write(f"sf|q|parameters|time\n")
 
 pg_con = psycopg2.connect(host="localhost", user="postgres", password="mysecretpassword", port=8000)
