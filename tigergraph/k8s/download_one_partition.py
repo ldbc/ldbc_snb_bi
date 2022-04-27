@@ -18,12 +18,14 @@ if args.key:
 buckets = {
     '100': 'ldbc_bi',
     '1k': 'ldbc_snb_1t',
-    '10k': 'ldbc_snb_10t_v2',
+    '3k': 'ldbc_bi',
+    '10k': 'ldbc_bi',
     '30k': 'ldbc_snb_30t_v2',}
 roots = {
   '100': 'sf100-with-header/',
   '1k': 'sf1k/',
-  '10k':'composite-projected-fk/',
+  '3k': 'ldbc_bi/sf3000-bi/',
+  '10k': 'ldbc_bi/sf10000-bi/',
   '30k':'composite-projected-fk/'}
 
 bucket = buckets[args.data]
