@@ -1,6 +1,6 @@
 /* Q19. Interaction path between cities
 \set city1Id 608
-\set city1Id 1148
+\set city2Id 1148
  */
 with recursive
 qs(f, t) as (
