@@ -40,11 +40,11 @@ tigergraph-0      1/1     Running   0          5m24s
 tigergraph-1      1/1     Running   0          3m11s
 ``` 
 ## Download data
-Fill in the parameters in `vars.sh`. Run the following script to start a background process in each pod to download data 
+Fill in the parameters in `vars.sh`. Then, run 
 ```bash
 ./download.sh
 ```
-To check if the data is downloaded successfully, log into the cluster using `kubectl exec -it tigergraph-0 -- bash` and then run
+It will start background processes on each pods to download and decompress the data. To check if the data is downloaded successfully, log into the cluster using `kubectl exec -it tigergraph-0 -- bash` and then run
 ```bash
 grun all 'tail ~/log.download' # last line should be 'download and decompress finished'
 grun all 'du -sh  ~/tigergraph/data/sf100/' # The data should be in correct size

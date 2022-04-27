@@ -24,8 +24,8 @@ buckets = {
 roots = {
   '100': 'sf100-with-header/',
   '1k': 'sf1k/',
-  '3k': 'ldbc_bi/sf3000-bi/',
-  '10k': 'ldbc_bi/sf10000-bi/',
+  '3k': 'sf3000-bi/',
+  '10k': 'sf10000-bi/',
   '30k':'composite-projected-fk/'}
 
 bucket = buckets[args.data]
