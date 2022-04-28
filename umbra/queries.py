@@ -122,7 +122,7 @@ open(f"output/timings.csv", "w").close()
 
 results_file = open(f"output/results.csv", "a")
 timings_file = open(f"output/timings.csv", "a")
-timings_file.write(f"sf|q|parameters|time\n")
+timings_file.write(f"tool|sf|q|parameters|time\n")
 
 pg_con = psycopg2.connect(host="localhost", user="postgres", password="mysecretpassword", port=8000)
 
