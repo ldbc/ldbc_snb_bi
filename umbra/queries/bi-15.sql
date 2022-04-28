@@ -27,12 +27,19 @@ path(src, dst, w) as (
     from Person_knows_Person pp left join mm on least(pp.person1id, pp.person2id) = mm.src and greatest(pp.person1id, pp.person2id) = mm.dst
 ),
 shorts(gsrc, dst, w, dead, iter) as (
-    select distinct f, f, 0, false, 0 from qs
+    (
+        with srcs as (select distinct f from qs)
+        select f, f, 0, true, 0 from srcs
+        union all
+        select ss.f, p.dst, min(p.w), false, 0
+        from srcs ss, path p
+        where ss.f = p.src and p.dst not in (select ss2.f from srcs ss2)
+        group by ss.f, p.dst
+    )
     union all
     (
         with
-        ss as (select * from shorts),
-        toExplore as (select * from ss where dead = false order by w limit 1000),
+        toExplore as (select * from shorts where dead = false order by w limit 1000),
         newPoints as (
             select e.gsrc as gsrc, p.dst as dst, min(e.w + p.w) as w, false as dead, min(e.iter) + 1 as iter
             from path p join toExplore e on forceorder(e.dst = p.src)
@@ -41,24 +48,28 @@ shorts(gsrc, dst, w, dead, iter) as (
         updated as (
             select n.gsrc, n.dst, n.w, false as dead, iter
             from newPoints n
-            where not exists (select * from ss o where n.gsrc = o.gsrc and n.dst = o.dst and o.w <= n.w)
+            where not exists (select * from shorts o where n.gsrc = o.gsrc and n.dst = o.dst and o.w <= n.w)
         ),
         found as (
             select q.f, q.t, n.w
             from qs q left join updated n on n.dst = q.t and n.gsrc = q.f
         ),
+        ss2 as (
+            select o.gsrc, o.dst, o.w, o.dead or (exists (select * from toExplore e where e.gsrc = o.gsrc and e.dst = o.dst)) as dead, o.iter + 1 as iter
+            from shorts o
+        ),
         fullTable as (
             select coalesce(n.gsrc, o.gsrc) as gsrc,
                    coalesce(n.dst, o.dst) as dst,
                    coalesce(n.w, o.w) as w,
-                   coalesce(n.dead, o.dead or (exists (select * from toExplore e where e.gsrc = o.gsrc and e.dst = o.dst))) as dead,
-                   coalesce(n.iter, o.iter + 1) as iter
-            from ss o full join updated n on o.gsrc = n.gsrc and o.dst = n.dst
+                   coalesce(n.dead, o.dead) as dead,
+                   coalesce(n.iter, o.iter) as iter
+            from ss2 o full join updated n on o.gsrc = n.gsrc and o.dst = n.dst
         )
         select gsrc,
                dst,
                w,
-               dead or (exists (select * from found f where f.w < t.w)),
+               dead or (t.w > coalesce((select min(w) from found f), t.w)),
                iter
         from fullTable t
         where exists (select * from toExplore limit 1)
