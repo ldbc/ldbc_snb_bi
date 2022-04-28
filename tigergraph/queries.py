@@ -128,7 +128,7 @@ def run_queries(query_variants, results_file, timings_file, args):
             timings_file.write(f"{sf}|{query_variant}|{query_parameters_in_order}|{duration:.6f}\n")
             timings_file.flush()
             # test run: 1 query, regular run: 10 queries
-            if args.test or i == 9:
+            if args.test or i == args.nruns-1:
                 break
     
     if not args.skip and ("19a" in query_variants or "19b" in query_variants):
@@ -153,6 +153,7 @@ if __name__ == '__main__':
     parser.add_argument('--para', type=Path, default=Path('../parameters'), help='parameter folder')
     parser.add_argument('--skip', action='store_true', help='skip precompute')
     parser.add_argument('--test', action='store_true', help='test mode only run one time')
+    parser.add_argument('--nruns', '-n', type=int, default=10, help='number of runs')
     parser.add_argument('--endpoint', type=str, default='http://127.0.0.1:9000',help='tigergraph endpoints')
     args = parser.parse_args()
     

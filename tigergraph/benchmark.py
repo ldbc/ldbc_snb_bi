@@ -12,6 +12,7 @@ if __name__ == '__main__':
     parser.add_argument('--skip', action='store_true', help='skip precompute')
     parser.add_argument('--para', type=Path, default=Path('../parameters'), help='parameter folder')
     parser.add_argument('--test', action='store_true', help='test mode only run one time')
+    parser.add_argument('--nruns', '-n', type=int, default=10, help='number of runs')
     parser.add_argument('--endpoint', type=str, default = 'http://127.0.0.1:9000', help='tigergraph rest port')
     args = parser.parse_args()
 
