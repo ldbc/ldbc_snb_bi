@@ -90,11 +90,10 @@ def run_batch_updates(start_date, end_date, timing_file, args):
             docker_path = docker_data/'deletes'/'dynamic'/vertex/batch_dir
             print(path)
             if not path.exists(): 
-                print("!!! No changes occured")
                 continue
             for fp in path.glob('*.csv'):
                 if fp.is_file():
-                    print(f'- {fp}')
+                    print(f'- {fp.name}')
                     result, duration = run_query(f'del_{vertex}', {'file':str(docker_path/fp.name), 'header':args.header}, args.endpoint)
                     print(f'> {result} changes')
             tot_del_time += duration
