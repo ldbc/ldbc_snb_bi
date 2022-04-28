@@ -137,10 +137,7 @@ if args.thread > 1:
     pool.map(download,jobs2)
   print("downloading is done")
 
-# download parameter
-if args.data not in ['100'] and args.index != 0:
-  exit()
-
+# download parameters
 print("download parameters")
 client = storage.Client()  
 gcs_bucket = client.bucket('ldbc_bi')
