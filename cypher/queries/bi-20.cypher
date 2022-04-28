@@ -17,6 +17,12 @@ CALL gds.shortestPath.dijkstra.stream('bi20', {
 })
 YIELD totalCost
 WHERE person1.id <> $person2Id
-RETURN person1.id, totalCost AS totalWeight
-ORDER BY totalWeight ASC, person1.id ASC
+WITH person1.id AS person1Id, totalCost AS totalWeight
+ORDER BY totalWeight ASC
+WITH collect({person1Id: person1Id, totalWeight: totalWeight}) AS results
+UNWIND results AS result
+WITH result.person1Id AS person1Id, result.totalWeight AS totalWeight
+WHERE totalWeight = results[0].totalWeight
+RETURN person1Id, totalWeight
+ORDER BY person1Id ASC
 LIMIT 20
