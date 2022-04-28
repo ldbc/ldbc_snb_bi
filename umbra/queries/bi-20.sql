@@ -69,4 +69,4 @@ ss(gsrc, dst, w, iter) as (
 results(f, t, w) as (
     select qs.f, qs.t , ss.w from qs left join ss on qs.f = ss.gsrc and qs.t = ss.dst
 )
-select t, w from results where w = (select min(w) from results) order by t;
+select t, w from results where w = (select min(w) from results) order by t limit 20;
