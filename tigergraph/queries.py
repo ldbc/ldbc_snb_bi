@@ -95,7 +95,7 @@ def run_queries(query_variants, results_file, timings_file, args):
         start = time.time()
         response = requests.get(f'{args.endpoint}/query/ldbc_snb/bi19precompute', headers=HEADERS).json()
         duration = time.time() - start
-        timings_file.write(f"{sf}|bi19precompute||{duration:.6f}\n")
+        timings_file.write(f"TigerGraph|{sf}|bi19precompute||{duration:.6f}\n")
         timings_file.flush()
 
     if not args.skip and "20" in query_variants:
@@ -103,7 +103,7 @@ def run_queries(query_variants, results_file, timings_file, args):
         start = time.time()
         response = requests.get(f'{args.endpoint}/query/ldbc_snb/bi20precompute', headers=HEADERS).json()
         duration = time.time() - start
-        timings_file.write(f"{sf}|bi20precompute||{duration:.6f}\n")
+        timings_file.write(f"TigerGraph|{sf}|bi20precompute||{duration:.6f}\n")
         timings_file.flush()
 
     for query_variant in query_variants:
@@ -125,7 +125,7 @@ def run_queries(query_variants, results_file, timings_file, args):
 
             results_file.write(f"{query_num}|{query_variant}|{query_parameters_in_order}|{results}\n")
             results_file.flush()
-            timings_file.write(f"{sf}|{query_variant}|{query_parameters_in_order}|{duration:.6f}\n")
+            timings_file.write(f"TigerGraph|{sf}|{query_variant}|{query_parameters_in_order}|{duration:.6f}\n")
             timings_file.flush()
             # test run: 1 query, regular run: 10 queries
             if args.test or i == 9:
@@ -136,7 +136,7 @@ def run_queries(query_variants, results_file, timings_file, args):
         start = time.time()
         response = requests.get(f'{args.endpoint}/query/ldbc_snb/bi19cleanup', headers=HEADERS).json()
         duration = time.time() - start
-        timings_file.write(f"{sf}|bi19cleanup||{duration:.6f}\n")
+        timings_file.write(f"TigerGraph|{sf}|bi19cleanup||{duration:.6f}\n")
         timings_file.flush()
 
     if not args.skip and "20" in query_variants:
@@ -144,7 +144,7 @@ def run_queries(query_variants, results_file, timings_file, args):
         start = time.time()
         response = requests.get(f'{args.endpoint}/query/ldbc_snb/bi20cleanup', headers=HEADERS).json()
         duration = time.time() - start
-        timings_file.write(f"{sf}|bi20cleanup||{duration:.6f}\n")
+        timings_file.write(f"TigerGraph|{sf}|bi20cleanup||{duration:.6f}\n")
         timings_file.flush()
 
 # main functions
