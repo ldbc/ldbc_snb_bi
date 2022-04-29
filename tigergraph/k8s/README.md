@@ -42,7 +42,7 @@ tigergraph-1      1/1     Running   0          3m11s
 ## Download data
 1. Fill in the parameters in `vars.sh`.
     * `NUM_NODES` - number of nodes.
-    * `SF` - data source 100, 1l, 3k, 10k or 30k.
+    * `SF` - data source, choices are 100, 300, 1000, 3000, 10000.
     * `DOWNLOAD_THREAD` - number of download threads
     * `TG_HEADER` - whether the data has header, should be true
 1. Run:

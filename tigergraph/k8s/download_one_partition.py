@@ -5,7 +5,7 @@ import argparse
 from multiprocessing import Pool, cpu_count
 import os
 parser = argparse.ArgumentParser(description='Download one partition of data from GCS bucket.')
-parser.add_argument('data',  type=str, choices=['100', '1k', '10k', '30k'], help='data scale factor.')
+parser.add_argument('data',  type=str, choices=['100', '300', '1000', '3000', '10000', '30000'], help='data scale factor.')
 parser.add_argument('index', type=int, help='index of the node')
 parser.add_argument('nodes', type=int, help='the total number of nodes')
 parser.add_argument('--thread','-t', type=int, default=4, help='number of threads')
@@ -17,16 +17,18 @@ if args.key:
 
 buckets = {
     '100': 'ldbc_bi',
-    '1k': 'ldbc_snb_1t',
-    '3k': 'ldbc_bi',
-    '10k': 'ldbc_bi',
-    '30k': 'ldbc_snb_30t_v2',}
+    '300': 'ldbc_bi',
+    '1000': 'ldbc_bi',
+    '3000': 'ldbc_bi',
+    '10000': 'ldbc_bi',
+    '30000': 'ldbc_snb_30t_v2',}
 roots = {
   '100': 'sf100-with-header/',
-  '1k': 'sf1k/',
-  '3k': 'sf3000-bi/',
-  '10k': 'sf10000-bi/',
-  '30k':'composite-projected-fk/'}
+  '300': 'sf300-bi/',
+  '1000': 'sf1000-bi/',
+  '3000': 'sf3000-bi/',
+  '10000': 'sf10000-bi/',
+  '30000':'composite-projected-fk/'}
 
 bucket = buckets[args.data]
 root = roots[args.data]
