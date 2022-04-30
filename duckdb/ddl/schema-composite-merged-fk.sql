@@ -6,7 +6,70 @@ CREATE TABLE Organisation (
     name varchar(256) NOT NULL,
     url varchar(256) NOT NULL,
     LocationPlaceId bigint NOT NULL
-);
+) ;
+
+CREATE TABLE Place (
+    id bigint PRIMARY KEY,
+    name varchar(256) NOT NULL,
+    url varchar(256) NOT NULL,
+    type varchar(12) NOT NULL,
+    PartOfPlaceId bigint -- null for continents
+) ;
+
+CREATE TABLE Tag (
+    id bigint PRIMARY KEY,
+    name varchar(256) NOT NULL,
+    url varchar(256) NOT NULL,
+    TypeTagClassId bigint NOT NULL
+) ;
+
+CREATE TABLE TagClass (
+    id bigint PRIMARY KEY,
+    name varchar(256) NOT NULL,
+    url varchar(256) NOT NULL,
+    SubclassOfTagClassId bigint -- null for the root TagClass (Thing)
+) ;
+
+-- static tables / separate table per individual subtype
+
+-- dynamic tables
+
+CREATE TABLE Comment (
+    creationDate timestamp NOT NULL,
+    id bigint PRIMARY KEY,
+    locationIP varchar(40) NOT NULL,
+    browserUsed varchar(40) NOT NULL,
+    content varchar(2000) NOT NULL,
+    length int NOT NULL,
+    CreatorPersonId bigint NOT NULL,
+    LocationCountryId bigint NOT NULL,
+    ParentPostId bigint,
+    ParentCommentId bigint
+) ;
+
+
+CREATE TABLE Forum (
+    creationDate timestamp NOT NULL,
+    id bigint PRIMARY KEY,
+    title varchar(256) NOT NULL,
+    ModeratorPersonId bigint -- can be null as its cardinality is 0..1
+) ;
+
+
+CREATE TABLE Post (
+    creationDate timestamp NOT NULL,
+    id bigint PRIMARY KEY,
+    imageFile varchar(40),
+    locationIP varchar(40) NOT NULL,
+    browserUsed varchar(40) NOT NULL,
+    language varchar(40),
+    content varchar(2000),
+    length int NOT NULL,
+    CreatorPersonId bigint NOT NULL,
+    ContainerForumId bigint NOT NULL,
+    LocationCountryId bigint NOT NULL
+) ;
+
 
 CREATE TABLE Person (
     creationDate timestamp NOT NULL,
@@ -20,7 +83,58 @@ CREATE TABLE Person (
     LocationCityId bigint NOT NULL,
     speaks varchar(640) NOT NULL,
     email varchar(8192) NOT NULL
-);
+) ;
+
+
+-- edges
+CREATE TABLE Comment_hasTag_Tag (
+    creationDate timestamp NOT NULL,
+    CommentId bigint NOT NULL,
+    TagId bigint NOT NULL
+    --, PRIMARY KEY(CommentId, TagId)
+) ;
+
+CREATE TABLE Post_hasTag_Tag (
+    creationDate timestamp NOT NULL,
+    PostId bigint NOT NULL,
+    TagId bigint NOT NULL
+    --, PRIMARY KEY(PostId, TagId)
+) ;
+
+CREATE TABLE Forum_hasMember_Person (
+    creationDate timestamp NOT NULL,
+    ForumId bigint NOT NULL,
+    PersonId bigint NOT NULL
+    --, PRIMARY KEY(ForumId, PersonId)
+) ;
+
+CREATE TABLE Forum_hasTag_Tag (
+    creationDate timestamp NOT NULL,
+    ForumId bigint NOT NULL,
+    TagId bigint NOT NULL
+    --, PRIMARY KEY(ForumId, TagId)
+) ;
+
+CREATE TABLE Person_hasInterest_Tag (
+    creationDate timestamp NOT NULL,
+    PersonId bigint NOT NULL,
+    TagId bigint NOT NULL
+    --, PRIMARY KEY(PersonId, TagId)
+) ;
+
+CREATE TABLE Person_likes_Comment (
+    creationDate timestamp NOT NULL,
+    PersonId bigint NOT NULL,
+    CommentId bigint NOT NULL
+    --, PRIMARY KEY(PersonId, CommentId)
+) ;
+
+CREATE TABLE Person_likes_Post (
+    creationDate timestamp NOT NULL,
+    PersonId bigint NOT NULL,
+    PostId bigint NOT NULL
+    --, PRIMARY KEY(PersonId, PostId)
+) ;
 
 CREATE TABLE Person_studyAt_University (
     creationDate timestamp NOT NULL,
@@ -28,7 +142,7 @@ CREATE TABLE Person_studyAt_University (
     UniversityId bigint NOT NULL,
     classYear int NOT NULL
     --, PRIMARY KEY(PersonId, UniversityId)
-);
+) ;
 
 CREATE TABLE Person_workAt_Company (
     creationDate timestamp NOT NULL,
@@ -36,99 +150,76 @@ CREATE TABLE Person_workAt_Company (
     CompanyId bigint NOT NULL,
     workFrom int NOT NULL
     --, PRIMARY KEY(PersonId, CompanyId)
-);
+) ;
 
 CREATE TABLE Person_knows_Person (
     creationDate timestamp NOT NULL,
     Person1id bigint NOT NULL,
     Person2id bigint NOT NULL
     --, PRIMARY KEY(Person1id, Person2id)
-);
-
-CREATE VIEW Company AS
-	SELECT id, name, url, LocationPlaceId
-	FROM Organisation
-	WHERE type = 'Company'
-;
-
-CREATE VIEW University AS
-	SELECT id, name, url, LocationPlaceId
-	FROM Organisation
-	WHERE type = 'University'
-;
-
-copy Organisation from '/home/daniel/Documents/Programming/ldbc_snb_datagen_spark/out-sf1/graphs/csv/bi/composite-merged-fk/initial_snapshot/static/Organisation/part-00000-c885b73f-7f2e-4109-9acd-65fabee6c16a-c000.csv' (DELIMITER '|', HEADER);
-
-copy Person from '/home/daniel/Documents/Programming/ldbc_snb_datagen_spark/out-sf1/graphs/csv/bi/composite-merged-fk/initial_snapshot/dynamic/Person/part-00000-354b330a-be7e-4581-99ab-dfe73df59470-c000.csv' (DELIMITER '|', HEADER);
-copy Person from '/home/daniel/Documents/Programming/ldbc_snb_datagen_spark/out-sf1/graphs/csv/bi/composite-merged-fk/initial_snapshot/dynamic/Person/part-00001-354b330a-be7e-4581-99ab-dfe73df59470-c000.csv' (DELIMITER '|', HEADER);
-
-copy Person_knows_Person from '/home/daniel/Documents/Programming/ldbc_snb_datagen_spark/out-sf1/graphs/csv/bi/composite-merged-fk/initial_snapshot/dynamic/Person_knows_Person/part-00000-97235d24-1e63-44da-a16e-fbec913d8097-c000.csv' (DELIMITER '|', HEADER);
-copy Person_knows_Person from '/home/daniel/Documents/Programming/ldbc_snb_datagen_spark/out-sf1/graphs/csv/bi/composite-merged-fk/initial_snapshot/dynamic/Person_knows_Person/part-00001-97235d24-1e63-44da-a16e-fbec913d8097-c000.csv' (DELIMITER '|', HEADER);
-
-copy Person_workAt_Company from '/home/daniel/Documents/Programming/ldbc_snb_datagen_spark/out-sf1/graphs/csv/bi/composite-merged-fk/initial_snapshot/dynamic/Person_workAt_Company/part-00000-2c95aeeb-87c8-470d-8438-3b6ad49a5131-c000.csv' (DELIMITER '|', HEADER);
-copy Person_workAt_Company from '/home/daniel/Documents/Programming/ldbc_snb_datagen_spark/out-sf1/graphs/csv/bi/composite-merged-fk/initial_snapshot/dynamic/Person_workAt_Company/part-00001-2c95aeeb-87c8-470d-8438-3b6ad49a5131-c000.csv' (DELIMITER '|', HEADER);
-
-copy Person_studyAt_University from '/home/daniel/Documents/Programming/ldbc_snb_datagen_spark/out-sf1/graphs/csv/bi/composite-merged-fk/initial_snapshot/dynamic/Person_studyAt_University/part-00000-a7960d43-e786-49e2-b86e-f47edafde7fb-c000.csv' (DELIMITER '|', HEADER);
-copy Person_studyAt_University from '/home/daniel/Documents/Programming/ldbc_snb_datagen_spark/out-sf1/graphs/csv/bi/composite-merged-fk/initial_snapshot/dynamic/Person_studyAt_University/part-00001-a7960d43-e786-49e2-b86e-f47edafde7fb-c000.csv' (DELIMITER '|', HEADER);
+) ;
 
 
-insert into Person_knows_Person select creationdate, person2id, person1id from Person_knows_Person;
+-- Materialized views
 
-SELECT CREATE_CSR_VERTEX(
-0,
-v.vcount,
-sub.dense_id,
-sub.cnt
-) AS numEdges
-FROM (
-    SELECT p.rowid as dense_id, count(k.Person1id) as cnt
-    FROM Person p
-    LEFT JOIN  Person_knows_Person k ON k.Person1id = p.id
-    GROUP BY p.rowid
-) sub,  (SELECT count(p.id) as vcount FROM Person p) v;
+-- A recursive materialized view containing the root Post of each Message (for Posts, themselves, for Comments, traversing up the Message thread to the root Post of the tree)
+CREATE TABLE Message (
+    creationDate timestamp not null,
+    MessageId bigint primary key,
+    RootPostId bigint not null,
+    RootPostLanguage varchar(40),
+    content varchar(2000),
+    imageFile varchar(40),
+    locationIP varchar(40) not null,
+    browserUsed varchar(40) not null,
+    length int not null,
+    CreatorPersonId bigint not null,
+    ContainerForumId bigint,
+    LocationCountryId bigint not null,
+    ParentMessageId bigint,
+    ParentPostId bigint,
+    ParentCommentId bigint,
+    type varchar(7)
+) ;
 
-SELECT min(CREATE_CSR_EDGE(0, (SELECT count(c.cid) as vcount FROM Customer c),
-CAST ((SELECT sum(CREATE_CSR_VERTEX(0, (SELECT count(c.cid) as vcount FROM Customer c),
-sub.dense_id , sub.cnt )) AS numEdges
-FROM (
-    SELECT c.rowid as dense_id, count(t.from_id) as cnt
-    FROM Customer c
-    LEFT JOIN  Transfers t ON t.from_id = c.cid
-    GROUP BY c.rowid
-) sub) AS BIGINT),
-src.rowid, dst.rowid))
-FROM
-  Transfers t
-  JOIN Customer src ON t.from_id = src.cid
-  JOIN Customer dst ON t.to_id = dst.cid
+CREATE TABLE Person_likes_Message (
+    creationDate timestamp NOT NULL,
+    PersonId bigint NOT NULL,
+    MessageId bigint NOT NULL
+) ;
 
+CREATE TABLE Message_hasTag_Tag (
+    creationDate timestamp NOT NULL,
+    MessageId bigint NOT NULL,
+    TagId bigint NOT NULL
+) ;
 
-SELECT min(CREATE_CSR_EDGE(0, (SELECT count(p.id) as vcount FROM Person p),
-CAST ((SELECT sum(CREATE_CSR_VERTEX(0, (SELECT count(p.id) as vcount FROM Person p),
-sub.dense_id , sub.cnt )) AS numEdges
-FROM (
-    SELECT p.rowid as dense_id, count(k.Person1id) as cnt
-    FROM Person p
-    LEFT JOIN Person_knows_Person k ON k.Person1id = p.id
-    GROUP BY p.rowid
-) sub) AS BIGINT),
-src.rowid, dst.rowid))
-FROM
-  Person_knows_Person k
-  JOIN Person src ON k.Person1id = src.id
-  JOIN Person dst ON k.Person2id = dst.id;
+CREATE TABLE Country (
+    id bigint primary key,
+    name varchar(256) not null,
+    url varchar(256) not null,
+    PartOfContinentId bigint
+) ;
 
-CREATE TABLE src_dest(id int, v_size bigint, src bigint, dst bigint);
+CREATE TABLE City (
+    id bigint primary key,
+    name varchar(256) not null,
+    url varchar(256) not null,
+    PartOfCountryId bigint
+) ;
 
+CREATE VIEW Company AS SELECT * FROM Organisation
+    WHERE type = 'Company';
 
--- CREATE TABLE Person_UniversityKnows_Person AS (
-    SELECT p.id as p1id, p2.id as p2id, min(abs(u.classYear - u2.classYear) + 1) as weight --
-    FROM Person p
-    JOIN Person_knows_Person k on p.id = k.Person1id
-    JOIN Person p2 on p2.id = k.Person2id
-    JOIN Person_studyAt_University u on p.id = u.PersonId
-    JOIN Person_studyAt_University u2 on p2.id = u2.PersonId
-    WHERE u.UniversityId = u2.UniversityId
-    GROUP BY p.id, p2.id
---     );
+CREATE VIEW University AS SELECT * FROM Organisation
+    WHERE type = 'University';
 
+CREATE VIEW Comment_View AS
+    SELECT creationDate, MessageId AS id, locationIP, browserUsed, content, length, CreatorPersonId, LocationCountryId, ParentPostId, ParentCommentId
+    FROM Message
+    WHERE ParentMessageId IS NOT NULL;
+
+CREATE VIEW Post_View AS
+    SELECT creationDate, MessageId AS id, imageFile, locationIP, browserUsed, RootPostLanguage, content, length, CreatorPersonId, ContainerForumId, LocationCountryId
+    From Message
+    WHERE ParentMessageId IS NULL;

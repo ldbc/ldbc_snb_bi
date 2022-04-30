@@ -17,6 +17,7 @@ test-data/
 *.log
 
 .#*
+*.duckdb
 
 social-network-sf*/
 social-network-sf*.zip
