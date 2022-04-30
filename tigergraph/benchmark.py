@@ -19,7 +19,7 @@ if __name__ == '__main__':
     results_file = open('output/results.csv', 'w')
     timings_file = open('output/timings.csv', 'w')
     batch_timing = open('output/batch_timings.csv', 'w')
-    timings_file.write(f"sf|q|parameters|time\n")
+    timings_file.write(f"tool|sf|q|parameters|time\n")
     batch_timing.write(f'date|operation|time\n')
     query_variants = ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "15a", "15b", "16a", "16b", "17", "18", "19a", "19b", "20"]
 

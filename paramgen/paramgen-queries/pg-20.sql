@@ -1,6 +1,6 @@
 SELECT DISTINCT
     comp.companyName AS 'company:STRING',
-    k3.person2Id AS 'person2Id:ID'
+    k2.person2Id AS 'person2Id:ID'
 FROM
     (SELECT
         Person_workAt_Company_window.personId AS person1Id,
@@ -22,16 +22,11 @@ JOIN same_university_knows k1
 JOIN same_university_knows k2
   ON k2.person1Id = k1.person2Id
  AND k2.person2Id != k1.person1Id
--- hop 3
-JOIN same_university_knows k3
-  ON k3.person1Id = k2.person2Id
- AND k3.person2Id != k1.person1Id
- AND k3.person2Id != k2.person1Id
 -- 'person2' does not work at the company
 WHERE NOT EXISTS (SELECT 1
         FROM Person_workAt_Company_window work
         WHERE work.companyId = comp.companyId
-          AND work.personId = k3.person2Id
+          AND work.personId = k2.person2Id
         )
-ORDER BY md5(k3.person2Id), md5(comp.companyId)
+ORDER BY md5(k2.person2Id + comp.companyId), md5(k2.person2Id), md5(comp.companyId)
 LIMIT 400
