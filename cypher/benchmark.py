@@ -32,7 +32,7 @@ result_mapping = {
     15: ["FLOAT32"],
     16: ["ID", "INT32", "INT32"],
     17: ["ID", "INT32"],
-    18: ["ID", "INT32"],
+    18: ["ID", "ID", "INT32"],
     19: ["ID", "ID", "FLOAT32"],
     20: ["ID", "INT64"],
 }
@@ -274,7 +274,7 @@ open(f"output/timings.csv", "w").close()
 
 results_file = open(f"output/results.csv", "a")
 timings_file = open(f"output/timings.csv", "a")
-timings_file.write(f"sf|q|parameters|time\n")
+timings_file.write(f"tool|sf|q|parameters|time\n")
 
 
 network_start_date = datetime.date(2012, 11, 29)

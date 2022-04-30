@@ -15,7 +15,7 @@ local = len(sys.argv) == 3 and sys.argv[2] == "--local"
 pg_con = psycopg2.connect(host="localhost", user="postgres", password="mysecretpassword", port=8000)
 cur = pg_con.cursor()
 
-def run_script(cur, filename):
+def run_script(pg_con, cur, filename):
     with open(filename, "r") as f:
         queries_file = f.read()
         # strip comments
@@ -29,14 +29,14 @@ def run_script(cur, filename):
             print(f"{sql_statement[0][0].strip()} ...")
             start = time.time()
             cur.execute(query)
+            pg_con.commit()
             end = time.time()
             duration = end - start
             print(f"-> {duration:.4f} seconds")
 
-
-run_script(cur, "ddl/drop-tables.sql")
-run_script(cur, "ddl/schema-composite-merged-fk.sql")
-run_script(cur, "ddl/schema-delete-candidates.sql")
+run_script(pg_con, cur, "ddl/drop-tables.sql")
+run_script(pg_con, cur, "ddl/schema-composite-merged-fk.sql")
+run_script(pg_con, cur, "ddl/schema-delete-candidates.sql")
 
 print("Load initial snapshot")
 
@@ -76,13 +76,11 @@ for entity in dynamic_entities:
 print("Loaded dynamic entities.")
 
 print("Maintain materialized views . . . ")
-run_script(cur, "dml/maintain-views.sql")
-pg_con.commit()
+run_script(pg_con, cur, "dml/maintain-views.sql")
 print("Done.")
 
 print("Create static materialized views . . . ")
-run_script(cur, "dml/create-static-materialized-views.sql")
-pg_con.commit()
+run_script(pg_con, cur, "dml/create-static-materialized-views.sql")
 print("Done.")
 
 print("Loaded initial snapshot to Umbra.")

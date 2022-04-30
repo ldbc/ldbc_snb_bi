@@ -99,7 +99,7 @@ def run_queries(query_variants, results_file, timings_file, args):
         start = time.time()
         response = requests.get(f'{args.endpoint}/query/ldbc_snb/bi19precompute', headers=HEADERS).json()
         duration = time.time() - start
-        timings_file.write(f"{sf}|bi19precompute||{duration:.6f}\n")
+        timings_file.write(f"TigerGraph|{sf}|bi19precompute||{duration:.6f}\n")
         timings_file.flush()
 
     if not args.skip and "20" in query_variants:
@@ -107,7 +107,7 @@ def run_queries(query_variants, results_file, timings_file, args):
         start = time.time()
         response = requests.get(f'{args.endpoint}/query/ldbc_snb/bi20precompute', headers=HEADERS).json()
         duration = time.time() - start
-        timings_file.write(f"{sf}|bi20precompute||{duration:.6f}\n")
+        timings_file.write(f"TigerGraph|{sf}|bi20precompute||{duration:.6f}\n")
         timings_file.flush()
 
     for query_variant in query_variants:
@@ -129,7 +129,7 @@ def run_queries(query_variants, results_file, timings_file, args):
 
             results_file.write(f"{query_num}|{query_variant}|{query_parameters_in_order}|{results}\n")
             results_file.flush()
-            timings_file.write(f"{sf}|{query_variant}|{query_parameters_in_order}|{duration:.6f}\n")
+            timings_file.write(f"TigerGraph|{sf}|{query_variant}|{query_parameters_in_order}|{duration:.6f}\n")
             timings_file.flush()
             # test run: 1 query, regular run: 10 queries
             if args.test or i == args.nruns-1:
@@ -140,7 +140,7 @@ def run_queries(query_variants, results_file, timings_file, args):
         start = time.time()
         response = requests.get(f'{args.endpoint}/query/ldbc_snb/bi19cleanup', headers=HEADERS).json()
         duration = time.time() - start
-        timings_file.write(f"{sf}|bi19cleanup||{duration:.6f}\n")
+        timings_file.write(f"TigerGraph|{sf}|bi19cleanup||{duration:.6f}\n")
         timings_file.flush()
 
     if not args.skip and "20" in query_variants:
@@ -148,7 +148,7 @@ def run_queries(query_variants, results_file, timings_file, args):
         start = time.time()
         response = requests.get(f'{args.endpoint}/query/ldbc_snb/bi20cleanup', headers=HEADERS).json()
         duration = time.time() - start
-        timings_file.write(f"{sf}|bi20cleanup||{duration:.6f}\n")
+        timings_file.write(f"TigerGraph|{sf}|bi20cleanup||{duration:.6f}\n")
         timings_file.flush()
 
 # main functions
@@ -165,7 +165,7 @@ if __name__ == '__main__':
     output.mkdir(exist_ok=True)
     results_file = open(output/'results.csv', 'w')
     timings_file = open(output/'timings.csv', 'w')
-    timings_file.write(f"sf|q|parameters|time\n")
+    timings_file.write(f"tool|sf|q|parameters|time\n")
     query_variants = ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "15a", "15b", "16a", "16b", "17", "18", "19a", "19b", "20"]
     run_queries(query_variants, results_file, timings_file, args)
     results_file.close()
