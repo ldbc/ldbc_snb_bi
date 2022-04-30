@@ -67,8 +67,12 @@ def cast_parameter_to_driver_input(value, type):
 
 def run_query(endpoint, query_num, parameters):
     start = time.time()
-    response = requests.get(f'{endpoint}/query/ldbc_snb/bi{query_num}', 
-        headers=HEADERS, params=parameters).json()
+    if query_num == 15: 
+        requests.get(f'{endpoint}/query/ldbc_snb/bi15precompute', headers=HEADERS, params=parameters)
+    response = requests.get(f'{endpoint}/query/ldbc_snb/bi{query_num}', headers=HEADERS, params=parameters).json()
+    if query_num == 15:
+        requests.get(f'{endpoint}/query/ldbc_snb/bi15cleanup', headers=HEADERS)
+
     end = time.time()
     if response['error']:
         print(response['message'])
