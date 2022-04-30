@@ -1,10 +1,10 @@
-CREATE OR REPLACE DISTRIBUTED QUERY bi15(VERTEX<Person> person1Id, VERTEX<Person> person2Id, DATETIME startDate, DATETIME endDate) SYNTAX v2 {
+//USE GRAPH ldbc_snb
+CREATE OR REPLACE DISTRIBUTED QUERY bi15precompute(VERTEX<Person> person1Id, VERTEX<Person> person2Id, DATETIME startDate, DATETIME endDate) SYNTAX v2 {
   SetAccum<VERTEX<Person>> @neighbor;
   MinAccum<VERTEX<Person>> @creator, @replyto;
   MapAccum<VERTEX<Person>, SumAccum<UINT>> @replyCount;
   MapAccum<VERTEX<Person>, SumAccum<DOUBLE>> @weight;
-  MinAccum<DOUBLE> @@result, @dis;
-  OrAccum @visited, @next;
+  OrAccum @visited;
   INT startEpoch = datetime_to_epoch(startDate) * 1000;
   INT endEpoch = datetime_to_epoch(endDate) * 1000;
 
@@ -37,15 +37,28 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi15(VERTEX<Person> person1Id, VERTEX<Person
       END
     END;
   
-  // Calculate the shortest Path
+  tmp =
+    SELECT p2
+    FROM persons:p1 -(KNOWS:e)- Person:p2
+    WHERE p1.id<p2.id AND (p1.@weight.get(p2) > 0 OR p2.@weight.get(p1) > 0)
+    ACCUM
+      INSERT INTO KNOWS15 (FROM, TO, weight) VALUES (p1, p2, 1.0/(1 + p1.@weight.get(p2) + p2.@weight.get(p1)));
+}
+
+CREATE OR REPLACE DISTRIBUTED QUERY bi15(VERTEX<Person> person1Id, VERTEX<Person> person2Id) syntax v2 {
+  MinAccum<DOUBLE> @@result, @dis;
+  OrAccum @next;
   P = {Person.*};
   @@result = P.size();
   S = {person1Id};
   S = SELECT s FROM S:s ACCUM s.@dis = 0; 
   WHILE S.size()>0 DO
-    S = SELECT t FROM S:s-(KNOWS:e)-Person:t 
+    S = SELECT t FROM S:s-((KNOWS15|KNOWS):e)-Person:t 
       ACCUM
-        DOUBLE t_dis = s.@dis + 1.0 / (1+ t.@weight.get(s) + s.@weight.get(t)), 
+        DOUBLE t_dis = s.@dis + 1,
+        IF e.type == "KNOWS15" THEN
+          t_dis = s.@dis + e.weight
+        END,
         IF t_dis < @@result AND t_dis < t.@dis THEN
           t.@dis += t_dis,
           t.@next += true, 
@@ -55,7 +68,6 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi15(VERTEX<Person> person1Id, VERTEX<Person
         END
       HAVING t.@next;
     S = SELECT s FROM S:s ACCUM s.@next = false;
-    #PRINT S.size();
   END;
 
   IF ABS(@@result - P.size()) < 1 THEN
@@ -66,5 +78,14 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi15(VERTEX<Person> person1Id, VERTEX<Person
   END;
 }
 
-//INSTALL QUERY bi15
-//run query bi15(448,8796093023144,"2010-05-02","2012-11-25")
+CREATE OR REPLACE DISTRIBUTED QUERY bi15cleanup() syntax v2 {
+  S = {Person.*};
+  DELETE e FROM S:v1 -(KNOWS15:e)- Person:v2;
+}
+
+/*
+INSTALL QUERY bi15precompute,bi15,bi15cleanup
+run query bi15cleanup()
+run query bi15precompute(2975,2199023256727,"2010-04-18","2012-11-22")
+run query bi15(2975,2199023256727)
+*/
