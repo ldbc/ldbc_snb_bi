@@ -14,4 +14,4 @@ use_sf10k() {
   export NRUNS=3
 }
 
-use_sf10k
+#use_sf10k
