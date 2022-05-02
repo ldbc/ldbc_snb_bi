@@ -19,7 +19,7 @@ test-data/
 .#*
 
 social-network-sf*/
-social-network-sf*.zip
+social-network-sf*.*
 
 tuning/graphics/*
 tuning/ssh_keys/*
@@ -27,3 +27,6 @@ tuning/data/*
 *.Rhistory
 tuning/scripts/server.sh
 tuning/scripts/get-plots.sh
+
+parameters-sf*/
+parameters-sf*.*
