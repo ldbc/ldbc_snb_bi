@@ -16,7 +16,7 @@ if args.key:
   os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = args.key
 
 bucket = 'ldbc_bi'
-root = Path(f'sf{args.data}-bi')
+root = f'sf{args.data}-bi/'
 target = Path(f'sf{args.data}')
 
 PARTITION_OR_NOT = {
@@ -67,7 +67,7 @@ d1 ='initial_snapshot'
 for d2 in ['static', 'dynamic']:
   for name in NAMES[d2]:
     loc = '/'.join([d1,d2,name]) + '/'
-    prefix = root / loc
+    prefix = root + loc
     target_dir = target / loc
     target_dir.mkdir(parents=True, exist_ok=True)
     i = -1
@@ -88,7 +88,7 @@ for d1 in ['inserts','deletes']:
   d2 = 'dynamic'
   for name in NAMES[d2]:
     loc = '/'.join([d1,d2,name]) + '/'
-    prefix = root / loc
+    prefix = root + loc
     i = -1
     for blob in client.list_blobs(bucket, prefix=prefix):
       blob_name = blob.name
