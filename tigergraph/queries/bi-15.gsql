@@ -22,8 +22,9 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi15precompute(VERTEX<Person> person1Id, VER
   tmp = SELECT p1 FROM persons:p1 -(KNOWS)- Person:p2 WHERE p2.@visited ACCUM p1.@neighbor += p2;
   M = SELECT m FROM persons:p -(<HAS_CREATOR)- _:m ACCUM m.@creator += p;
   // filter messages in the taget forum 
-  M = SELECT m FROM M:m -(REPLY_OF>*.<CONTAINER_OF)- Forum:f WHERE f.creationDate BETWEEN startEpoch AND endEpoch;
+  M = SELECT m FROM M:m -(REPLY_OF>*.<CONTAINER_OF)- Forum:f WHERE f.creationDate BETWEEN startEpoch AND endEpoch POST-ACCUM m.@visited += true;
   M1 = SELECT m1 FROM M:m1 -(<REPLY_OF)- _:m2
+    WHERE m2.@visited
     ACCUM m1.@replyCount += (m2.@creator -> 1);
 
   PersonReplied = SELECT p FROM M1:m -(HAS_CREATOR>)- Person:p    
@@ -83,9 +84,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi15cleanup() syntax v2 {
   DELETE e FROM S:v1 -(KNOWS15:e)- Person:v2;
 }
 
-/*
 INSTALL QUERY bi15precompute,bi15,bi15cleanup
 run query bi15cleanup()
-run query bi15precompute(2975,2199023256727,"2010-04-18","2012-11-22")
-run query bi15(2975,2199023256727)
-*/
+run query bi15precompute(448,8796093023144,"2010-05-02","2012-11-25")
+run query bi15(448,8796093023144)
