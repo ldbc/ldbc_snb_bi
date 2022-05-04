@@ -1,5 +1,5 @@
 //USE GRAPH ldbc_snb
-CREATE OR REPLACE DISTRIBUTED QUERY bi15precompute(DATETIME startDate, DATETIME endDate) SYNTAX _v2 {
+CREATE OR REPLACE DISTRIBUTED QUERY bi15precompute(DATETIME startDate, DATETIME endDate) SYNTAX v2 {
   SetAccum<VERTEX<Person>> @neighbor;
   MinAccum<VERTEX<Person>> @creator, @replyto;
   MapAccum<VERTEX<Person>, SumAccum<UINT>> @replyCount;

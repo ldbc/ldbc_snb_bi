@@ -1,4 +1,4 @@
-CREATE OR REPLACE DISTRIBUTED QUERY bi4 (DATETIME date) SYNTAX _v2 {
+CREATE OR REPLACE DISTRIBUTED QUERY bi4 (DATETIME date) SYNTAX v2 {
   TYPEDEF TUPLE <UINT personId, STRING personFirstName, STRING personLastName,
     STRING personCreationDate, UINT messageCount> RESULT;
   HeapAccum<RESULT>(100, messageCount DESC, personId ASC) @@result;
