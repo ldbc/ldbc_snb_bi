@@ -4,10 +4,10 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi18(STRING tag) SYNTAX v2 {
   SetAccum<VERTEX> @exclude;
   MapAccum<VERTEX<Person>, SumAccum<UINT>> @mutualFriendCount;
   OrAccum<BOOL> @hasInterest;
+  T = SELECT t FROM Tag:t WHERE t.name == tag;
   person1 =
     SELECT p
-    FROM Tag:t -(<HAS_INTEREST)- Person:p
-    WHERE t.name == tag
+    FROM T:t -(<HAS_INTEREST)- Person:p
     ACCUM p.@hasInterest += TRUE, p.@exclude += p;
   tmp =
     SELECT p2

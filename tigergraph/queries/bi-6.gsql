@@ -7,7 +7,8 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi6(STRING tag) SYNTAX v2 {
   SumAccum<UINT> @authorityScore;
   SumAccum<UINT> @score;
   SetAccum<VERTEX<Person>> @liked;
-  message1 = SELECT m FROM Tag:t -(<HAS_TAG)- (Comment|Post):m WHERE t.name == tag;
+  T = SELECT t FROM Tag:t WHERE t.name == tag;
+  message1 = SELECT m FROM T -(<HAS_TAG)- (Comment|Post):m;
   person2 = SELECT p2 FROM message1 -(<LIKES)- Person:p2; 
   person2 = SELECT p2 FROM person2:p2 -(<HAS_CREATOR)- _:m
     ACCUM p2.@score += m.outdegree("LIKES_REVERSE")
