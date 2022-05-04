@@ -51,6 +51,7 @@ def load_by_restpp(job, data_dir, names, batch_dir, endpoint):
             curl = f'curl -X POST  --data-binary  @{f} "{url}"'
             res = subprocess.run(curl, shell=True, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
             res = json.loads(res.stdout.decode("utf-8"))
+            print(res)
             nlines = res["results"][0]["statistics"]["validLine"]
             print(f'> {nlines} changes')
 
@@ -79,10 +80,7 @@ def run_batch_updates(start_date, end_date, timing_file, args):
         t0 = time.time()
         load(f'insert_vertex', args.data_dir/'inserts', VERTICES, batch_dir, args)
         load(f'insert_edge', args.data_dir/'inserts', EDGES, batch_dir, args)
-        t1 = time.time()
-        tot_ins_time += t1-t0
-        timing_file.write(f'{batch_date}|insert|{tot_ins_time:.6f}\n')
-        timing_file.flush()
+        #tot_ins_time = time.time() - t0
         print("## Deletes")
         for vertex in VERTICES:
             print(f"{vertex}:")
@@ -95,15 +93,15 @@ def run_batch_updates(start_date, end_date, timing_file, args):
                 if fp.is_file():
                     print(f'- {fp.name}')
                     result, duration = run_query(f'del_{vertex}', {'file':str(docker_path/fp.name), 'header':args.header}, args.endpoint)
+                    tot_del_time += duration
                     print(f'> {result} changes')
-            tot_del_time += duration
-        t0 = time.time()
+        #t1 = time.time()
         load(f'delete_edge', args.data_dir/'deletes', DEL_EDGES, batch_dir, args)
-        t1 = time.time()
-        tot_del_time += t1 - t0
-        batch_date = batch_date + batch_size
-        timing_file.write(f'{batch_date}|delete|{tot_del_time:.6f}\n')
+        #duration += time.time() - t1
+        tot_time += time.time() - t0
+        timing_file.write(f'TigerGraph|write|{sf}|{batch_date}|{tot_time:.6f}\n')
         timing_file.flush()
+        batch_date = batch_date + batch_size
 
 # main functions
 if __name__ == '__main__':
@@ -117,7 +115,7 @@ if __name__ == '__main__':
     output = Path('output')
     output.mkdir(exist_ok=True)
     timing_file = open(output/'batch_timing.csv', 'w')
-    timing_file.write(f'date|operation|time\n')
+    timing_file.write(f'tool|sf|q|parameters|time\n')
     network_start_date = date(2012, 11, 29)
     network_end_date = date(2013, 1, 1)
     run_batch_updates(network_start_date, network_end_date, timing_file, args)

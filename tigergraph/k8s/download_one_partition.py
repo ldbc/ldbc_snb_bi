@@ -15,8 +15,8 @@ args = parser.parse_args()
 if args.key:
   os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = args.key
 
-buckets = 'ldbc_bi'
-roots = f'sf{args.data}-bi'
+bucket = 'ldbc_bi'
+root = f'sf{args.data}-bi/'
 target = Path(f'sf{args.data}')
 
 PARTITION_OR_NOT = {
