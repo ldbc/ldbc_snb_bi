@@ -83,8 +83,9 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi15cleanup() syntax v2 {
   S = {Person.*};
   DELETE e FROM S:v1 -(KNOWS15:e)- Person:v2;
 }
-
+/*
 INSTALL QUERY bi15precompute,bi15,bi15cleanup
 run query bi15cleanup()
 run query bi15precompute(448,8796093023144,"2010-05-02","2012-11-25")
 run query bi15(448,8796093023144)
+*/
