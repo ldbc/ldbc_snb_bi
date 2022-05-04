@@ -51,6 +51,7 @@ def load_by_restpp(job, data_dir, names, batch_dir, endpoint):
             curl = f'curl -X POST  --data-binary  @{f} "{url}"'
             res = subprocess.run(curl, shell=True, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
             res = json.loads(res.stdout.decode("utf-8"))
+            print(res)
             nlines = res["results"][0]["statistics"]["validLine"]
             print(f'> {nlines} changes')
 
@@ -78,12 +79,8 @@ def run_batch_updates(start_date, end_date, timing_file, args):
         print("## Inserts")
         t0 = time.time()
         load(f'insert_vertex', args.data_dir/'inserts', VERTICES, batch_dir, args)
-        t1 = time.time()
-        timing_file.write(f'TigerGraph|insert_vertex|{sf}|{batch_date}|{t1-t0:.6f}\n')
         load(f'insert_edge', args.data_dir/'inserts', EDGES, batch_dir, args)
-        t2 = time.time()
-        timing_file.write(f'TigerGraph|insert_edge|{sf}|{batch_date}|{t2-t1:.6f}\n')
-        timing_file.flush()
+        #tot_ins_time = time.time() - t0
         print("## Deletes")
         for vertex in VERTICES:
             print(f"{vertex}:")
@@ -96,12 +93,13 @@ def run_batch_updates(start_date, end_date, timing_file, args):
                 if fp.is_file():
                     print(f'- {fp.name}')
                     result, duration = run_query(f'del_{vertex}', {'file':str(docker_path/fp.name), 'header':args.header}, args.endpoint)
-                    timing_file.write(f'TigerGraph|del_{vertex}|{sf}|{batch_date}|{duration:.6f}\n')
+                    tot_del_time += duration
                     print(f'> {result} changes')
-        t0 = time.time()
+        #t1 = time.time()
         load(f'delete_edge', args.data_dir/'deletes', DEL_EDGES, batch_dir, args)
-        duration = time.time() - t0
-        timing_file.write(f'TigerGraph|delete_edge|{sf}|{batch_date}|{duration:.6f}\n')
+        #duration += time.time() - t1
+        tot_time += time.time() - t0
+        timing_file.write(f'TigerGraph|write|{sf}|{batch_date}|{tot_time:.6f}\n')
         timing_file.flush()
         batch_date = batch_date + batch_size
 
