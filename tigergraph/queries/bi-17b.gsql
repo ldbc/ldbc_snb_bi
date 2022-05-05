@@ -18,10 +18,10 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi17(STRING tag, INT delta) SYNTAX v2 {
   SetAccum<UINT> @person1Id;
   MapAccum<UINT, SumAccum<UINT>> @@messageCount;
   UINT deltaInMs = delta * 60 * 60 * 1000;
-  T = SELECT t FROM Tag:t WHERE t.name == tag;
   messagesWithTag =
     SELECT m
-    FROM T:t -(<HAS_TAG)- (Comment|Post):m
+    FROM Tag:t -(<HAS_TAG)- (Comment|Post):m
+    WHERE t.name == tag
     ACCUM m.@hasTag = true;
 
   creators =
