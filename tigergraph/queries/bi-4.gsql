@@ -18,19 +18,17 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi4 (DATETIME date) SYNTAX v2 {
   popularForums = SELECT f FROM F:f -(HAS_MEMBER>)- Person:p 
     ACCUM f.@memberCount += (p.@country -> 1)
     POST-ACCUM
-      FOREACH (city, num) IN f.@memberCount DO
+      FOREACH (country, num) IN f.@memberCount DO
         f.@maxMemberCount += num
       END
-    
     ORDER BY f.@maxMemberCount DESC, f.id ASC
     LIMIT 100;
 
   P = SELECT p FROM popularForums -(HAS_MEMBER>)- Person:p ACCUM p.@inForum += true;
   M = SELECT m FROM popularForums -(CONTAINER_OF>)- Post -(<REPLY_OF*)- (Comment|Post):m;
-  M = SELECT m FROM M:m WHERE m.creationDate > epoch;
   tmp = SELECT p FROM M-(HAS_CREATOR>)- Person:p WHERE p.@inForum ACCUM p.@messageCount += 1;
-  tmp = SELECT p FROM P:p
-    ACCUM @@result += RESULT(p.id, p.firstName, p.lastName, ms_to_string(p.creationDate), p.@messageCount);
+  tmp = SELECT p FROM P:p ORDER BY p.@messageCount DESC, p.id ASC LIMIT 100;
+  tmp = SELECT p FROM P:p ACCUM @@result += RESULT(p.id, p.firstName, p.lastName, ms_to_string(p.creationDate), p.@messageCount);
 
   PRINT @@result as result;
 }

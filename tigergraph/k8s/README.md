@@ -40,40 +40,48 @@ tigergraph-0      1/1     Running   0          5m24s
 tigergraph-1      1/1     Running   0          3m11s
 ``` 
 ## Download data
-Fill in the parameters in `vars.sh`. Run the following script to start a background process in each pod to download data 
-```bash
-./download.sh
-```
-To check if the data is downloaded successfully, log into the cluster using `kubectl exec -it tigergraph-0 -- bash` and then run
-```bash
-grun all 'tail ~/log.download' # last line should be 'download and decompress finished'
-grun all 'du -sh  ~/tigergraph/data/sf100/' # The data should be in correct size
-```
+1. Fill in the parameters in `vars.sh`.
+    * `NUM_NODES` - number of nodes.
+    * `SF` - data source, choices are 100, 300, 1000, 3000, 10000.
+    * `DOWNLOAD_THREAD` - number of download threads
+    * `TG_HEADER` - whether the data has header, should be true
+1. Run:
+    ```bash
+    ./download.sh
+    ```
+    It will start background processes on each pods to download and decompress the data.
+
+1. To check if the data is downloaded successfully, log into the cluster using `kubectl exec -it tigergraph-0 -- bash` and then run
+    ```bash
+    grun all 'tail ~/log.download' # last line should be 'download and decompress finished'
+    grun all 'du -sh  ~/tigergraph/data/sf*/' # The data should be SF / NODE_NUMBER
+    ```
 
 ## Run Benchmark 
-First log into the k8s cluster 
-```bash
-kubectl exec -it tigergraph-0 -- bash
-```
+1. log into the k8s cluster 
+    ```bash
+    kubectl exec -it tigergraph-0 -- bash
+    ```
 
-In the container, run (It is recommended to run scripts in the background because it usualy takes long time for large scale factors)
-```bash
-nohup ./k8s/setup.sh > log.setup 2>&1 < /dev/null &
-```
+1. In the container, run (It is recommended to run scripts in the background because it usualy takes long time for large scale factors)
+   ```bash
+   nohup ./k8s/setup.sh > log.setup 2>&1 < /dev/null &
+   ```
 
-To run benchmark
-```bash
-nohup ./k8s/benchmark.sh > log.benchmark 2>&1 < /dev/null &
-```
+1. To run benchmark scripts
+    ```bash
+    nohup ./k8s/benchmark.sh > log.benchmark 2>&1 < /dev/null &
+    ```
 
-The `queries.sh` and `batches.sh` can be run in the similar approach. The outputs are in `~/output`. To download, 
-  1. compress using tar `tar -cvf output.tar log.benchmark output/` 
-  2. On local desktop, `kubectl cp tigergraph-0:output.tar output.tar`
+    The `queries.sh` and `batches.sh` can be run in the similar approach. The outputs are in `~/output`. To download, 
+    * Compress using tar `tar -cvf output.tar log.benchmark output/` 
+    * On local desktop, `kubectl cp tigergraph-0:output.tar output.tar`
 
-To reset TigerGraph database
-```bash
-gsql drop all
-```
+1. To reset TigerGraph database
+    ```bash
+    gsql drop all
+    nohup ./k8s/setup.sh > log.setup 2>&1 < /dev/null &
+    ```
 
 ## Release the cluter
 ```bash
@@ -88,16 +96,16 @@ gcloud container clusters delete snb-bi-tg
 ## Benchmark without k8s
 Please refer to [the old benchmark](https://github.com/tigergraph/ecosys/tree/ldbc/ldbc_benchmark/tigergraph/queries_v3) for the details. 
 1. Manually install TigerGraph (may require configuration of the network, log-ins and install pre-requisites)
-2. Adjust the variables values in `vars.sh`
-3. On all machines, download the corresponding part of the data
+1. Adjust the variables values in `vars.sh`
+1. On all machines, download the corresponding part of the data
     ```bash
     ./download_one_pod.sh [index_of_node]
     ```
-4. On one machine, run the setup script
+1. On one machine, run the setup script
     ```bash
     nohup ./k8s/setup.sh > log.setup 2>&1 < /dev/null &
     ```
-5. On one machine, run the benchmark script
+1. On one machine, run the benchmark script
     ```bash
     nohup ./k8s/benchmark.sh > log.benchmark 2>&1 < /dev/null &
     ```

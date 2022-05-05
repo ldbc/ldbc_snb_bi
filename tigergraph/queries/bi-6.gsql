@@ -23,7 +23,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi6(STRING tag) SYNTAX v2 {
     POST-ACCUM 
       FOREACH p IN p1.@liked DO
         p1.@authorityScore += @@popularityScore.get(p)
-      END, 
+      END,
       @@result += RESULT(p1.id, p1.@authorityScore);
   
   PRINT @@result as result;

@@ -9,5 +9,5 @@ cd ../..
 numdiff \
     --separators='\|\n;,<>' \
     --absolute-tolerance 0.001 \
-    cypher/output/results.csv \
+    umbra/output/results.csv \
     tigergraph/output/results.csv

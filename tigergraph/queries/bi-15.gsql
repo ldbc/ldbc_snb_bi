@@ -1,113 +1,77 @@
-CREATE OR REPLACE DISTRIBUTED QUERY bi15(VERTEX<Person> person1Id, VERTEX<Person> person2Id, 
-    DATETIME startDate, DATETIME endDate) SYNTAX v2 {
-
-  TYPEDEF TUPLE <JSONARRAY personId, DOUBLE weight> RESULT;
-  HeapAccum<RESULT>(0, weight DESC, personId ASC) @@result;
-  OrAccum @@found, @@next=true;
-  ListAccum<ListAccum<VERTEX<Person>>> @paths;
-  ListAccum<ListAccum<VERTEX<Person>>> @@shortestPaths;
-  OrAccum @visited1, @visited2;
+//USE GRAPH ldbc_snb
+CREATE OR REPLACE DISTRIBUTED QUERY bi15precompute(DATETIME startDate, DATETIME endDate) SYNTAX v2 {
+  SetAccum<VERTEX<Person>> @neighbor;
+  MinAccum<VERTEX<Person>> @creator, @replyto;
+  MapAccum<VERTEX<Person>, SumAccum<UINT>> @replyCount;
+  OrAccum @visited, @toPost;
   INT startEpoch = datetime_to_epoch(startDate) * 1000;
   INT endEpoch = datetime_to_epoch(endDate) * 1000;
 
-  SetAccum<VERTEX<Person>> @@PersonInShortestPath;
-  SumAccum<UINT> @creatorId;
-  #bug in GroupAccum: semantic check error
-  GroupByAccum<UINT p1, UINT p2, SumAccum<DOUBLE> weight> @@KnowWeight; 
-  #MapAccum<UINT, MapAccum<UINT, SumAccum<DOUBLE>>> @@KnowWeight;
-  STRING jsonStr;
-  SumAccum<DOUBLE> @@weight;
-
-  S1 = {person1Id};
-  S2 = {person2Id};
-  S1 = Select s FROM S1:s ACCUM s.@visited1 = TRUE, s.@paths += [s];
-  S2 = Select s FROM S2:s ACCUM s.@visited2 = TRUE, s.@paths += [s];
+  M = SELECT m FROM Forum:f -(CONTAINER_OF>)- Post -(<REPLY_OF*)- (Comment|Post):m
+    WHERE f.creationDate BETWEEN startEpoch AND endEpoch ACCUM m.@visited += true;
+  M = SELECT m FROM  M:m -(HAS_CREATOR>)- Person:p ACCUM m.@creator += p;
+  tmp = SELECT p1 FROM Person:p1 -(KNOWS)- Person:p2 ACCUM p1.@neighbor += p2;
   
-  WHILE NOT @@found AND @@next DO
-    @@next = false;
-    S1 = 
-      SELECT t
-      FROM S1:s -(KNOWS)- Person:t
-      WHERE NOT t.@visited1
-      ACCUM 
-        IF t.@visited2 THEN #found the shortest path
-          @@found += TRUE,
-          FOREACH p1 IN s.@paths DO
-            FOREACH p2 IN t.@paths DO
-              @@shortestPaths += p1 + p2
-            END
-          END
-        ELSE #not found
-          @@next += true,
-          t.@visited1 += TRUE,
-          FOREACH p IN s.@paths DO
-            t.@paths += p + [t]
-          END
-        END;
-    
-    IF @@found OR NOT @@next THEN
-      BREAK;
-    END;
-    @@next = false;
-    S2 =   
-      SELECT t
-      FROM S2:s -(KNOWS)- Person:t
-      WHERE NOT t.@visited2
-      ACCUM 
-        IF t.@visited1 THEN #found the shortest path
-          @@found += TRUE,
-          FOREACH p1 IN s.@paths DO
-            FOREACH p2 IN t.@paths DO
-              @@shortestPaths += p2 + p1
-            END
-          END
-        ELSE #not found
-          @@next += true,
-          t.@visited2 += TRUE,
-          FOREACH p IN s.@paths DO
-            t.@paths += [t] + p 
-          END
-        END;
-  END;
-  #PRINT @@shortestPaths;
-  
-  
-  #Calculate weight for each path
-  FOREACH path IN @@shortestPaths DO
-    FOREACH p in path DO
-      @@PersonInShortestPath += p;
-    END;
-  END;
-
-  persons = {@@PersonInShortestPath};
-  comments = SELECT m FROM persons:p -(<HAS_CREATOR)- Comment:m ACCUM m.@creatorId = p.id;
-  commentsInForum = SELECT m 
-    FROM comments:m -(REPLY_OF>*)- Post -(<CONTAINER_OF)- Forum:f 
-    WHERE f.creationDate BETWEEN startEpoch AND endEpoch;
-  postsInForum = SELECT p 
-    FROM persons:c -(<HAS_CREATOR)- Post:p -(<CONTAINER_OF)- Forum:f 
-    WHERE f.creationDate BETWEEN startEpoch AND endEpoch
-    ACCUM p.@creatorId = c.id;
-  tmp = SELECT m2
-    FROM comments:m1 -(REPLY_OF>)- postsInForum:m2
-    ACCUM @@KnowWeight += (m1.@creatorId, m2.@creatorId -> 1.0);
-  tmp = SELECT m2
-    FROM comments:m1 -(REPLY_OF>)- commentsInForum:m2
-    ACCUM @@KnowWeight += (m1.@creatorId, m2.@creatorId -> 0.5);
-  
-  @@result.resize(@@shortestPaths.size());
-  FOREACH path IN @@shortestPaths DO
-    @@weight = 0.0;
-    jsonStr = "[";
-    FOREACH i in range[0,path.size()-2] DO 
-       jsonStr = jsonStr + bigint_to_string(path.get(i).id) + ",";
-       @@weight += @@KnowWeight.get(path.get(i).id, path.get(i+1).id).weight
-          + @@KnowWeight.get(path.get(i+1).id, path.get(i).id).weight;
-    END;
-    jsonStr = jsonStr + bigint_to_string(path.get(path.size()-1).id) + "]";
-    @@result += RESULT(parse_json_array(jsonStr), @@weight);
-  END;
-  PRINT @@result as result; 
+  M1 = SELECT m1 FROM M:m1 -(REPLY_OF>)- _:m2
+    WHERE m2.@visited 
+    ACCUM m1.@replyto += m2.@creator,
+      IF m2.type == "Post" THEN m1.@toPost += true END;
+  tmp = SELECT p FROM M1:m -(HAS_CREATOR>)- Person:p
+    WHERE m.@replyto IN p.@neighbor
+    ACCUM 
+      IF m.@toPost THEN
+        p.@replyCount += (m.@replyto -> 2)
+      ELSE
+        p.@replyCount += (m.@replyto -> 1)
+      END;
+  tmp =
+    SELECT p2
+    FROM Person:p1 -(KNOWS:e)- Person:p2
+    WHERE p1.id<p2.id AND (p1.@replyCount.get(p2) > 0 OR p2.@replyCount.get(p1) > 0)
+    ACCUM
+      INSERT INTO KNOWS15 (FROM, TO, weight) VALUES (p1, p2, 2.0/(2 + p1.@replyCount.get(p2) + p2.@replyCount.get(p1)));
 }
-#INSTALL QUERY bi15
-#RUN QUERY bi15(2199023259725,24189255821493,"2011-07-22T00:00:00","2012-07-31T00:00:00")
+
+CREATE OR REPLACE DISTRIBUTED QUERY bi15(VERTEX<Person> person1Id, VERTEX<Person> person2Id) syntax v2 {
+  MinAccum<DOUBLE> @@result, @dis;
+  OrAccum @next;
+  P = {Person.*};
+  @@result = P.size();
+  S = {person1Id};
+  S = SELECT s FROM S:s ACCUM s.@dis = 0; 
+  WHILE S.size()>0 DO
+    S = SELECT t FROM S:s-((KNOWS15|KNOWS):e)-Person:t 
+      ACCUM
+        DOUBLE t_dis = s.@dis + 1,
+        IF e.type == "KNOWS15" THEN
+          t_dis = s.@dis + e.weight
+        END,
+        IF t_dis < @@result AND t_dis < t.@dis THEN
+          t.@dis += t_dis,
+          t.@next += true, 
+          IF t == person2Id THEN
+            @@result += t_dis
+          END 
+        END
+      HAVING t.@next;
+    S = SELECT s FROM S:s ACCUM s.@next = false;
+  END;
+
+  IF ABS(@@result - P.size()) < 1 THEN
+    // if no path was found
+    PRINT -1 as result;
+  ELSE 
+    PRINT @@result as result;
+  END;
+}
+
+CREATE OR REPLACE DISTRIBUTED QUERY bi15cleanup() syntax v2 {
+  S = {Person.*};
+  DELETE e FROM S:v1 -(KNOWS15:e)- Person:v2;
+}
+/*
+INSTALL QUERY bi15precompute,bi15,bi15cleanup
+run query bi15cleanup()
+run query bi15precompute(448,8796093023144,"2010-05-02","2012-11-25")
+run query bi15(448,8796093023144)
+*/

@@ -12,4 +12,4 @@ else
 fi
 
 cd ..
-python3 -u benchmark.py ~/tigergraph/data/sf${SF} --cluster $HEADER_STR --para ~/tigergraph/data/parameters-sf${SF}
+python3 -u benchmark.py ${TG_DATA_DIR} --cluster $HEADER_STR --para ${TG_PARAMETER} --nruns ${NRUNS}

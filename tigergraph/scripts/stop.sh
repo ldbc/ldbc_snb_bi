@@ -10,3 +10,4 @@ cd ..
 
 echo "stop TG container ${TG_CONTAINER_NAME}"
 docker stop ${TG_CONTAINER_NAME} || echo "No container ${TG_CONTAINER_NAME} found"
+docker rm -f ${TG_CONTAINER_NAME}

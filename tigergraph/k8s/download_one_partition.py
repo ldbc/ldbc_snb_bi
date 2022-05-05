@@ -5,7 +5,7 @@ import argparse
 from multiprocessing import Pool, cpu_count
 import os
 parser = argparse.ArgumentParser(description='Download one partition of data from GCS bucket.')
-parser.add_argument('data',  type=str, choices=['100', '1k', '10k', '30k'], help='data scale factor.')
+parser.add_argument('data',  type=int, choices=[100, 300, 1000, 3000, 10000], help='data scale factor.')
 parser.add_argument('index', type=int, help='index of the node')
 parser.add_argument('nodes', type=int, help='the total number of nodes')
 parser.add_argument('--thread','-t', type=int, default=4, help='number of threads')
@@ -14,20 +14,9 @@ args = parser.parse_args()
 
 if args.key:
   os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = args.key
-"""
-buckets = {
-    '100': 'ldbc_bi',
-    '1k': 'ldbc_snb_1t',
-    '10k': 'ldbc_snb_10t_v2',
-    '30k': 'ldbc_snb_30t_v2',}
-roots = {
-  '100': 'sf100-with-header/',
-  '1k': 'sf1k/',
-  '10k':'composite-projected-fk/',
-  '30k':'composite-projected-fk/'}
 
-bucket = buckets[args.data]
-root = roots[args.data]
+bucket = 'ldbc_bi'
+root = f'sf{args.data}-bi/'
 target = Path(f'sf{args.data}')
 
 PARTITION_OR_NOT = {
@@ -134,11 +123,8 @@ if args.thread > 1:
   with Pool(processes=args.thread) as pool:
     pool.map(download,jobs2)
   print("downloading is done")
-"""
-# download parameter
-if args.data not in ['100'] and args.index != 0:
-  exit()
 
+# download parameters
 print("download parameters")
 client = storage.Client()  
 gcs_bucket = client.bucket('ldbc_bi')

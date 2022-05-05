@@ -26,7 +26,7 @@ result_mapping = {
     12: ["INT32", "INT32"],
     13: ["ID", "INT32", "INT32", "FLOAT32"],
     14: ["ID", "ID", "STRING", "INT32"],
-    15: ["ID[]", "FLOAT32"],
+    15: ["FLOAT32"],
     16: ["ID", "INT32", "INT32"],
     17: ["ID", "INT32"],
     18: ["ID", "ID", "INT32"],
@@ -67,15 +67,19 @@ def cast_parameter_to_driver_input(value, type):
 
 def run_query(endpoint, query_num, parameters):
     start = time.time()
-    response = requests.get(f'{endpoint}/query/ldbc_snb/bi{query_num}', 
-        headers=HEADERS, params=parameters).json()
+    if query_num == 15:
+        requests.get(f'{endpoint}/query/ldbc_snb/bi15precompute', headers=HEADERS, params=parameters)
+    response = requests.get(f'{endpoint}/query/ldbc_snb/bi{query_num}', headers=HEADERS, params=parameters).json()
+    if query_num == 15:
+        requests.get(f'{endpoint}/query/ldbc_snb/bi15cleanup', headers=HEADERS)
+
     end = time.time()
     if response['error']:
         print(response['message'])
         return '<>', 0
     results, duration = response['results'][0]['result'], end - start
-    # for BI-11, result is a INT
-    if isinstance(results, int):
+    # for BI-11 and BI-15, result is a single value
+    if isinstance(results, int) or isinstance(results, float):
         return f"[<{results}>]", duration
     
     #convert results from [dict()] to [[]] 
@@ -128,7 +132,7 @@ def run_queries(query_variants, results_file, timings_file, args):
             timings_file.write(f"TigerGraph|{sf}|{query_variant}|{query_parameters_in_order}|{duration:.6f}\n")
             timings_file.flush()
             # test run: 1 query, regular run: 10 queries
-            if args.test or i == 9:
+            if args.test or i == args.nruns-1:
                 break
     
     if not args.skip and ("19a" in query_variants or "19b" in query_variants):
@@ -153,6 +157,7 @@ if __name__ == '__main__':
     parser.add_argument('--para', type=Path, default=Path('../parameters'), help='parameter folder')
     parser.add_argument('--skip', action='store_true', help='skip precompute')
     parser.add_argument('--test', action='store_true', help='test mode only run one time')
+    parser.add_argument('--nruns', '-n', type=int, default=10, help='number of runs')
     parser.add_argument('--endpoint', type=str, default='http://127.0.0.1:9000',help='tigergraph endpoints')
     args = parser.parse_args()
     

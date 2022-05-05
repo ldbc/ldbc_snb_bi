@@ -1,13 +1,15 @@
 CREATE OR REPLACE DISTRIBUTED QUERY bi19(VERTEX<City> city1Id, VERTEX<City> city2Id) syntax v2 {
   TYPEDEF TUPLE <UINT person1Id, UINT person2Id, DOUBLE totalWeight> RESULT;
-  HeapAccum<RESULT>(20, totalWeight ASC, person1Id ASC, person2Id ASC) @@result;
-  GroupByAccum<UINT p1, UINT p2, MinAccum<DOUBLE> dist> @@paths;
-  MapAccum<UINT, MinAccum<DOUBLE>> @dist1;  
+  TYPEDEF TUPLE <UINT person1Id, UINT person2Id> PAIR;
+  HeapAccum<RESULT>(1, person1Id ASC, person2Id ASC) @@result;
+  MapAccum<DOUBLE, SetAccum<PAIR>> @@pairs;
+  SetAccum<PAIR> @@shortest;
+  MapAccum<UINT, MinAccum<DOUBLE>> @dist1;
   SumAccum<UINT> @creatorId; 
-  OrAccum @next1, @isTarget;
-  DOUBLE threshold;
+  OrAccum @next, @isTarget;
+  MinAccum<DOUBLE> @@threshold;
   P = {Person.*};
-  threshold = P.size();
+  @@threshold += P.size();
 
   city1 = {city1Id};
   city2 = {city2Id};
@@ -20,31 +22,26 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi19(VERTEX<City> city1Id, VERTEX<City> city
       ACCUM
         FOREACH (p,dis) IN s.@dist1 DO
           DOUBLE t_dis = dis + e.weight, 
-          IF t_dis < threshold AND t_dis < t.@dist1.get(p) THEN
+          IF t_dis < @@threshold + 0.0001 AND t_dis < t.@dist1.get(p) THEN
             t.@dist1 += (p -> t_dis),
-            t.@next1 += true, 
+            t.@next += true,
             IF t.@isTarget THEN
-              @@paths += (p, t.id->t_dis)
+              @@threshold += t_dis,
+              @@pairs += (t_dis -> PAIR(p, t.id))
             END 
           END
         END
-      HAVING t.@next1;
-    S = SELECT s FROM S:s ACCUM s.@next1 = false;
+      HAVING t.@next;
+    S = SELECT s FROM S:s ACCUM s.@next = false;
 
-    # Update the threshold
-    IF S.size()>0 AND @@paths.size() >= 20 THEN
-      @@result.clear();
-      FOREACH (p1,p2,dist) IN @@paths DO
-        @@result += RESULT(p1,p2,dist);
-      END;
-      FOREACH i IN RANGE[0, 19] DO
-        threshold = @@result.pop().totalWeight;
-      END; 
-    END;
-    #PRINT S.size();
-  END; # WHILE (S1.size()>0 OR S2.size()>0)
-  FOREACH (p1,p2,dist) IN @@paths DO
-    @@result += RESULT(p1,p2,dist);
+    @@shortest.clear();
+    @@shortest += @@pairs.get(@@threshold);
+    @@pairs.clear();
+    @@pairs += (@@threshold -> @@shortest); 
+  END;
+  @@result.resize(@@shortest.size());
+  FOREACH pp IN @@shortest DO
+    @@result += RESULT(pp.person1Id, pp.person2Id, @@threshold);
   END;
   PRINT @@result as result;
 }
