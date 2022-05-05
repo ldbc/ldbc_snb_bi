@@ -48,10 +48,9 @@ def load_by_restpp(job, data_dir, names, batch_dir, endpoint):
         for f in folder.iterdir():
             print(f'- {f}')
             url = f'{endpoint}/ddl/ldbc_snb?tag={job}&filename=file_{name}&sep=%7C&ack=all'
-            curl = f'curl -X POST  --data-binary  @{f} "{url}"'
+            curl = f'curl -X POST -H "GSQL-TIMEOUT:3600000" --data-binary  @{f} "{url}"'
             res = subprocess.run(curl, shell=True, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
             res = json.loads(res.stdout.decode("utf-8"))
-            print(res)
             nlines = res["results"][0]["statistics"]["validLine"]
             print(f'> {nlines} changes')
 
@@ -98,7 +97,7 @@ def run_batch_updates(start_date, end_date, timing_file, args):
         #t1 = time.time()
         load(f'delete_edge', args.data_dir/'deletes', DEL_EDGES, batch_dir, args)
         #duration += time.time() - t1
-        tot_time += time.time() - t0
+        tot_time = time.time() - t0
         timing_file.write(f'TigerGraph|write|{sf}|{batch_date}|{tot_time:.6f}\n')
         timing_file.flush()
         batch_date = batch_date + batch_size

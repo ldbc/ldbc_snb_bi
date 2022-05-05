@@ -24,4 +24,4 @@ else
     HEADER_STR=""
 fi
 
-python3 benchmark.py ${TG_DATA_DIR} --para $TG_PARAMETER --endpoint ${TG_ENDPOINT} ${HEADER_STR} $@
+python3 -u benchmark.py ${TG_DATA_DIR} --para $TG_PARAMETER --endpoint ${TG_ENDPOINT} ${HEADER_STR} $@
