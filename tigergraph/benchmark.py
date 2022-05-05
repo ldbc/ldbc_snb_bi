@@ -24,7 +24,7 @@ if __name__ == '__main__':
     query_variants = ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "15a", "15b", "16a", "16b", "17", "18", "19a", "19b", "20"]
 
     start_date = date(2012, 11, 29)
-    end_date = date(2012, 12, 2)
+    end_date = date(2013, 1, 1)
     batch_size = timedelta(days=1)
     while start_date < end_date:
         print()

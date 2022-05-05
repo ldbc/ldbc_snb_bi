@@ -6,7 +6,8 @@ import requests
 from datetime import datetime, date, timedelta
 from glob import glob
 import json
-import ast
+import os
+
 
 VERTICES = ['Comment', 'Forum', 'Person', 'Post']
 EDGES = ['Comment_hasCreator_Person', 'Comment_hasTag_Tag', 'Comment_isLocatedIn_Country',
@@ -64,6 +65,7 @@ def load_by_gsql(job, data_dir, names, batch_dir):
     subprocess.run(f'gsql -g ldbc_snb {gsql}', shell=True)
 
 def run_batch_updates(start_date, end_date, timing_file, args):
+    sf = os.environ.get("SF")
     docker_data = Path('/data') if not args.cluster else args.data_dir
     batch_size = timedelta(days=1)
     batch_date = start_date
