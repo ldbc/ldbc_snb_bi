@@ -10,8 +10,8 @@ use_sf10k() {
   export NUM_NODES=16
   export SF=10000
   export DOWNLOAD_THREAD=10
-  export TG_HEADER=true
-  export NRUNS=3
 }
 
 #use_sf10k
+export TG_DATA_DIR=~/tigergraph/data/sf${SF}
+export TG_PARAMETER=$HOME/tigergraph/data/parameters-sf${SF}
