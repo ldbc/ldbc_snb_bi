@@ -3,6 +3,7 @@ from pathlib import Path
 from datetime import datetime, date, timedelta
 from queries import run_queries
 from batches import run_batch_updates
+import os
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='LDBC TigerGraph BI workload Benchmark')
@@ -16,13 +17,11 @@ if __name__ == '__main__':
     parser.add_argument('--endpoint', type=str, default = 'http://127.0.0.1:9000', help='tigergraph rest port')
     args = parser.parse_args()
 
+    sf = os.environ.get("SF")
     results_file = open('output/results.csv', 'w')
     timings_file = open('output/timings.csv', 'w')
-    batch_timing = open('output/batch_timings.csv', 'w')
     timings_file.write(f"tool|sf|q|parameters|time\n")
-    batch_timing.write(f'date|operation|time\n')
     query_variants = ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "15a", "15b", "16a", "16b", "17", "18", "19a", "19b", "20"]
-
     start_date = date(2012, 11, 29)
     end_date = date(2013, 1, 1)
     batch_size = timedelta(days=1)
@@ -30,8 +29,11 @@ if __name__ == '__main__':
         print()
         print(f"----------------> Batch date: {start_date} <---------------")
         next_date = start_date + batch_size
-        run_batch_updates(start_date, next_date, batch_timing, args)
+        run_batch_updates(start_date, next_date, timings_file, args)
+        t0 = time.time()
         run_queries(query_variants, results_file, timings_file, args)
+        duration = time.time() - t0
+        timings_file.write(f'TigerGraph|read|{sf}|{start_date}|{duration:.6f}\n')
         start_date = next_date
 
     results_file.close()

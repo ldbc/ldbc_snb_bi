@@ -64,7 +64,7 @@ def load_by_gsql(job, data_dir, names, batch_dir):
     gsql += ', '.join([f'file_{name}=\\"ANY:{data_dir}/dynamic/{name}/{batch_dir}\\"' for name in names])
     subprocess.run(f'gsql -g ldbc_snb {gsql}', shell=True)
 
-def run_batch_updates(start_date, end_date, timing_file, args):
+def run_batch_updates(start_date, end_date, timings_file, args):
     sf = os.environ.get("SF")
     docker_data = Path('/data') if not args.cluster else args.data_dir
     batch_size = timedelta(days=1)
@@ -100,8 +100,8 @@ def run_batch_updates(start_date, end_date, timing_file, args):
         load(f'delete_edge', args.data_dir/'deletes', DEL_EDGES, batch_dir, args)
         #duration += time.time() - t1
         tot_time = time.time() - t0
-        timing_file.write(f'TigerGraph|write|{sf}|{batch_date}|{tot_time:.6f}\n')
-        timing_file.flush()
+        timings_file.write(f'TigerGraph|write|{sf}|{batch_date}|{tot_time:.6f}\n')
+        timings_file.flush()
         batch_date = batch_date + batch_size
 
 # main functions
@@ -115,8 +115,8 @@ if __name__ == '__main__':
 
     output = Path('output')
     output.mkdir(exist_ok=True)
-    timing_file = open(output/'batch_timing.csv', 'w')
-    timing_file.write(f'tool|sf|q|parameters|time\n')
+    timings_file = open(output/'timings.csv', 'w')
+    timings_file.write(f'tool|sf|q|parameters|time\n')
     network_start_date = date(2012, 11, 29)
     network_end_date = date(2013, 1, 1)
-    run_batch_updates(network_start_date, network_end_date, timing_file, args)
+    run_batch_updates(network_start_date, network_end_date, timings_file, args)

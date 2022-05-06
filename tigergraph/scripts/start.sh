@@ -50,13 +50,13 @@ docker run \
 
 echo -e "Waiting for the container to start.\n"
 echo
-until docker exec --user tigergraph --interactive --tty ${TG_CONTAINER_NAME} /home/tigergraph/tigergraph/app/cmd/gadmin version >/dev/null 2>&1; do
+until docker exec --user tigergraph ${TG_CONTAINER_NAME} /home/tigergraph/tigergraph/app/cmd/gadmin version >/dev/null 2>&1; do
   echo -n " ."
   sleep 1
 done
 
 echo -n "Starting the services."
-until docker exec --user tigergraph --interactive --tty ${TG_CONTAINER_NAME} /home/tigergraph/tigergraph/app/cmd/gadmin start all >/dev/null 2>&1; do
+until docker exec --user tigergraph ${TG_CONTAINER_NAME} /home/tigergraph/tigergraph/app/cmd/gadmin start all >/dev/null 2>&1; do
   echo -n " ."
   sleep 1
 done
@@ -65,7 +65,7 @@ if [ -z ${TG_LICENSE} ]; then
   echo "Trial license is used. For SF-100 and larger you need to provide a license by setting \$TG_LICENSE in scripts/vars.sh"
 else
   echo "Setting the license."
-  until docker exec --user tigergraph --interactive --tty ${TG_CONTAINER_NAME} bash -c "export PATH=/home/tigergraph/tigergraph/app/cmd:\$PATH; gadmin license set $TG_LICENSE; gadmin start ctrl; gadmin config apply -y; gadmin restart -y" >/dev/null 2>&1; do
+  until docker exec --user tigergraph ${TG_CONTAINER_NAME} bash -c "export PATH=/home/tigergraph/tigergraph/app/cmd:\$PATH; gadmin license set $TG_LICENSE; gadmin start ctrl; gadmin config apply -y; gadmin restart -y" >/dev/null 2>&1; do
     echo -n " ."
     sleep 1
   done
