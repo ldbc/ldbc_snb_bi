@@ -1,4 +1,4 @@
-SELECT
+SELECT DISTINCT
     people4Hops.person1Id AS 'person1Id:ID',
     people4Hops.person2Id AS 'person2Id:ID',
     (SELECT percentile_disc(0.95) WITHIN GROUP (ORDER BY creationDay) AS startAnchorDate FROM creationDayNumMessages) - INTERVAL (people4Hops.person1Id % 7) DAY AS 'startDate:DATE',
