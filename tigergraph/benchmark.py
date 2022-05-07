@@ -3,6 +3,7 @@ from pathlib import Path
 from datetime import datetime, date, timedelta
 from queries import run_queries
 from batches import run_batch_updates
+import time
 import os
 
 if __name__ == '__main__':
@@ -33,7 +34,7 @@ if __name__ == '__main__':
         t0 = time.time()
         run_queries(query_variants, results_file, timings_file, args)
         duration = time.time() - t0
-        timings_file.write(f'TigerGraph|read|{sf}|{start_date}|{duration:.6f}\n')
+        timings_file.write(f'TigerGraph|reads|{sf}|{start_date}|{duration:.6f}\n')
         start_date = next_date
 
     results_file.close()
