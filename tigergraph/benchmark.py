@@ -26,7 +26,8 @@ if __name__ == '__main__':
     end_date = date(2013, 1, 1)
     batch_size = timedelta(days=1)
     needClean = False
-    while start_date < end_date:
+    batch_date = start_date
+    while batch_date < end_date:
         print()
         print(f"----------------> Batch date: {start_date} <---------------")
         write_time = run_batch_update(batch_date, args)
