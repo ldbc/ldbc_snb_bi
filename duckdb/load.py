@@ -39,6 +39,7 @@ def run_script(con, filename, params=None, sf=None):
     queries = open(filename).read().split(";")
     final_result = []
     final_timing = []
+    total_time = 0
     for query in queries:
         logging.debug(query)
         if "-- PARAMS" in query:
@@ -48,21 +49,18 @@ def run_script(con, filename, params=None, sf=None):
                 custom_query = original_query
                 line = line.strip("\n")
                 split_line = line.split("|")
-                print(split_line[-1])
-                if split_line[-1] == "28587302326999":
-                    pass
                 for i in range(len(filtered_param_headers)):
                     custom_query = custom_query.replace(f"{filtered_param_headers[i]}", f"{split_line[i]}")
                 # print(custom_query)
                 start = timeit.default_timer()
 
-                result = con.execute(custom_query).fetchdf()
+                con.execute(custom_query)
 
                 stop = timeit.default_timer()
 
                 timing = stop - start
-                final_result.append(result)
-                final_timing.append(timing)
+
+                final_timing.append(timing + total_time)
         # elif "-- OUTPUT" in query:
         #
         #     start = timeit.default_timer()
@@ -73,26 +71,22 @@ def run_script(con, filename, params=None, sf=None):
         #
         #     timing = stop - start
         #     return result, timing
+        elif "-- RESULTS" in query:
+            start = timeit.default_timer()
+            final_result = con.execute(query).fetchdf()
+            stop = timeit.default_timer()
+            final_result = pd.DataFrame(final_result)
+            for time in final_timing:
+                time += stop - start
+            return final_result, final_timing
+        elif "-- DEBUG" in query:
+            result = con.execute(query).fetchdf()
+            print(result)
         else:
+            start = timeit.default_timer()
             con.execute(query)
-    if final_result and final_timing:
-        final_result = pd.concat(final_result)
-        return final_result, final_timing
-
-#  -- PARAMS
-# -- INSERT INTO src_dst (src, dst, cName) (SELECT p.rowid, p2.rowid, c.name
-# -- FROM PersonUniversity p
-# -- JOIN Person_workAt_Company pwc on p.id = pwc.PersonId
-# -- JOIN Company c on (pwc.CompanyId = c.id AND c.name = 'company')
-# -- JOIN PersonUniversity p2 on p2.id = person2id);
-# --
-# -- update src_dst s set v_size = (select count(*) from PersonUniversity p) where v_size is NULL;
-# -- CREATE TABLE src_dst
-# --     (id integer default 0,
-# --     v_size bigint,
-# --     src bigint,
-# --     dst bigint,
-# --     cName varchar);
+            stop = timeit.default_timer()
+            total_time += stop - start
 
 def process_arguments(argv):
     sf = ''
@@ -159,8 +153,13 @@ def load_entities(con, data_dir):
                         "Person", "Person_hasInterest_Tag", "Person_knows_Person", "Person_likes_Comment",
                         "Person_likes_Post", "Person_studyAt_University", "Person_workAt_Company", "Post",
                         "Post_hasTag_Tag"]
+    # Query 20
     static_entities = ["Organisation"]
     dynamic_entities = ["Person", "Person_knows_Person", "Person_studyAt_University", "Person_workAt_Company"]
+
+    # Query 19
+    static_entities = ["Place"]
+    dynamic_entities = ["Comment", "Person", "Person_knows_Person", "Post"]
 
     logging.info("## Static entities")
     for entity in static_entities:
