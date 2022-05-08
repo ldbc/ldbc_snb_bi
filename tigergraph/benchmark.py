@@ -29,10 +29,10 @@ if __name__ == '__main__':
     needClean = False
     batch_date = start_date
     while batch_date < end_date:
-        t0 = time.time()
+        start = time.time()
         duration = run_batch_update(batch_date, args)
         # For SF-10k and larger, sleep time may be needed after batch update to release memory
-        # time.sleep(write_time * 0.2)
+        # time.sleep(duration * 0.2)
         if needClean:
             if ("19a" in query_variants or "19b" in query_variants):
                 cleanup19(args, timings_file)
@@ -44,7 +44,7 @@ if __name__ == '__main__':
         if "20" in query_variants:
             precompute20(args, timings_file)
         needClean = True
-        writes_time = time.time() - t0
+        writes_time = time.time() - start
         timings_file.write(f"TigerGraph|{sf}|writes|{batch_date}|{writes_time:.6f}")
         reads_time = run_queries(query_variants, results_file, timings_file, args)
         timings_file.write(f"TigerGraph|{sf}|reads|{batch_date}|{reads_time:.6f}")
