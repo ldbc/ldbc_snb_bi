@@ -29,7 +29,7 @@ if __name__ == '__main__':
     batch_date = start_date
     while batch_date < end_date:
         print()
-        print(f"----------------> Batch date: {start_date} <---------------")
+        print(f"----------------> Batch date: {batch_date} <---------------")
         write_time = run_batch_update(batch_date, args)
         # in SF-10k benchmark, sleep time is needed after batch update to release memory, otherwise bi19precompute can cause OOM
         # sleep_time = write_time * 0.2
