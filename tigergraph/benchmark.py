@@ -4,6 +4,7 @@ from datetime import datetime, date, timedelta
 from queries import run_queries, precompute19, precompute20, cleanup19, cleanup20
 from batches import run_batch_update
 import os
+import time
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='LDBC TigerGraph BI workload Benchmark')
@@ -28,23 +29,25 @@ if __name__ == '__main__':
     needClean = False
     batch_date = start_date
     while batch_date < end_date:
-        print()
-        print(f"----------------> Batch date: {batch_date} <---------------")
-        write_time = run_batch_update(batch_date, args)
-        # in SF-10k benchmark, sleep time is needed after batch update to release memory, otherwise bi19precompute can cause OOM
-        # sleep_time = write_time * 0.2
-        # time.sleep(sleep_time)
-        # write_time += sleep_time
+        t0 = time.time()
+        duration = run_batch_update(batch_date, args)
+        # For SF-10k and larger, sleep time may be needed after batch update to release memory
+        # time.sleep(write_time * 0.2)
         if needClean:
-            write_time += cleanup19(args)
-            write_time += cleanup20(args)
+            if ("19a" in query_variants or "19b" in query_variants):
+                cleanup19(args, timings_file)
+            if "20" in query_variants:
+                cleanup20(args, timings_file)
             needClean = False
-        write_time += precompute19(args)
-        write_time += precompute20(args)
+        if ("19a" in query_variants or "19b" in query_variants):
+            precompute19(args, timings_file)
+        if "20" in query_variants:
+            precompute20(args, timings_file)
         needClean = True
-        timings_file.write(f"TigerGraph|{sf}|writes|{batch_date}|{write_time:.6f}")
-        read_time = run_queries(query_variants, results_file, timings_file, args)
-        timings_file.write(f"TigerGraph|{sf}|reads|{batch_date}|{read_time:.6f}")
+        writes_time = time.time() - t0
+        timings_file.write(f"TigerGraph|{sf}|writes|{batch_date}|{writes_time:.6f}")
+        reads_time = run_queries(query_variants, results_file, timings_file, args)
+        timings_file.write(f"TigerGraph|{sf}|reads|{batch_date}|{reads_time:.6f}")
         batch_date = batch_date + batch_size
 
     results_file.close()
