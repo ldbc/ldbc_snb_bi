@@ -93,25 +93,25 @@ def run_query(endpoint, query_num, parameters):
     return results, duration
 
 
-def precompute19():
+def precompute19(args):
     print("Precomputing weights for Q19")
     start = time.time()
     response = requests.get(f'{args.endpoint}/query/ldbc_snb/bi19precompute', headers=HEADERS).json()
     return time.time() - start
 
-def precompute20():
+def precompute20(args):
     print("Precomputing weights for Q20")
     start = time.time()
     response = requests.get(f'{args.endpoint}/query/ldbc_snb/bi20precompute', headers=HEADERS).json()
     return time.time() - start
 
-def cleanup19():
+def cleanup19(args):
     print("Cleaning weights for Q19")
     start = time.time()
     response = requests.get(f'{args.endpoint}/query/ldbc_snb/bi19cleanup', headers=HEADERS).json()
     return time.time() - start
 
-def cleanup20():
+def cleanup20(args):
     print("Cleaning weights for Q20")
     start = time.time()
     response = requests.get(f'{args.endpoint}/query/ldbc_snb/bi20cleanup', headers=HEADERS).json()
@@ -165,17 +165,17 @@ if __name__ == '__main__':
 
     sf = os.environ.get("SF")
     if not args.skip and ("19a" in query_variants or "19b" in query_variants):
-        timings_file.write(f"TigerGraph|{sf}|bi19precompute|{precompute19():.6f}")
+        timings_file.write(f"TigerGraph|{sf}|bi19precompute|{precompute19(args):.6f}")
         timings_file.flush()
     if not args.skip and "20" in query_variants:
-        timings_file.write(f"TigerGraph|{sf}|bi20precompute|{precompute20():.6f}")
+        timings_file.write(f"TigerGraph|{sf}|bi20precompute|{precompute20(args):.6f}")
         timings_file.flush()
     run_queries(query_variants, results_file, timings_file, args)
     if not args.skip and ("19a" in query_variants or "19b" in query_variants):
-        timings_file.write(f"TigerGraph|{sf}|bi19cleanup|{cleanup19():.6f}")
+        timings_file.write(f"TigerGraph|{sf}|bi19cleanup|{cleanup19(args):.6f}")
         timings_file.flush()
     if not args.skip and "20" in query_variants:
-        timings_file.write(f"TigerGraph|{sf}|bi20cleanup|{cleanup20():.6f}")
+        timings_file.write(f"TigerGraph|{sf}|bi20cleanup|{cleanup20(args):.6f}")
         timings_file.flush()
 
     results_file.close()

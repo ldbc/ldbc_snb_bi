@@ -36,11 +36,11 @@ if __name__ == '__main__':
         # time.sleep(sleep_time)
         # write_time += sleep_time
         if needClean:
-            write_time += cleanup19()
-            write_time += cleanup20()
+            write_time += cleanup19(args)
+            write_time += cleanup20(args)
             needClean = False
-        write_time += precompute19()
-        write_time += precompute20()
+        write_time += precompute19(args)
+        write_time += precompute20(args)
         needClean = True
         timings_file.write(f"TigerGraph|{sf}|writes|{write_time:.6f}")
         read_time = run_queries(query_variants, results_file, timings_file, args)
