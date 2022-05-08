@@ -1,9 +1,8 @@
 import argparse
 from pathlib import Path
 from datetime import datetime, date, timedelta
-from queries import run_queries
-from batches import run_batch_updates
-import time
+from queries import run_queries, precompute19, precompute20, cleanup19, cleanup20
+from batches import run_batch_update
 import os
 
 if __name__ == '__main__':
@@ -26,16 +25,26 @@ if __name__ == '__main__':
     start_date = date(2012, 11, 29)
     end_date = date(2013, 1, 1)
     batch_size = timedelta(days=1)
+    needClean = False
     while start_date < end_date:
         print()
         print(f"----------------> Batch date: {start_date} <---------------")
-        next_date = start_date + batch_size
-        run_batch_updates(start_date, next_date, timings_file, args)
-        t0 = time.time()
-        run_queries(query_variants, results_file, timings_file, args)
-        duration = time.time() - t0
-        timings_file.write(f'TigerGraph|reads|{sf}|{start_date}|{duration:.6f}\n')
-        start_date = next_date
+        write_time = run_batch_update(batch_date, args)
+        # in SF-10k benchmark, sleep time is needed after batch update to release memory, otherwise bi19precompute can cause OOM
+        # sleep_time = write_time * 0.2
+        # time.sleep(sleep_time)
+        # write_time += sleep_time
+        if needClean:
+            write_time += cleanup19()
+            write_time += cleanup20()
+            needClean = False
+        write_time += precompute19()
+        write_time += precompute20()
+        needClean = True
+        timings_file.write(f"TigerGraph|{sf}|writes|{write_time:.6f}")
+        read_time = run_queries(query_variants, results_file, timings_file, args)
+        timings_file.write(f"TigerGraph|{sf}|reads|{read_time:.6f}")
+        batch_date = batch_date + batch_size
 
     results_file.close()
     timings_file.close()
