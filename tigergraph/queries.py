@@ -98,7 +98,7 @@ def precompute19(args, timings_file):
     start = time.time()
     response = requests.get(f'{args.endpoint}/query/ldbc_snb/bi19precompute', headers=HEADERS).json()
     duration = time.time() - start
-    timings_file.write(f"TigerGraph|{sf}|bi19precompute|{duration:.6f}")
+    timings_file.write(f"TigerGraph|{os.environ.get("SF")}|bi19precompute|{duration:.6f}")
     timings_file.flush()
 
 def precompute20(args, timings_file):
@@ -106,7 +106,7 @@ def precompute20(args, timings_file):
     start = time.time()
     response = requests.get(f'{args.endpoint}/query/ldbc_snb/bi20precompute', headers=HEADERS).json()
     duration = time.time() - start
-    timings_file.write(f"TigerGraph|{sf}|bi20precompute|{duration:.6f}")
+    timings_file.write(f"TigerGraph|{os.environ.get("SF")}|bi20precompute|{duration:.6f}")
     timings_file.flush()
 
 def cleanup19(args, timings_file):
@@ -114,7 +114,7 @@ def cleanup19(args, timings_file):
     start = time.time()
     response = requests.get(f'{args.endpoint}/query/ldbc_snb/bi19cleanup', headers=HEADERS).json()
     duration = time.time() - start
-    timings_file.write(f"TigerGraph|{sf}|bi19cleanup|{duration:.6f}")
+    timings_file.write(f"TigerGraph|{os.environ.get("SF")}|bi19cleanup|{duration:.6f}")
     timings_file.flush()
 
 def cleanup20(args, timings_file):
@@ -122,7 +122,7 @@ def cleanup20(args, timings_file):
     start = time.time()
     response = requests.get(f'{args.endpoint}/query/ldbc_snb/bi20cleanup', headers=HEADERS).json()
     duration = time.time() - start
-    timings_file.write(f"TigerGraph|{sf}|bi20cleanup|{duration:.6f}")
+    timings_file.write(f"TigerGraph|{os.environ.get("SF")}|bi20cleanup|{duration:.6f}")
     timings_file.flush()
 
 def run_queries(query_variants, results_file, timings_file, args):

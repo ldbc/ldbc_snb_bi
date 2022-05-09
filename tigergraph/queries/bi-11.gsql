@@ -24,3 +24,29 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi11(STRING country, DATETIME startDate, DAT
   
   PRINT @@result as result;
 }
+
+/* Simpler query but slower
+CREATE OR REPLACE DISTRIBUTED QUERY bi11(STRING country, DATETIME startDate) SYNTAX v2 {
+  OrAccum<BOOL> @selected;
+  SumAccum<UINT> @@count;
+  INT startEpoch = datetime_to_epoch(startDate) * 1000;
+  INT endEpoch = datetime_to_epoch(endDate) * 1000;
+  
+  persons = SELECT p FROM Country:cn -(<IS_PART_OF.<IS_LOCATED_IN)- Person:p 
+    WHERE cn.name == country
+    ACCUM p.@selected += True;
+  persons =
+    SELECT p1
+    FROM persons:p1 -(KNOWS:k12)- Person:p2 -(KNOWS:k23)- Person:p3 -(KNOWS:k31)- Person:p1
+    WHERE
+      p2.@selected AND p3.@selected AND
+      p1.id < p2.id AND p2.id < p3.id AND
+      (k12.creationDate BETWEEN startEpoch AND endEpoch) AND 
+      (k23.creationDate BETWEEN startEpoch AND endEpoch) AND 
+      (k31.creationDate BETWEEN startEpoch AND endEpoch)
+    PER (p1, p2, p3)
+    ACCUM @@count += 1;
+
+  PRINT @@count as result;
+}
+*/
