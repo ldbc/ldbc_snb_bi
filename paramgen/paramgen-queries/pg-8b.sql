@@ -7,7 +7,7 @@ FROM (
         tagName,
         startDate,
         endDate,
-        abs(frequency - (SELECT percentile_disc(0.54) WITHIN GROUP (ORDER BY frequency) FROM tagAndWindowNumMessages)) diff
+        abs(frequency - (SELECT percentile_disc(0.31) WITHIN GROUP (ORDER BY frequency) FROM tagAndWindowNumMessages)) diff
     FROM tagAndWindowNumMessages
     ORDER BY diff, tagName, startDate
     LIMIT 100
