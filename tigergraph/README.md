@@ -1,9 +1,10 @@
 # LDBC SNB BI TigerGraph/GSQL implementation
-> **This section is for single-node benchmark. For cluster setup, refer to [k8s/README.md](./k8s).**
+**The instruction is for single-node benchmark.**
+We provide two methods for cluster setup.
+  1. [k8s/README.md](./k8s) - Deploy TG containers using [kubernetes (k8s)](https://kubernetes.io) 
+  1. [benchmark_on_cluster/README.md](./benchmark_on_cluster) - Manually install and configure TigerGraph
 
-[TigerGraph](https://www.tigergraph.com) implementation of the [LDBC SNB benchmark](https://github.com/ldbc/ldbc_snb_docs). 
-
-[[Old Benchmark]](https://github.com/tigergraph/ecosys/tree/ldbc/ldbc_benchmark/tigergraph/queries_v3)
+[[Old Benchmark link]](https://github.com/tigergraph/ecosys/tree/ldbc/ldbc_benchmark/tigergraph/queries_v3)
 
 ## Generating the data set
 

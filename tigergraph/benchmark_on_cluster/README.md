@@ -1,0 +1,63 @@
+
+# Benchmark on Google Cloud Cluster
+# Pre-requisites
+1. Google Cloud Command line `gcloud`. The default project and region/zone need to be configured using `gcloud init`.
+
+## Set up the cluster
+1. Create intance template. The number of machines is dependent on the data size and machine memory. NUMBER_OF_NODES * MEMORY_PER_MACHINE >= 1.3 * SCALE_FACTOR. In SF-10000, we created 20 instances of `n2d-highmem-96`. To achieve we created a template `n2d-96` in the [GCP Console](https://cloud.google.com/compute/docs/instance-templates/create-instance-templates):  machine type ``n2d-highmem-96``, Boot system `CentOS 7` (we once had bug on Ubuntu) and `persistent SSD` of `4096 GB`. Others are default settings.
+
+1. Reserve IP and create instances
+    ```sh
+    for i in $(seq 0 19)
+    do
+    let "ip = $i + 10"
+    gcloud compute addresses create ip${i} --region us-central1 --subnet default  --addresses  10.128.0.${ip}
+    done
+
+    for i in $(seq 0 19)
+    do
+    let "m = $i + 1"
+    let "ip = $i + 10"
+    gcloud compute instances create  m${m} --private-network-ip 10.128.0.${ip}  --source-instance-template n2d-96
+    done
+    ```
+
+1. log into instances 
+    ```sh
+    # on local machine
+    gcloud compute config-ssh
+    gcloud compute ssh m1
+    ```
+1. Setup instances 
+    ```sh
+    # on GCP m1 
+    git clone https://github.com/ldbc/ldbc_snb_bi.git
+    cd ldbc_snb_bi/tigergraph/benchmark_on_cluster
+    gcloud init
+    ```
+1. TigerGraph will be installed under user `tigergraph`. The password of the user need to be modified in `setup_GCP.sh`. Run
+    ```sh
+    sh setup_GCP.sh
+    # press enter and skip paraphrase
+    ```
+1. Download TigerGraph pacakge and modify `install_conf.json` with the one in this folder. Go the tigergraph pacakge and replace the license and ip addresses. Then install tigergraph in the non-interative mode
+    ```
+    ./install.sh -n
+    ```
+
+1. Download data, replace the ip address with the start ip in your case.
+    ```sh
+    # on GCP m1 
+    # log in as tigergraph
+    su - tigergraph 
+    # password tigergraph
+    sudo python3 -m pip install --upgrade pip
+    sudo pip3 install paramiko scp
+    git clone https://github.com/ldbc/ldbc_snb_bi.git
+    cd ldbc_snb_bi/tigergraph/benchmark_on_cluster
+    ```
+  Modify the password of TigerGraph user `download_all.py`, then run
+    ```sh
+    python3 download_all.py 10000 10.128.0.10 20 -t 10
+    ```
+  This script will run `../k8s/download_one_pod.sh` on all the machines. Usage of the `download_all.py` is `download_all.py [data source] [m1 IP address]`
