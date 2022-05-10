@@ -25,7 +25,7 @@ for parquet_file in [f for f in os.listdir(f"{temporal_parquet_path}Person_study
     print(f"- {parquet_file}")
     con.execute(f"""
         INSERT INTO Person_studyAt_University_window (
-            SELECT PersonId, UniversityId, to_timestamp(creationDate/1000), to_timestamp(deletionDate/1000)
+            SELECT PersonId, UniversityId
             FROM read_parquet('{temporal_parquet_path}Person_studyAt_University/{parquet_file}')
             WHERE to_timestamp(creationDate/1000) < TIMESTAMP '2012-11-29'
               AND to_timestamp(deletionDate/1000) > TIMESTAMP '2013-01-01'
@@ -37,7 +37,7 @@ for parquet_file in [f for f in os.listdir(f"{temporal_parquet_path}Person_workA
     print(f"- {parquet_file}")
     con.execute(f"""
         INSERT INTO Person_workAt_Company_window (
-            SELECT personId, companyId, to_timestamp(creationDate/1000), to_timestamp(deletionDate/1000)
+            SELECT personId, companyId
             FROM read_parquet('{temporal_parquet_path}Person_workAt_Company/{parquet_file}')
             WHERE to_timestamp(creationDate/1000) < TIMESTAMP '2012-11-29'
               AND to_timestamp(deletionDate/1000) > TIMESTAMP '2013-01-01'
@@ -49,7 +49,7 @@ for parquet_file in [f for f in os.listdir(f"{temporal_parquet_path}Person/") if
     print(f"- {parquet_file}")
     con.execute(f"""
         INSERT INTO person_window (
-            SELECT id, to_timestamp(creationDate/1000), to_timestamp(deletionDate/1000)
+            SELECT id
             FROM read_parquet('{temporal_parquet_path}Person/{parquet_file}')
             WHERE to_timestamp(creationDate/1000) < TIMESTAMP '2012-11-29'
               AND to_timestamp(deletionDate/1000) > TIMESTAMP '2013-01-01'
@@ -61,7 +61,7 @@ for parquet_file in [f for f in os.listdir(f"{temporal_parquet_path}Person_knows
     print(f"- {parquet_file}")
     con.execute(f"""
         INSERT INTO knows_window (
-            SELECT person1Id, person2Id, to_timestamp(creationDate/1000), to_timestamp(deletionDate/1000)
+            SELECT person1Id, person2Id
             FROM read_parquet('{temporal_parquet_path}Person_knows_Person/{parquet_file}')
             WHERE to_timestamp(creationDate/1000) < TIMESTAMP '2012-11-29'
               AND to_timestamp(deletionDate/1000) > TIMESTAMP '2013-01-01'
