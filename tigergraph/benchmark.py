@@ -35,14 +35,14 @@ if __name__ == '__main__':
         # time.sleep(duration * 0.2)
         if needClean:
             if ("19a" in query_variants or "19b" in query_variants):
-                cleanup19(args, timings_file)
+                cleanup19(args)
             if "20" in query_variants:
-                cleanup20(args, timings_file)
+                cleanup20(args)
             needClean = False
         if ("19a" in query_variants or "19b" in query_variants):
-            precompute19(args, timings_file)
+            precompute19(args)
         if "20" in query_variants:
-            precompute20(args, timings_file)
+            precompute20(args)
         needClean = True
         writes_time = time.time() - start
         timings_file.write(f"TigerGraph|{sf}|writes|{batch_date}|{writes_time:.6f}")
