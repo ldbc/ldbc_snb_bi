@@ -10,7 +10,7 @@ parser.add_argument('index', type=int, help='index of the node')
 parser.add_argument('nodes', type=int, help='the total number of nodes')
 parser.add_argument('--thread','-t', type=int, default=4, help='number of threads')
 parser.add_argument('--key','-k', type=str, default=None, help='service key file')
-parser.add_argument('--target', type=Path, default=Path('./'), help='target diretory to download')
+parser.add_argument('--target', type=Path, default=Path('/home/tigergraph/tigergraph/data'), help='target diretory to download')
 args = parser.parse_args()
 
 if args.key:
