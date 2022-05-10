@@ -11,5 +11,5 @@ for i in $( seq 0 $((NUM_NODES-1)) ); do
   echo "tigergraph-$i: Upload scripts"
   kubectl cp tmp.tar tigergraph-${i}:tmp.tar 
   echo "tigergraph-$i: Start download"
-  kubectl exec tigergraph-${i} -- bash -c "tar -xf tmp.tar; sh ./k8s/download_decompress.sh $i > log.download 2> /dev/null &"  
+  kubectl exec tigergraph-${i} -- bash -c "tar -xf tmp.tar; . k8s/vars.sh; sh ./k8s/download_decompress.sh $i > log.download 2> /dev/null &"  
 done

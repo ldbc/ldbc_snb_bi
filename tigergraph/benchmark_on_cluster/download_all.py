@@ -50,7 +50,6 @@ def main():
     ip = '.'.join(ip)
     ssh = createSSHClient(ip, 22, user, pin)
     scp = SCPClient(ssh.get_transport())
-    target = f'~/sf{args.data}'
     print(f'logging to {ip}')
     scp.put('../k8s/download_one_partition.py', workdir)
     scp.put('../k8s/download_decompress.sh', workdir)
@@ -61,12 +60,12 @@ def main():
       cd {workdir}
       . .profile
       pip3 install google-cloud-storage 
-      export data={args.data}
-      export index={i + args.start}
-      export nodes={args.parts if args.parts else args.nodes}
-      export target={target}
-      export thread={args.thread}
-      export key="{key}"
+      export SF={args.data}
+      export i={i + args.start}
+      export NUM_NODES={args.parts if args.parts else args.nodes}
+      export target=~/sf$SF
+      export DOWNLOAD_THREAD={args.thread}
+      export SERVICE_KEY="{key}"
       nohup sh download_decompress.sh > log.download 2>&1 < /dev/null &  
     ''')
     time.sleep(4)
