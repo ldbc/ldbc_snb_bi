@@ -14,7 +14,7 @@ FROM
     ORDER BY diff, Person_workAt_Company_window.companyId
     LIMIT 300
     ) comp
--- ensure that there is a three-hop path
+-- ensure that there is a two-hop path
 -- hop 1
 JOIN same_university_knows k1
   ON k1.person1Id = comp.person1Id

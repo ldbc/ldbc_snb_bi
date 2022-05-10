@@ -22,7 +22,7 @@ DROP TABLE IF EXISTS tagNumPersons;
 
 -- drop temporal entity tables
 DROP TABLE IF EXISTS Person_window;
-DROP TABLE IF EXISTS Person_studyAt_Univesity_window;
+DROP TABLE IF EXISTS Person_studyAt_University_window;
 DROP TABLE IF EXISTS Person_workAt_Company_window;
 DROP TABLE IF EXISTS knows_window;
 
@@ -52,7 +52,7 @@ CREATE TABLE tagNumMessages(tagId bigint not null, tagName varchar not null, fre
 CREATE TABLE tagNumPersons(tagId bigint not null, tagName varchar not null, frequency bigint not null);
 
 -- schema of temporal entity tables
-CREATE TABLE Person_window(personId bigint not null, creationDate date not null, deletionDate date not null);
-CREATE TABLE Person_studyAt_Univesity_window(personId bigint not null, universityId bigint not null, creationDate date not null, deletionDate date not null);
-CREATE TABLE Person_workAt_Company_window(personId bigint not null, companyId bigint not null, creationDate date not null, deletionDate date not null);
-CREATE TABLE knows_window(person1Id bigint not null, person2Id bigint not null, creationDate date not null, deletionDate date not null);
+CREATE TABLE Person_window(personId bigint not null);
+CREATE TABLE Person_studyAt_University_window(personId bigint not null, universityId bigint not null);
+CREATE TABLE Person_workAt_Company_window(personId bigint not null, companyId bigint not null);
+CREATE TABLE knows_window(person1Id bigint not null, person2Id bigint not null);
