@@ -33,11 +33,11 @@
     # on GCP m1 
     git clone https://github.com/ldbc/ldbc_snb_bi.git
     cd ldbc_snb_bi/tigergraph/benchmark_on_cluster
-    gcloud init
+    gcloud init --console-only
     ```
-1. TigerGraph will be installed under user `tigergraph`. The password of the user need to be modified in `setup_GCP.sh`. Run
+1. TigerGraph will be installed under user `tigergraph`. The password need to be modified in `setup_centOS.sh`. Run
     ```sh
-    sh setup_GCP.sh
+    ./setup_GCP.sh
     # press enter and skip paraphrase
     ```
 1. Download TigerGraph pacakge and modify `install_conf.json` with the one in this folder. Go the tigergraph pacakge and replace the license and ip addresses. Then install tigergraph in the non-interative mode

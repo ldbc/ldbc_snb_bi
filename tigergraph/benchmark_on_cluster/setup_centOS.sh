@@ -12,7 +12,5 @@ sudo sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/' /etc/ssh/s
 sudo service sshd reload
 
 sudo yum -y update
-sudo yum -y install python3-pip net-tools sshpass parallel git gzip
-sudo python3 -m pip install --upgrade pip
-sudo pip3 install google-cloud-storage
+sudo yum -y install net-tools sshpass parallel git gzip
 echo 'done CentOS setup'

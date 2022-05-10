@@ -40,7 +40,7 @@ def main():
   print("check data accessibility")
   storage_client = storage.Client()  
   bucket_name = 'my_bucket_name'
-  bucket = storage_client.bucket(buckets[args.data])
+  bucket = storage_client.bucket(bucket)
   stats = storage.Blob(bucket=bucket, name=roots[args.data]).exists(storage_client)
   print("The bucket can be accessed")
   
