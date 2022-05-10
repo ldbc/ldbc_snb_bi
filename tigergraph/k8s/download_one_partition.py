@@ -10,6 +10,7 @@ parser.add_argument('index', type=int, help='index of the node')
 parser.add_argument('nodes', type=int, help='the total number of nodes')
 parser.add_argument('--thread','-t', type=int, default=4, help='number of threads')
 parser.add_argument('--key','-k', type=str, default=None, help='service key file')
+parser.add_argument('--target', type=Path, default=Path(f'sf{args.data}'), help='target diretory to download')
 args = parser.parse_args()
 
 if args.key:
@@ -17,7 +18,6 @@ if args.key:
 
 bucket = 'ldbc_bi'
 root = f'sf{args.data}-bi/'
-target = Path(f'sf{args.data}')
 
 PARTITION_OR_NOT = {
   'initial_snapshot': True,
@@ -68,7 +68,7 @@ for d2 in ['static', 'dynamic']:
   for name in NAMES[d2]:
     loc = '/'.join([d1,d2,name]) + '/'
     prefix = root + loc
-    target_dir = target / loc
+    target_dir = args.target / loc
     target_dir.mkdir(parents=True, exist_ok=True)
     i = -1
     for blob in client.list_blobs(bucket, prefix=prefix):
@@ -97,7 +97,7 @@ for d1 in ['inserts','deletes']:
       if PARTITION_OR_NOT[d1] and i % args.nodes != args.index: continue
       batch, csv = blob_name.rsplit('/',2)[-2:]
       if name=='Comment': print(d1, name, batch, i)
-      target_dir = target / loc / batch
+      target_dir = args.target / loc / batch
       target_dir.mkdir(parents=True, exist_ok=True)
       if args.thread > 1:
         jobs.append((blob_name, target_dir/csv))

@@ -40,7 +40,7 @@
     ./setup_GCP.sh
     # press enter and skip paraphrase
     ```
-1. Download TigerGraph pacakge and modify `install_conf.json` with the one in this folder. Go the tigergraph pacakge and replace the license and ip addresses. Then install tigergraph in the non-interative mode
+1. Download TigerGraph pacakge and modify `install_conf.json`. Please provide the license, IP address, and sudo username (here is tigergraph) and password. Then run
     ```
     ./install.sh -n
     ```
