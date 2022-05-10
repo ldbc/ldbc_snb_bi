@@ -21,16 +21,15 @@ args = parser.parse_args()
 user = "tigergraph"
 pin = "tigergraph" # please change the pin here
 workdir = '/home/tigergraph'
+bucket_name = 'ldbc_bi'
+root = f'sf{args.data}-bi/'
+
 def createSSHClient(server, port, user, password):
     client = paramiko.SSHClient()
     client.load_system_host_keys()
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     client.connect(server, port, user, password)
     return client
-
-
-bucket = 'ldbc_bi'
-root = f'sf{args.data}-bi/'
 
 def main():
   key = ''
@@ -39,9 +38,8 @@ def main():
     key = f'-k {args.key}'
   print("check data accessibility")
   storage_client = storage.Client()  
-  bucket_name = 'my_bucket_name'
-  bucket = storage_client.bucket(bucket)
-  stats = storage.Blob(bucket=bucket, name=roots[args.data]).exists(storage_client)
+  bucket = storage_client.bucket(bucket_name)
+  stats = storage.Blob(bucket=bucket, name=root).exists(storage_client)
   print("The bucket can be accessed")
   
   
