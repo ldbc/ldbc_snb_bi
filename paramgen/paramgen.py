@@ -24,7 +24,7 @@ print("Person_studyAt_University")
 for parquet_file in [f for f in os.listdir(f"{temporal_parquet_path}Person_studyAt_University/") if f.endswith(".snappy.parquet")]:
     print(f"- {parquet_file}")
     con.execute(f"""
-        INSERT INTO person_studyat_univesity_window (
+        INSERT INTO Person_studyAt_University_window (
             SELECT PersonId, UniversityId, to_timestamp(creationDate/1000), to_timestamp(deletionDate/1000)
             FROM read_parquet('{temporal_parquet_path}Person_studyAt_University/{parquet_file}')
             WHERE to_timestamp(creationDate/1000) < TIMESTAMP '2012-11-29'

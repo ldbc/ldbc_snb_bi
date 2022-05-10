@@ -4,9 +4,9 @@ CREATE TABLE same_university_knows AS
     FROM (
       SELECT k.person1Id AS person1Id, k.person2Id AS person2Id, p1.universityId AS universityId
       FROM knows_window k
-      JOIN Person_studyAt_Univesity_window p1
+      JOIN Person_studyAt_University_window p1
         ON p1.personId = k.person1Id
     ) p1joined
-    JOIN Person_studyAt_Univesity_window p2
+    JOIN Person_studyAt_University_window p2
       ON p2.personId = p1joined.person2Id
      AND p2.universityId = p1joined.universityId
