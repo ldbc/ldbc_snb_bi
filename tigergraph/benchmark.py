@@ -45,9 +45,9 @@ if __name__ == '__main__':
             precompute20(args)
         needClean = True
         writes_time = time.time() - start
-        timings_file.write(f"TigerGraph|{sf}|writes|{batch_date}|{writes_time:.6f}")
+        timings_file.write(f"TigerGraph|{sf}|writes|{batch_date}|{writes_time:.6f}\n")
         reads_time = run_queries(query_variants, results_file, timings_file, args)
-        timings_file.write(f"TigerGraph|{sf}|reads|{batch_date}|{reads_time:.6f}")
+        timings_file.write(f"TigerGraph|{sf}|reads|{batch_date}|{reads_time:.6f}\n")
         batch_date = batch_date + batch_size
 
     results_file.close()

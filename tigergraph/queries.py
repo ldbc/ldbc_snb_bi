@@ -165,17 +165,17 @@ if __name__ == '__main__':
 
     sf = os.environ.get("SF")
     if not args.skip and ("19a" in query_variants or "19b" in query_variants):
-        timings_file.write(f"TigerGraph|{sf}|bi19precompute|{precompute19(args):.6f}")
+        timings_file.write(f"TigerGraph|{sf}|bi19precompute|{precompute19(args):.6f}\n")
         timings_file.flush()
     if not args.skip and "20" in query_variants:
-        timings_file.write(f"TigerGraph|{sf}|bi20precompute|{precompute20(args):.6f}")
+        timings_file.write(f"TigerGraph|{sf}|bi20precompute|{precompute20(args):.6f}\n")
         timings_file.flush()
     run_queries(query_variants, results_file, timings_file, args)
     if not args.skip and ("19a" in query_variants or "19b" in query_variants):
-        timings_file.write(f"TigerGraph|{sf}|bi19cleanup|{cleanup19(args):.6f}")
+        timings_file.write(f"TigerGraph|{sf}|bi19cleanup|{cleanup19(args):.6f}\n")
         timings_file.flush()
     if not args.skip and "20" in query_variants:
-        timings_file.write(f"TigerGraph|{sf}|bi19cleanup|{cleanup20(args):.6f}")
+        timings_file.write(f"TigerGraph|{sf}|bi19cleanup|{cleanup20(args):.6f}\n")
         timings_file.flush()
     
     results_file.close()
