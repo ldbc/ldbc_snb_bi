@@ -35,6 +35,7 @@
     cd ldbc_snb_bi/tigergraph/benchmark_on_cluster
     gcloud init --console-only
     ```
+
 1. TigerGraph will be installed under user `tigergraph`. The password need to be modified in `setup_centOS.sh`. Run
     ```sh
     ./setup_GCP.sh
@@ -45,19 +46,41 @@
     ./install.sh -n
     ```
 
-1. Download data, replace the ip address with the start ip in your case.
-    ```sh
-    # on GCP m1 
-    # log in as tigergraph
-    su - tigergraph 
-    # password tigergraph
-    sudo python3 -m pip install --upgrade pip
-    sudo pip3 install paramiko scp
-    git clone https://github.com/ldbc/ldbc_snb_bi.git
-    cd ldbc_snb_bi/tigergraph/benchmark_on_cluster
-    ```
-  Modify the password of TigerGraph user `download_all.py`, then run
-    ```sh
-    python3 download_all.py 10000 10.128.0.10 20 -t 10
-    ```
-  This script will run `../k8s/download_one_pod.sh` on all the machines. Usage of the `download_all.py` is `download_all.py [data source] [m1 IP address]`
+## Download Data
+Download data, replace the ip address with the start ip in your case.
+```sh
+# on GCP m1 
+# log in as tigergraph
+su - tigergraph 
+# password tigergraph
+sudo python3 -m pip install --upgrade pip
+sudo pip3 install paramiko scp
+git clone https://github.com/ldbc/ldbc_snb_bi.git
+cd ldbc_snb_bi/tigergraph
+```
+Modify the password of TigerGraph user `download_all.py`, then run
+```sh
+python3 benchmark_on_cluster/download_all.py 10000 10.128.0.10 20 -t 10
+```
+This script will run `./k8s/download_one_pod.sh` on all the machines. Usage of the `download_all.py` is 
+```sh
+download_all.py [scale factor] [m1 ip address] [number of nodes] -t [download threads]`
+```
+
+## Load data
+Update `TG_DATA_DIR` and `TG_PARAMETER` in `../k8s/vars.sh` and the load the data
+```sh
+nohup ./k8s/setup.sh > log.setup 2>&1 < /dev/null &
+```
+
+## Run benchmark
+To run benchmark scripts
+```bash
+nohup ./k8s/benchmark.sh > log.benchmark 2>&1 < /dev/null &
+```
+The `queries.sh` and `batches.sh` can be run in the similar approach. To download, 
+
+To clear the TigerGraph database
+```bash
+gsql drop all
+```

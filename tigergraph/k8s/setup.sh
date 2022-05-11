@@ -3,7 +3,9 @@ set -eu
 set -o pipefail
 
 cd "$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-. vars.sh
+cd ..
+
+. k8s/vars.sh
 
 sed "s;header=\"false\";header=\"$TG_HEADER\";" $DDL_PATH/load_static.gsql > $DDL_PATH/load.gsql
 sed "s;header=\"false\";header=\"$TG_HEADER\";" $DDL_PATH/load_dynamic.gsql >> $DDL_PATH/load.gsql
