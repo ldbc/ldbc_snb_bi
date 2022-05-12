@@ -92,6 +92,11 @@ def run_query(endpoint, query_num, parameters):
     ]) + "]"
     return results, duration
 
+def precompute6(args):
+    print("Precomputing weights for Q6")
+    start = time.time()
+    response = requests.get(f'{args.endpoint}/query/ldbc_snb/bi6precompute', headers=HEADERS).json()
+    return time.time() - start
 
 def precompute19(args):
     print("Precomputing weights for Q19")
@@ -125,9 +130,7 @@ def run_queries(query_variants, results_file, timings_file, args):
         query_num = int(re.sub("[^0-9]", "", query_variant))
         parameters_csv = csv.DictReader(open(args.para / f'bi-{query_variant}.csv'), delimiter='|')
         parameters = [{"name": t[0], "type": t[1]} for t in [f.split(":") for f in parameters_csv.fieldnames]]
-        
-        # Q6 use outdegress function, need to make sure rebuild is done
-        if query_num == 6: requests.get(f'{args.endpoint}/rebuildnow', headers=HEADERS)
+
         for i,query_parameters in enumerate(parameters_csv):
             query_parameters_split = {k.split(":")[0]: v for k, v in query_parameters.items()}
             query_parameters_in_order = f'<{";".join([query_parameters_split[parameter["name"]] for parameter in parameters])}>'
@@ -164,6 +167,9 @@ if __name__ == '__main__':
     query_variants = ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "15a", "15b", "16a", "16b", "17", "18", "19a", "19b", "20"]
 
     sf = os.environ.get("SF")
+    if not args.skip and "6" in query_variants:
+        timings_file.write(f"TigerGraph|{sf}|bi6precompute|{precompute6(args):.6f}\n")
+        timings_file.flush()
     if not args.skip and ("19a" in query_variants or "19b" in query_variants):
         timings_file.write(f"TigerGraph|{sf}|bi19precompute|{precompute19(args):.6f}\n")
         timings_file.flush()

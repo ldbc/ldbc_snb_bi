@@ -1,7 +1,7 @@
 import argparse
 from pathlib import Path
 from datetime import datetime, date, timedelta
-from queries import run_queries, precompute19, precompute20, cleanup19, cleanup20
+from queries import run_queries, precompute6, precompute19, precompute20, cleanup19, cleanup20
 from batches import run_batch_update
 import os
 import time
@@ -39,6 +39,8 @@ if __name__ == '__main__':
             if "20" in query_variants:
                 cleanup20(args)
             needClean = False
+        if "6" in query_variants:
+            precompute6(args)
         if ("19a" in query_variants or "19b" in query_variants):
             precompute19(args)
         if "20" in query_variants:
