@@ -1,7 +1,7 @@
 import argparse
 from pathlib import Path
 from datetime import datetime, date, timedelta
-from queries import run_queries, precompute6, precompute19, precompute20, cleanup19, cleanup20
+from queries import run_queries, precompute, cleanup
 from batches import run_batch_update
 import os
 import time
@@ -23,6 +23,7 @@ if __name__ == '__main__':
     timings_file = open('output/timings.csv', 'w')
     timings_file.write(f"tool|sf|q|parameters|time\n")
     query_variants = ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "15a", "15b", "16a", "16b", "17", "18", "19a", "19b", "20"]
+    query_nums = [int(re.sub("[^0-9]", "", query_variant)) for query_variant in query_variants]
     start_date = date(2012, 11, 29)
     end_date = date(2013, 1, 1)
     batch_size = timedelta(days=1)
@@ -34,17 +35,14 @@ if __name__ == '__main__':
         # For SF-10k and larger, sleep time may be needed after batch update to release memory
         # time.sleep(duration * 0.2)
         if needClean:
-            if ("19a" in query_variants or "19b" in query_variants):
-                cleanup19(args)
-            if "20" in query_variants:
-                cleanup20(args)
-            needClean = False
-        if "6" in query_variants:
-            precompute6(args)
-        if ("19a" in query_variants or "19b" in query_variants):
-            precompute19(args)
-        if "20" in query_variants:
-            precompute20(args)
+            for query_num in [19,20]:
+                if query_num in query_nums:
+                    cleanup(query_num, args.endpoint)
+        needClean = False
+        
+        for query_num in [4,6,19,20]:
+            if query_num in query_nums:
+                precompute(query_num, args.endpoint)
         needClean = True
         writes_time = time.time() - start
         timings_file.write(f"TigerGraph|{sf}|writes|{batch_date}|{writes_time:.6f}\n")

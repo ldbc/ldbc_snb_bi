@@ -30,9 +30,9 @@ CREATE LOADING JOB load_dynamic FOR GRAPH ldbc_snb {
   LOAD file_Post
     TO VERTEX Post VALUES ($1, $2, ToMiliSeconds($0), $3, $4, $5, $6, $7) USING header="false", separator="|";
   LOAD file_Forum
-    TO VERTEX Forum VALUES ($1, $2, ToMiliSeconds($0)) USING header="false", separator="|";
+    TO VERTEX Forum VALUES ($1, $2, ToMiliSeconds($0), _) USING header="false", separator="|";
   LOAD file_Person
-    TO VERTEX Person VALUES ($1, $2, $3, $4, ToMiliSeconds($5), ToMiliSeconds($0), $6, $7, SPLIT($8,";"), SPLIT($9,";")) USING header="false", separator="|";
+    TO VERTEX Person VALUES ($1, $2, $3, $4, ToMiliSeconds($5), ToMiliSeconds($0), $6, $7, SPLIT($8,";"), SPLIT($9,";"), _) USING header="false", separator="|";
 
   // load dynamic edge
   LOAD file_Forum_containerOf_Post

@@ -92,34 +92,16 @@ def run_query(endpoint, query_num, parameters):
     ]) + "]"
     return results, duration
 
-def precompute6(args):
-    print("Precomputing weights for Q6")
+def precompute(query_num, endpoint):
+    print(f"Precomputing weights for Q{query_num}")
     start = time.time()
-    response = requests.get(f'{args.endpoint}/query/ldbc_snb/bi6precompute', headers=HEADERS).json()
+    response = requests.get(f'{endpoint}/query/ldbc_snb/bi{query_num}precompute', headers=HEADERS).json()
     return time.time() - start
 
-def precompute19(args):
-    print("Precomputing weights for Q19")
+def cleanup(query_num, endpoint):
+    print(f"Cleaning weights for Q{query_num}")
     start = time.time()
-    response = requests.get(f'{args.endpoint}/query/ldbc_snb/bi19precompute', headers=HEADERS).json()
-    return time.time() - start
-
-def precompute20(args):
-    print("Precomputing weights for Q20")
-    start = time.time()
-    response = requests.get(f'{args.endpoint}/query/ldbc_snb/bi20precompute', headers=HEADERS).json()
-    return time.time() - start
-
-def cleanup19(args):
-    print("Cleaning weights for Q19")
-    start = time.time()
-    response = requests.get(f'{args.endpoint}/query/ldbc_snb/bi19cleanup', headers=HEADERS).json()
-    return time.time() - start
-
-def cleanup20(args):
-    print("Cleaning weights for Q20")
-    start = time.time()
-    response = requests.get(f'{args.endpoint}/query/ldbc_snb/bi20cleanup', headers=HEADERS).json()
+    response = requests.get(f'{endpoint}/query/ldbc_snb/bi{query_num}cleanup', headers=HEADERS).json()
     return time.time() - start
 
 def run_queries(query_variants, results_file, timings_file, args):
@@ -167,22 +149,19 @@ if __name__ == '__main__':
     query_variants = ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "15a", "15b", "16a", "16b", "17", "18", "19a", "19b", "20"]
 
     sf = os.environ.get("SF")
-    if not args.skip and "6" in query_variants:
-        timings_file.write(f"TigerGraph|{sf}|bi6precompute|{precompute6(args):.6f}\n")
-        timings_file.flush()
-    if not args.skip and ("19a" in query_variants or "19b" in query_variants):
-        timings_file.write(f"TigerGraph|{sf}|bi19precompute|{precompute19(args):.6f}\n")
-        timings_file.flush()
-    if not args.skip and "20" in query_variants:
-        timings_file.write(f"TigerGraph|{sf}|bi20precompute|{precompute20(args):.6f}\n")
-        timings_file.flush()
+    # precomputation for BI 4, 6, 19, 20
+    query_nums = [int(re.sub("[^0-9]", "", query_variant)) for query_variant in query_variants]
+    for query_num in [4,6,19,20]:
+        if not args.skip and query_num in query_nums:
+            timings_file.write(f"TigerGraph|{sf}|bi{query_num}precompute|{precompute(query_num, args.endpoint):.6f}\n")
+            timings_file.flush()
+    
     run_queries(query_variants, results_file, timings_file, args)
-    if not args.skip and ("19a" in query_variants or "19b" in query_variants):
-        timings_file.write(f"TigerGraph|{sf}|bi19cleanup|{cleanup19(args):.6f}\n")
-        timings_file.flush()
-    if not args.skip and "20" in query_variants:
-        timings_file.write(f"TigerGraph|{sf}|bi19cleanup|{cleanup20(args):.6f}\n")
-        timings_file.flush()
+    # cleanup for 19 and 20
+    for query_num in [19,20]:
+        if not args.skip and query_num in query_nums:
+            timings_file.write(f"TigerGraph|{sf}|bi{query_num}cleanup|{cleanup(query_num, args.endpoint):.6f}\n")
+            timings_file.flush()
     
     results_file.close()
     timings_file.close()
