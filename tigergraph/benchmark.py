@@ -5,6 +5,7 @@ from queries import run_queries, precompute, cleanup
 from batches import run_batch_update
 import os
 import time
+import re
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='LDBC TigerGraph BI workload Benchmark')
