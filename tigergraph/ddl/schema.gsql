@@ -10,7 +10,8 @@ CREATE VERTEX Country (id UINT PRIMARY KEY, name STRING, url STRING)
 CREATE VERTEX Continent (id UINT PRIMARY KEY, name STRING, url STRING)
 ## etc
 CREATE VERTEX Forum (id UINT PRIMARY KEY, title STRING, creationDate INT)
-CREATE VERTEX Person (id UINT PRIMARY KEY, firstName STRING, lastName STRING, gender STRING, birthday INT, creationDate INT, locationIP STRING, browserUsed STRING, speaks SET<STRING>, email SET<STRING>)
+CREATE VERTEX Person (id UINT PRIMARY KEY, firstName STRING, lastName STRING, gender STRING, birthday INT, creationDate INT,
+  locationIP STRING, browserUsed STRING, speaks SET<STRING>, email SET<STRING>, popularityScore UINT) // popularityScore is for precompute in BI-6
 CREATE VERTEX Tag (id UINT PRIMARY KEY, name STRING, url STRING)
 CREATE VERTEX TagClass (id UINT PRIMARY KEY, name STRING, url STRING)
 

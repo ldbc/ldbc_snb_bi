@@ -2,7 +2,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi13(STRING country, DATETIME endDate) SYNTA
 
   TYPEDEF TUPLE <UINT zombieId, UINT zombieLikeCount, UINT totalLikeCount, DOUBLE zombieScore> RESULT;
   HeapAccum<RESULT>(100, zombieScore DESC, zombieId ASC) @@result;
-  SetAccum<VERTEX<Person>> @@zombies;
+  OrAccum<BOOL> @selected; 
   SumAccum<UINT> @messageCount;
   SumAccum<UINT> @totalLikeCount;
   SumAccum<UINT> @zombieLikeCount;
@@ -24,15 +24,15 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi13(STRING country, DATETIME endDate) SYNTA
     FROM zombieCandidates:p
     WHERE p.@messageCount < (year(endDate) - year(epoch_to_datetime(p.creationDate/1000))) * 12 + 
         (month(endDate) - month(epoch_to_datetime(p.creationDate/1000))) + 1
-    POST-ACCUM @@zombies += p;
+    ACCUM p.@selected += true;
 
-  liker =
+  tmp =
     SELECT z
     FROM zombies:z -(<HAS_CREATOR)- (Comment|Post):m -(<LIKES)- Person:p
     WHERE p.creationDate < endEpoch
     ACCUM
       z.@totalLikeCount += 1,
-      IF p IN @@zombies THEN
+      IF p.@selected THEN
         z.@zombieLikeCount += 1
       END;
 

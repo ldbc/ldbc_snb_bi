@@ -12,4 +12,4 @@ else
 fi
 
 cd ..
-python3 -u benchmark.py ${TG_DATA_DIR} --cluster $HEADER_STR --para ${TG_PARAMETER} --nruns ${NRUNS}
+python3 -u benchmark.py ${TG_DATA_DIR} --cluster $HEADER_STR --para ${TG_PARAMETER} --nruns ${NRUNS} $@

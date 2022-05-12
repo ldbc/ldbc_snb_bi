@@ -9,13 +9,10 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi4 (DATETIME date) SYNTAX v2 {
   SumAccum<UINT> @messageCount;
   INT epoch = datetime_to_epoch(date) * 1000;
   
-  F = {Forum.*};
-  F = SELECT f FROM F:f WHERE f.creationDate > epoch;
-  persons = SELECT f FROM F:f -(HAS_MEMBER>)- Person:p ACCUM p.@selected += TRUE;
-  persons = SELECT p FROM Country:c -(<IS_PART_OF.<IS_LOCATED_IN)- Person:p 
-    WHERE p.@selected
+  tmp = SELECT p FROM Country:c -(<IS_PART_OF.<IS_LOCATED_IN)- Person:p 
     ACCUM p.@country = c;
-  popularForums = SELECT f FROM F:f -(HAS_MEMBER>)- Person:p 
+  popularForums = SELECT f FROM Forum:f -(HAS_MEMBER>)- Person:p
+    WHERE f.creationDate > epoch
     ACCUM f.@memberCount += (p.@country -> 1)
     POST-ACCUM
       FOREACH (country, num) IN f.@memberCount DO
