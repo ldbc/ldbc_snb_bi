@@ -1,35 +1,3 @@
-// outdegree function requires rebuild is done
-// To check the rebuild is done using command: curl -s -H "GSQL-TIMEOUT:2500000" "http://127.0.0.1:9000/rebuildnow"  
-CREATE OR REPLACE DISTRIBUTED QUERY bi6(STRING tag) SYNTAX v2 {
-  TYPEDEF TUPLE <UINT personId, UINT authorityScore> RESULT;
-  HeapAccum<RESULT>(100, authorityScore DESC, personId ASC) @@result;
-  MapAccum<VERTEX<Person>, UINT> @@popularityScore;
-  SumAccum<UINT> @authorityScore;
-  SumAccum<UINT> @score;
-  SetAccum<VERTEX<Person>> @liked;
-  message1 = SELECT m FROM Tag:t -(<HAS_TAG)- (Comment|Post):m WHERE t.name == tag;
-  person2 = SELECT p2 FROM message1 -(<LIKES)- Person:p2; 
-  person2 = SELECT p2 FROM person2:p2 -(<HAS_CREATOR)- _:m
-    ACCUM p2.@score += m.outdegree("LIKES_REVERSE")
-    POST-ACCUM @@popularityScore += (p2 -> p2.@score);  
-  tmp = SELECT m 
-    FROM message1:m -(<LIKES)- Person:p2 
-    ACCUM m.@liked += p2;
-    
-  person1 =
-    SELECT p1
-    FROM message1:m -(HAS_CREATOR>)- Person:p1
-    ACCUM p1.@liked += m.@liked
-    POST-ACCUM 
-      FOREACH p IN p1.@liked DO
-        p1.@authorityScore += @@popularityScore.get(p)
-      END,
-      @@result += RESULT(p1.id, p1.@authorityScore);
-  
-  PRINT @@result as result;
-}
-
-/* Use local accumulators
 CREATE OR REPLACE DISTRIBUTED QUERY bi6(STRING tag) SYNTAX v2 {
   TYPEDEF TUPLE <UINT personId, UINT authorityScore> RESULT;
   HeapAccum<RESULT>(100, authorityScore DESC, personId ASC) @@result;
@@ -50,4 +18,3 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi6(STRING tag) SYNTAX v2 {
       @@result += RESULT(p1.id, p1.@authorityScore);
   PRINT @@result as result;
 }
-*/
