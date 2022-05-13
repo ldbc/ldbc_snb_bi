@@ -1,28 +1,28 @@
 /* Q7. Related topics
 \set tag '\'Enrique_Iglesias\''
  */
+WITH MyMessage AS (
+  SELECT m.MessageId
+  FROM Message_hasTag_Tag m, Tag
+  WHERE Tag.name = :tag and m.TagId = Tag.Id
+)
 SELECT RelatedTag.name AS "relatedTag.name"
      , count(*) AS count
-  FROM Tag
-  INNER JOIN Message_hasTag_Tag ParentMessage_HasTag_Tag
-          ON Tag.id = ParentMessage_HasTag_Tag.TagId
+  FROM MyMessage ParentMessage_HasTag_Tag
   -- as an optimization, we don't need message here as it's ID is in ParentMessage_HasTag_Tag
   -- so proceed to the comment directly
-  INNER JOIN Comment_View Comment
-          ON ParentMessage_HasTag_Tag.MessageId = coalesce(Comment.ParentCommentId, Comment.ParentPostId)
+  INNER JOIN Message Comment
+          ON ParentMessage_HasTag_Tag.MessageId = Comment.ParentMessageId
   -- comment's tag
-  INNER JOIN Message_hasTag_Tag ct
-          ON Comment.id = ct.MessageId
+  LEFT  JOIN Message_hasTag_Tag ct
+          ON Comment.MessageId = ct.MessageId
   INNER JOIN Tag RelatedTag
-          ON ct.TagId = RelatedTag.id
-  -- comment doesn't have the given tag: antijoin in the where clause
-  LEFT  JOIN Message_hasTag_Tag nt
-          ON Comment.id = nt.MessageId
-         AND nt.TagId = ParentMessage_HasTag_Tag.TagId
- WHERE nt.MessageId IS NULL -- antijoin: comment (c) does not have the given tag
-    -- filter
-   AND Tag.name = :tag
- GROUP BY RelatedTag.name
+          ON RelatedTag.id = ct.TagId
+ WHERE TRUE
+  -- comment doesn't have the given tag
+   AND Comment.MessageId NOT In (SELECT MessageId FROM MyMessage)
+   AND Comment.ParentMessageId IS NOT NULL
+ GROUP BY RelatedTag.Name
  ORDER BY count DESC, RelatedTag.name
  LIMIT 100
 ;
