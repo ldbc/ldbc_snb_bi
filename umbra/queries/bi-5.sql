@@ -2,24 +2,19 @@
 \set tag '\'Abbas_I_of_Persia\''
  */
 WITH detail AS (
-SELECT CreatorPerson.id AS CreatorPersonId
-     , count(DISTINCT Comment.Id)  AS replyCount
-     , count(DISTINCT Person_likes_Message.MessageId||' '||Person_likes_Message.PersonId) AS likeCount
-     , count(DISTINCT Message.MessageId) AS messageCount
-     , NULL as score
+SELECT Message.CreatorPersonId AS CreatorPersonId
+     , sum(coalesce(Cs.c, 0))  AS replyCount
+     , sum(coalesce(Plm.c, 0)) AS likeCount
+     , count(Message.MessageId) AS messageCount
   FROM Tag
   JOIN Message_hasTag_Tag
     ON Message_hasTag_Tag.TagId = Tag.id
   JOIN Message
     ON Message.MessageId = Message_hasTag_Tag.MessageId
-  LEFT JOIN Comment_View Comment
-         ON Message.MessageId = coalesce(Comment.ParentPostId, Comment.ParentCommentId)
-  LEFT JOIN Person_likes_Message
-         ON Message.MessageId = Person_likes_Message.MessageId
-  JOIN Person CreatorPerson -- creator
-    ON CreatorPerson.id = Message.CreatorPersonId
+  LEFT JOIN (SELECT ParentMessageId, count(*) FROM Message c WHERE ParentMessageId IS NOT NULL GROUP BY ParentMessageId) Cs(id, c) ON Cs.id = Message.MessageId
+  LEFT JOIN (SELECT MessageId, count(*) FROM Person_likes_Message GROUP BY MessageId) Plm(id, c) ON Plm.id = Message.MessageId
  WHERE Tag.name = :tag
- GROUP BY CreatorPerson.id
+ GROUP BY Message.CreatorPersonId
 )
 SELECT CreatorPersonId AS "person.id"
      , replyCount
