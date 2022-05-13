@@ -23,4 +23,4 @@ sed "s;header=\"false\";header=\"$TG_HEADER\";" $TG_DML_DIR/ins_Vertex.gsql >> $
 sed "s;header=\"false\";header=\"$TG_HEADER\";" $TG_DML_DIR/ins_Edge.gsql >> $TG_DDL_DIR/load.gsql
 sed "s;header=\"false\";header=\"$TG_HEADER\";" $TG_DML_DIR/del_Edge.gsql >> $TG_DDL_DIR/load.gsql
 
-docker exec --user tigergraph --interactive --tty ${TG_CONTAINER_NAME} bash -c "export PATH=/home/tigergraph/tigergraph/app/cmd:\$PATH; cd /ddl; ./setup.sh"
+docker exec --user tigergraph ${TG_CONTAINER_NAME} bash -c "export PATH=/home/tigergraph/tigergraph/app/cmd:\$PATH; cd /ddl; ./setup.sh"

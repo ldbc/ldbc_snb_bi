@@ -23,8 +23,8 @@ echo "==========================================================================
 echo "Load Data"
 echo "-------------------------------------------------------------------------------"
 t1=$SECONDS
-STATIC_PATH=$DATA_PATH/initial_snapshot/static
-DYNAMIC_PATH=$DATA_PATH/initial_snapshot/dynamic
+STATIC_PATH=ANY:$DATA_PATH/initial_snapshot/static
+DYNAMIC_PATH=ANY:$DATA_PATH/initial_snapshot/dynamic
 
 gsql --graph ldbc_snb RUN LOADING JOB load_static USING \
   file_Organisation=\"$STATIC_PATH/Organisation\", \
@@ -70,6 +70,8 @@ for i in $(seq 1 20); do
   gsql --graph ldbc_snb $QUERY_PATH/bi-${i}.gsql
 done
 
+gsql --graph ldbc_snb $QUERY_PATH/bi-4-precompute.gsql
+gsql --graph ldbc_snb $QUERY_PATH/bi-6-precompute.gsql
 gsql --graph ldbc_snb $QUERY_PATH/bi-19-precompute.gsql
 gsql --graph ldbc_snb $QUERY_PATH/bi-20-precompute.gsql
 gsql --graph ldbc_snb $QUERY_PATH/bi-19-cleanup.gsql

@@ -64,45 +64,33 @@ def load_by_gsql(job, data_dir, names, batch_dir):
     gsql += ', '.join([f'file_{name}=\\"ANY:{data_dir}/dynamic/{name}/{batch_dir}\\"' for name in names])
     subprocess.run(f'gsql -g ldbc_snb {gsql}', shell=True)
 
-def run_batch_updates(start_date, end_date, timing_file, args):
-    sf = os.environ.get("SF")
+def run_batch_update(batch_date, args):
     docker_data = Path('/data') if not args.cluster else args.data_dir
-    batch_size = timedelta(days=1)
-    batch_date = start_date
-    while batch_date < end_date:
-        tot_ins_time = 0
-        tot_del_time = 0
-        
-        batch_id = batch_date.strftime('%Y-%m-%d')
-        batch_dir = f"batch_id={batch_id}"
-        print(f"#################### {batch_dir} ####################")
-
-        print("## Inserts")
-        t0 = time.time()
-        load(f'insert_vertex', args.data_dir/'inserts', VERTICES, batch_dir, args)
-        load(f'insert_edge', args.data_dir/'inserts', EDGES, batch_dir, args)
-        #tot_ins_time = time.time() - t0
-        print("## Deletes")
-        for vertex in VERTICES:
-            print(f"{vertex}:")
-            path = args.data_dir/'deletes'/'dynamic'/vertex/batch_dir 
-            docker_path = docker_data/'deletes'/'dynamic'/vertex/batch_dir
-            print(path)
-            if not path.exists(): 
-                continue
-            for fp in path.glob('*.csv'):
-                if fp.is_file():
-                    print(f'- {fp.name}')
-                    result, duration = run_query(f'del_{vertex}', {'file':str(docker_path/fp.name), 'header':args.header}, args.endpoint)
-                    tot_del_time += duration
-                    print(f'> {result} changes')
-        #t1 = time.time()
-        load(f'delete_edge', args.data_dir/'deletes', DEL_EDGES, batch_dir, args)
-        #duration += time.time() - t1
-        tot_time = time.time() - t0
-        timing_file.write(f'TigerGraph|write|{sf}|{batch_date}|{tot_time:.6f}\n')
-        timing_file.flush()
-        batch_date = batch_date + batch_size
+    batch_id = batch_date.strftime('%Y-%m-%d')
+    batch_dir = f"batch_id={batch_id}"
+    print(f"#################### {batch_dir} ####################")
+    print("## Inserts")
+    t0 = time.time()
+    load(f'insert_vertex', args.data_dir/'inserts', VERTICES, batch_dir, args)
+    load(f'insert_edge', args.data_dir/'inserts', EDGES, batch_dir, args)
+    #tot_ins_time = time.time() - t0
+    print("## Deletes")
+    #t1 = time.time()
+    for vertex in VERTICES:
+        print(f"{vertex}:")
+        path = args.data_dir/'deletes'/'dynamic'/vertex/batch_dir
+        docker_path = docker_data/'deletes'/'dynamic'/vertex/batch_dir
+        print(path)
+        if not path.exists():
+            continue
+        for fp in path.glob('*.csv'):
+            if fp.is_file():
+                print(f'- {fp.name}')
+                result, duration = run_query(f'del_{vertex}', {'file':str(docker_path/fp.name), 'header':args.header}, args.endpoint)
+                print(f'> {result} changes')
+    #tot_del_time = time.time() - t1
+    load(f'delete_edge', args.data_dir/'deletes', DEL_EDGES, batch_dir, args)
+    return time.time() - t0        
 
 # main functions
 if __name__ == '__main__':
@@ -113,10 +101,17 @@ if __name__ == '__main__':
     parser.add_argument('--endpoint', type=str, default = 'http://127.0.0.1:9000', help='tigergraph rest port')
     args = parser.parse_args()
 
+    sf = os.environ.get("SF")
     output = Path('output')
     output.mkdir(exist_ok=True)
-    timing_file = open(output/'batch_timing.csv', 'w')
-    timing_file.write(f'tool|sf|q|parameters|time\n')
+    timings_file = open(output/'timings.csv', 'w')
+    timings_file.write(f'tool|sf|q|parameters|time\n')
     network_start_date = date(2012, 11, 29)
     network_end_date = date(2013, 1, 1)
-    run_batch_updates(network_start_date, network_end_date, timing_file, args)
+    batch_date = network_start_date
+    batch_size = timedelta(days=1)
+    while batch_date < network_end_date:
+        write_time = run_batch_update(batch_date, args)
+        timings_file.write(f'TigerGraph|writes|{sf}|{batch_date}|{write_time:.6f}\n')
+        timings_file.flush()
+        batch_date = batch_date + batch_size

@@ -92,32 +92,27 @@ def run_query(endpoint, query_num, parameters):
     ]) + "]"
     return results, duration
 
+def precompute(query_num, endpoint):
+    print(f"Precomputing weights for Q{query_num}")
+    start = time.time()
+    response = requests.get(f'{endpoint}/query/ldbc_snb/bi{query_num}precompute', headers=HEADERS).json()
+    return time.time() - start
+
+def cleanup(query_num, endpoint):
+    print(f"Cleaning weights for Q{query_num}")
+    start = time.time()
+    response = requests.get(f'{endpoint}/query/ldbc_snb/bi{query_num}cleanup', headers=HEADERS).json()
+    return time.time() - start
+
 def run_queries(query_variants, results_file, timings_file, args):
     sf = os.environ.get("SF")
-    if not args.skip and ("19a" in query_variants or "19b" in query_variants):
-        print("Precomputing weights for Q19")
-        start = time.time()
-        response = requests.get(f'{args.endpoint}/query/ldbc_snb/bi19precompute', headers=HEADERS).json()
-        duration = time.time() - start
-        timings_file.write(f"TigerGraph|{sf}|bi19precompute||{duration:.6f}\n")
-        timings_file.flush()
-
-    if not args.skip and "20" in query_variants:
-        print("Precomputing weights for Q20")
-        start = time.time()
-        response = requests.get(f'{args.endpoint}/query/ldbc_snb/bi20precompute', headers=HEADERS).json()
-        duration = time.time() - start
-        timings_file.write(f"TigerGraph|{sf}|bi20precompute||{duration:.6f}\n")
-        timings_file.flush()
-
+    start = time.time()
     for query_variant in query_variants:
         print(f"========================= Q{query_variant} =========================")
         query_num = int(re.sub("[^0-9]", "", query_variant))
         parameters_csv = csv.DictReader(open(args.para / f'bi-{query_variant}.csv'), delimiter='|')
         parameters = [{"name": t[0], "type": t[1]} for t in [f.split(":") for f in parameters_csv.fieldnames]]
-        
-        # Q6 use outdegress function, need to make sure rebuild is done
-        if query_num == 6: requests.get(f'{args.endpoint}/rebuildnow', headers=HEADERS)
+
         for i,query_parameters in enumerate(parameters_csv):
             query_parameters_split = {k.split(":")[0]: v for k, v in query_parameters.items()}
             query_parameters_in_order = f'<{";".join([query_parameters_split[parameter["name"]] for parameter in parameters])}>'
@@ -134,22 +129,7 @@ def run_queries(query_variants, results_file, timings_file, args):
             # test run: 1 query, regular run: 10 queries
             if args.test or i == args.nruns-1:
                 break
-    
-    if not args.skip and ("19a" in query_variants or "19b" in query_variants):
-        print("Clean weights for Q19")
-        start = time.time()
-        response = requests.get(f'{args.endpoint}/query/ldbc_snb/bi19cleanup', headers=HEADERS).json()
-        duration = time.time() - start
-        timings_file.write(f"TigerGraph|{sf}|bi19cleanup||{duration:.6f}\n")
-        timings_file.flush()
-
-    if not args.skip and "20" in query_variants:
-        print("Clean weights for Q20")
-        start = time.time()
-        response = requests.get(f'{args.endpoint}/query/ldbc_snb/bi20cleanup', headers=HEADERS).json()
-        duration = time.time() - start
-        timings_file.write(f"TigerGraph|{sf}|bi20cleanup||{duration:.6f}\n")
-        timings_file.flush()
+    return time.time() - start
 
 # main functions
 if __name__ == '__main__':
@@ -167,6 +147,21 @@ if __name__ == '__main__':
     timings_file = open(output/'timings.csv', 'w')
     timings_file.write(f"tool|sf|q|parameters|time\n")
     query_variants = ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "15a", "15b", "16a", "16b", "17", "18", "19a", "19b", "20"]
+
+    sf = os.environ.get("SF")
+    # precomputation for BI 4, 6, 19, 20
+    query_nums = [int(re.sub("[^0-9]", "", query_variant)) for query_variant in query_variants]
+    for query_num in [4,6,19,20]:
+        if not args.skip and query_num in query_nums:
+            timings_file.write(f"TigerGraph|{sf}|bi{query_num}precompute|{precompute(query_num, args.endpoint):.6f}\n")
+            timings_file.flush()
+    
     run_queries(query_variants, results_file, timings_file, args)
+    # cleanup for 19 and 20
+    for query_num in [19,20]:
+        if not args.skip and query_num in query_nums:
+            timings_file.write(f"TigerGraph|{sf}|bi{query_num}cleanup|{cleanup(query_num, args.endpoint):.6f}\n")
+            timings_file.flush()
+    
     results_file.close()
     timings_file.close()

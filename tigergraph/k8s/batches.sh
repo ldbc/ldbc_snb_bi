@@ -12,4 +12,4 @@ else
 fi
 
 cd ..
-python3 -u batches.py ${TG_DATA_DIR} --cluster $HEADER_STR
+python3 -u batches.py ${TG_DATA_DIR} --cluster $HEADER_STR $@

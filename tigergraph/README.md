@@ -1,9 +1,10 @@
 # LDBC SNB BI TigerGraph/GSQL implementation
-> **This section is for single-node benchmark. For cluster setup, refer to [k8s/README.md](./k8s).**
+**The instruction is for single-node benchmark.**
+We provide two methods for cluster setup.
+  1. [k8s/README.md](./k8s) - Deploy TG containers using [kubernetes (k8s)](https://kubernetes.io) 
+  1. [benchmark_on_cluster/README.md](./benchmark_on_cluster) - Manually install and configure TigerGraph
 
-[TigerGraph](https://www.tigergraph.com) implementation of the [LDBC SNB benchmark](https://github.com/ldbc/ldbc_snb_docs). 
-
-[[Old Benchmark]](https://github.com/tigergraph/ecosys/tree/ldbc/ldbc_benchmark/tigergraph/queries_v3)
+[[Old Benchmark link]](https://github.com/tigergraph/ecosys/tree/ldbc/ldbc_benchmark/tigergraph/queries_v3)
 
 ## Generating the data set
 
@@ -99,3 +100,10 @@ To run the benchmark, issue:
 ```bash
 scripts/benchmark.sh
 ```
+
+## About the TigerGraph Implementation
+1. Because the current TigerGraph datetime use ecpoch in seconds but the datetime in LDBC SNB benchmarks is in milliseconds. So we store the datetime as INT64 in the datatime and write user defined functions to do conversion. The dateime value in the dataset is considered as the local time. INT64 datetime in millisecond `value` can be converted to datetime using `datetime_to_epoch(value/1000)`.
+1. The user defined function is in `ExprFunctions.hpp` (for query) and `TokenBank.cpp` (for loader).
+1. We add additional attribute `maxMember` in Forum for pre-computation of BI-4, and attribute `popularityScore` in Person for pre-computation of BI-6
+1. We also added additional edges `KNOWS15`, `KNOWS19` and `KNOWS20` to store the weight on KNOWS edges. The edge weight can be pre-computed for BI-19 and BI-20. For BI-15, the edge weight need to be calculated every time before the query run. 
+1. TigerGraph uses accumulators and the vertex-attached local accumulators give good performance on clusters. Most aggregation operations are achieved using local accumulators. Currently, the path patterns in TigerGraph are executed from left to right hand side. To filter paths, it is important to start from a highly selective endpoints and then reach out to others.
