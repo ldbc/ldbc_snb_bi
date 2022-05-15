@@ -28,5 +28,5 @@ WHERE NOT EXISTS (SELECT 1
         WHERE work.companyId = comp.companyId
           AND work.personId = k2.person2Id
         )
-ORDER BY md5(k2.person2Id + comp.companyId), md5(k2.person2Id), md5(comp.companyId)
+ORDER BY md5(k2.person2Id), md5(comp.companyId)
 LIMIT 400
