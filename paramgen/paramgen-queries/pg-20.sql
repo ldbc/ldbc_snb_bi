@@ -16,10 +16,10 @@ FROM
     ) comp
 -- ensure that there is a two-hop path
 -- hop 1
-JOIN same_university_knows_window k1
+JOIN same_university_knows k1
   ON k1.person1Id = comp.person1Id
 -- hop 2
-JOIN same_university_knows_window k2
+JOIN same_university_knows k2
   ON k2.person1Id = k1.person2Id
  AND k2.person2Id != k1.person1Id
 -- 'person2' does not work at the company
