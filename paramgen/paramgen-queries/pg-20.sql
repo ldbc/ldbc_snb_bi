@@ -11,7 +11,7 @@ FROM
     FROM companyNumEmployees
     JOIN Person_workAt_Company_window
       ON Person_workAt_Company_window.companyId = companyNumEmployees.companyId
-    ORDER BY diff, Person_workAt_Company_window.companyId
+    ORDER BY diff, md5(Person_workAt_Company_window.personId), md5(Person_workAt_Company_window.companyId)
     LIMIT 300
     ) comp
 -- ensure that there is a two-hop path
