@@ -15,6 +15,7 @@ DROP TABLE IF EXISTS people2Hops;
 DROP TABLE IF EXISTS people4Hops;
 DROP TABLE IF EXISTS personDisjointEmployerPairs;
 DROP TABLE IF EXISTS personNumFriends;
+DROP TABLE IF EXISTS sameUniversityKnows;
 DROP TABLE IF EXISTS tagClassNumMessages;
 DROP TABLE IF EXISTS tagClassNumTags;
 DROP TABLE IF EXISTS tagNumMessages;
@@ -46,6 +47,7 @@ CREATE TABLE people2Hops(person1id bigint not null, person2id bigint not null, p
 CREATE TABLE people4Hops(person1id bigint not null, person2id bigint not null, person1creationDate date not null, person1deletionDate date not null, person2creationDate date not null, person2deletionDate date not null);
 CREATE TABLE personDisjointEmployerPairs(person2id bigint not null, companyName varchar not null, companyId bigint not null, person2creationDate date not null, person2deletionDate date not null);
 CREATE TABLE personNumFriends(personId bigint not null, personCreationDate date not null, personDeletionDate date not null, frequency bigint not null);
+CREATE TABLE sameUniversityKnows(person1Id bigint not null, person2Id bigint not null);
 CREATE TABLE tagClassNumMessages(tagclassId bigint not null, tagclassName varchar not null, frequency bigint not null);
 CREATE TABLE tagClassNumTags(tagclassId bigint not null, tagclassName varchar not null, frequency bigint not null);
 CREATE TABLE tagNumMessages(tagId bigint not null, tagName varchar not null, frequency bigint not null);

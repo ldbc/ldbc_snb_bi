@@ -1,2 +1,2 @@
 -- drop table
-DROP TABLE IF EXISTS same_university_knows
+DROP TABLE IF EXISTS same_university_knows_window
