@@ -2,6 +2,7 @@ DROP TABLE IF EXISTS Person_UniversityKnows_Person;
 DROP TABLE IF EXISTS PersonUniversity;
 DROP TABLE IF EXISTS results;
 
+-- PRECOMPUTE
 CREATE TABLE Person_UniversityKnows_Person AS (SELECT p.id                                     as Person1id,
                                                       p2.id                                    as Person2id,
                                                       min(abs(u.classYear - u2.classYear) + 1) as weight --
@@ -15,7 +16,7 @@ CREATE TABLE Person_UniversityKnows_Person AS (SELECT p.id                      
                                                ORDER BY p.id, p2.id);
 
 
-
+-- PRECOMPUTE
 CREATE TABLE PersonUniversity AS (SELECT DISTINCT Person1id as id
                                   FROM ((SELECT Person1id
                                          FROM Person_UniversityKnows_Person)
@@ -24,7 +25,7 @@ CREATE TABLE PersonUniversity AS (SELECT DISTINCT Person1id as id
                                          FROM Person_UniversityKnows_Person))
                                   ORDER BY id);
 
-
+-- CSR CREATION
 SELECT CREATE_CSR_VERTEX(
                0,
                v.vcount,
@@ -37,6 +38,7 @@ FROM (SELECT p.rowid as dense_id, count(k.Person1id) as cnt
       GROUP BY p.rowid) sub,
      (SELECT count(p.id) as vcount FROM PersonUniversity p) v;
 
+-- CSR CREATION
 SELECT min(CREATE_CSR_EDGE(0, (SELECT count(p.id) as vcount FROM PersonUniversity p),
                            CAST((SELECT sum(CREATE_CSR_VERTEX(0, (SELECT count(p.id) as vcount FROM PersonUniversity p),
                                                               sub.dense_id, sub.cnt)) AS numEdges
@@ -56,7 +58,6 @@ create table results
     company   varchar,
     weight    bigint
 );
-
 
 -- PARAMS
 INSERT INTO results (SELECT p.id                                                                           as Person1id,

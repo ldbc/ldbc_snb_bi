@@ -8,6 +8,9 @@ import logging
 import pandas as pd
 import timeit
 
+print(duckdb.__version__)
+print(duckdb.__file__)
+
 SORT_ORDER_DICT = {'20': ['person1id', 'weight']}
 
 
@@ -37,12 +40,30 @@ def extract_headers(params):
 
 def run_script(con, filename, params=None, sf=None):
     queries = open(filename).read().split(";")
-    final_result = []
-    final_timing = []
-    total_time = 0
+    # final_result = []
+    # final_timing = []
+    csr_timing = 0
+    precompute_timing = 0
+    parameter_timing = []
+    result_timing = 0
+    total_timing = 0
+    timing = 0
     for query in queries:
         logging.debug(query)
-        if "-- PARAMS" in query:
+        if "-- PRECOMPUTE" in query:
+            start = timeit.default_timer()
+            con.execute(query)
+            stop = timeit.default_timer()
+            timing = stop - start
+            precompute_timing += timing
+            # Time precompute queries here
+        elif "-- CSR CREATION" in query:
+            start = timeit.default_timer()
+            con.execute(query)
+            stop = timeit.default_timer()
+            timing = stop - start
+            csr_timing += timing
+        elif "-- PARAMS" in query:
             original_query = query
             filtered_param_headers = extract_headers(params)
             for line in params[1:]:
@@ -51,7 +72,6 @@ def run_script(con, filename, params=None, sf=None):
                 split_line = line.split("|")
                 for i in range(len(filtered_param_headers)):
                     custom_query = custom_query.replace(f"{filtered_param_headers[i]}", f"{split_line[i]}")
-                # print(custom_query)
                 start = timeit.default_timer()
 
                 con.execute(custom_query)
@@ -60,15 +80,11 @@ def run_script(con, filename, params=None, sf=None):
 
                 timing = stop - start
 
-                final_timing.append(timing + total_time)
+                parameter_timing.append(timing)
         # elif "-- OUTPUT" in query:
-        #
         #     start = timeit.default_timer()
-        #
         #     result = con.execute(query).fetchdf()
-        #
         #     stop = timeit.default_timer()
-        #
         #     timing = stop - start
         #     return result, timing
         elif "-- RESULTS" in query:
@@ -76,9 +92,11 @@ def run_script(con, filename, params=None, sf=None):
             final_result = con.execute(query).fetchdf()
             stop = timeit.default_timer()
             final_result = pd.DataFrame(final_result)
-            for time in final_timing:
-                time += stop - start
-            return final_result, final_timing
+            timing = (stop - start)
+            result_timing = timing
+            total_timing += timing
+            timing_dict = {"precompute_timing": precompute_timing, "csr_timing": csr_timing, "parameter_timing": sum(parameter_timing)/len(parameter_timing), "result_timing": result_timing, "total_timing": result_timing}
+            return final_result, timing_dict
         elif "-- DEBUG" in query:
             result = con.execute(query).fetchdf()
             print(result)
@@ -86,7 +104,11 @@ def run_script(con, filename, params=None, sf=None):
             start = timeit.default_timer()
             con.execute(query)
             stop = timeit.default_timer()
-            total_time += stop - start
+            timing = stop - start
+        if timing == 0:
+            print(f"TIMING WAS 0 for query: {query}")
+        total_timing += timing
+
 
 def process_arguments(argv):
     sf = ''
@@ -107,7 +129,8 @@ def process_arguments(argv):
     return sf, query
 
 
-
+def write_timing_dict(result, timing_dict):
+    pass
 
 
 def main(argv):
@@ -120,12 +143,12 @@ def main(argv):
 
     data_dir = f'../../ldbc_snb_datagen_spark/out-sf{sf}/graphs/csv/bi/composite-merged-fk'
 
-    load_entities(con, data_dir)
-    params = open(f'../parameters/bi-20.csv').readlines() # parameters-sf{sf}/
+    load_entities(con, data_dir, query)
+    params = open(f'../parameters/parameters-sf{sf}/bi-{query}.csv').readlines() # parameters-sf{sf}/
 
-    result, timing = run_script(con, file_location, params, sf)
-    sort_results(result, timing, params, query, sf)
-
+    result, timing_dict = run_script(con, file_location, params, sf)
+    # sort_results(result, timing, params, query, sf)
+    write_timing_dict(result, timing_dict)
 
 def validate_input(query):
     try:
@@ -145,7 +168,7 @@ def validate_input(query):
     return file_location
 
 
-def load_entities(con, data_dir):
+def load_entities(con, data_dir: str, query: str):
     static_path = f"{data_dir}/initial_snapshot/static"
     dynamic_path = f"{data_dir}/initial_snapshot/dynamic"
     static_entities = ["Organisation", "Place", "Tag", "TagClass"]
@@ -153,13 +176,14 @@ def load_entities(con, data_dir):
                         "Person", "Person_hasInterest_Tag", "Person_knows_Person", "Person_likes_Comment",
                         "Person_likes_Post", "Person_studyAt_University", "Person_workAt_Company", "Post",
                         "Post_hasTag_Tag"]
-    # Query 20
-    static_entities = ["Organisation"]
-    dynamic_entities = ["Person", "Person_knows_Person", "Person_studyAt_University", "Person_workAt_Company"]
-
-    # Query 19
-    static_entities = ["Place"]
-    dynamic_entities = ["Comment", "Person", "Person_knows_Person", "Post"]
+    if query == "20":
+        # Query 20
+        static_entities = ["Organisation"]
+        dynamic_entities = ["Person", "Person_knows_Person", "Person_studyAt_University", "Person_workAt_Company"]
+    elif query == "19":
+        # Query 19
+        static_entities = ["Place"]
+        dynamic_entities = ["Comment", "Person", "Person_knows_Person", "Post"]
 
     logging.info("## Static entities")
     for entity in static_entities:
