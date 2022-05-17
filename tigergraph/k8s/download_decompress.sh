@@ -14,7 +14,7 @@ fi
 
 sudo $installer update
 sudo $installer install -y python3-pip parallel gzip
-pip3 install google-cloud-storage
+sudo pip3 install google-cloud-storage
 
 echo "download SF$SF($i/$NUM_NODES) using $DOWNLOAD_THREAD threads"
 python3 -u ${mydir}/download_one_partition.py $SF $i $NUM_NODES -t $DOWNLOAD_THREAD $SERVICE_KEY && \
