@@ -56,11 +56,11 @@ su - tigergraph
 sudo python3 -m pip install --upgrade pip
 sudo pip3 install paramiko scp
 git clone https://github.com/ldbc/ldbc_snb_bi.git
-cd ldbc_snb_bi/tigergraph
+cd ldbc_snb_bi/tigergraph/benchmark_on_cluster
 ```
 Modify the password of TigerGraph user `download_all.py`, then run
 ```sh
-python3 benchmark_on_cluster/download_all.py 10000 10.128.0.10 20 -t 10
+python3 download_all.py 10000 10.128.0.10 20 -t 10
 ```
 This script will run `./k8s/download_one_pod.sh` on all the machines. Usage of the `download_all.py` is 
 ```sh
