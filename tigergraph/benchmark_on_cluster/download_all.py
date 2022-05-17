@@ -66,7 +66,7 @@ def main():
       export target=~/sf{args.data}
       export DOWNLOAD_THREAD={args.thread}
       export SERVICE_KEY="{key}"
-      nohup sh download_decompress.sh $i > log.download 2>&1 < /dev/null &  
+      nohup sh download_decompress.sh $i $target > log.download 2>&1 < /dev/null &  
     ''')
     time.sleep(4)
     stdin, stdout, stderr = ssh.exec_command(f'tail {workdir}/log.download')
