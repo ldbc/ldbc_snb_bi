@@ -95,7 +95,9 @@ def run_script(con, filename, params=None, sf=None):
             timing = (stop - start)
             result_timing = timing
             total_timing += timing
-            timing_dict = {"precompute_timing": precompute_timing, "csr_timing": csr_timing, "parameter_timing": sum(parameter_timing)/len(parameter_timing), "result_timing": result_timing, "total_timing": result_timing}
+            timing_dict = {"precompute_timing": precompute_timing, "csr_timing": csr_timing,
+                           "parameter_timing": sum(parameter_timing) / len(parameter_timing),
+                           "result_timing": result_timing, "total_timing": total_timing}
             return final_result, timing_dict
         elif "-- DEBUG" in query:
             result = con.execute(query).fetchdf()
@@ -129,8 +131,15 @@ def process_arguments(argv):
     return sf, query
 
 
-def write_timing_dict(result, timing_dict):
-    pass
+def write_timing_dict(timing_dict, sf, query):
+    filename = 'benchmark/timings.csv'
+    if not os.path.exists(filename):
+        with open(filename, 'w') as f:
+            f.write("sf|query|total_timing|result_timing|csr_timing|precompute_timing|parameter_timing\n")
+
+    with open(filename, 'a') as f:
+        f.write(
+            f"{sf}|{query}|{timing_dict['total_timing']}|{timing_dict['result_timing']}|{timing_dict['csr_timing']}|{timing_dict['precompute_timing']}|{timing_dict['parameter_timing']}\n")
 
 
 def main(argv):
@@ -144,11 +153,12 @@ def main(argv):
     data_dir = f'../../ldbc_snb_datagen_spark/out-sf{sf}/graphs/csv/bi/composite-merged-fk'
 
     load_entities(con, data_dir, query)
-    params = open(f'../parameters/parameters-sf{sf}/bi-{query}.csv').readlines() # parameters-sf{sf}/
+    params = open(f'../parameters/parameters-sf{sf}/bi-{query}.csv').readlines()  # parameters-sf{sf}/
 
     result, timing_dict = run_script(con, file_location, params, sf)
     # sort_results(result, timing, params, query, sf)
-    write_timing_dict(result, timing_dict)
+    write_timing_dict(timing_dict, sf, query)
+
 
 def validate_input(query):
     try:
