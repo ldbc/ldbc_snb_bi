@@ -36,7 +36,7 @@
     gcloud init --console-only
     ```
 
-1. TigerGraph will be installed under user `tigergraph`. The password need to be modified in `setup_centOS.sh`. Run
+1. TigerGraph will be installed under user `tigergraph`. The password need to be modified in `setup.sh`. Run
     ```sh
     ./setup_GCP.sh
     # press enter and skip paraphrase
