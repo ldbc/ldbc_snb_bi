@@ -198,7 +198,7 @@ def load_entities(con, data_dir: str, query: str):
     logging.info("## Static entities")
     for entity in static_entities:
         for csv_file in [f for f in os.listdir(f"{static_path}/{entity}") if
-                         f.startswith("part-") and f.endswith(".csv")]:
+                         f.startswith("part-") and (f.endswith(".csv") or f.endswith(".csv.gz"))]:
             csv_path = f"{entity}/{csv_file}"
             logging.debug(f"- {csv_path}")
             con.execute(
