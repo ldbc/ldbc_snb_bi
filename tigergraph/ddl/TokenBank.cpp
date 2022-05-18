@@ -12,9 +12,6 @@ uint32_t nextInt(char*& timestamp_ptr, const char* timestamp_end_ptr){
     timestamp_ptr++;
   }
   timestamp_ptr++;  // jump over separator
-  if (timestamp_ptr > timestamp_end_ptr) {
-    timestamp_ptr = (char*)timestamp_end_ptr;
-  }
   return int_value;
 }
 
@@ -25,7 +22,6 @@ extern "C" int64_t ToMiliSeconds(const char* const iToken[], uint32_t iTokenLen[
   int64_t tm_year, tm_mon, tm_mday, tm_hour, tm_min, tm_sec;
   char* timestamp_ptr_ = const_cast<char*>(iToken[0]);
   char* timestamp_end_ptr_ = timestamp_ptr_ + 23;
-  struct tm t = {0};
   tm_year = nextInt(timestamp_ptr_, timestamp_end_ptr_);
   tm_mon = nextInt(timestamp_ptr_, timestamp_end_ptr_);
   tm_mday = nextInt(timestamp_ptr_, timestamp_end_ptr_);
