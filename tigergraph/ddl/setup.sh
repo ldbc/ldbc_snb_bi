@@ -85,18 +85,18 @@ gsql --graph ldbc_snb $DML_PATH/del_Post.gsql
 gsql --graph ldbc_snb INSTALL QUERY ALL
 t3=$SECONDS
 
-echo "==============================================================================="
-echo "Data Statisitcs Check (Optional)"
-echo "-------------------------------------------------------------------------------"
-echo 'update delta ...'
-curl -s -H "GSQL-TIMEOUT:2500000" "http://127.0.0.1:9000/rebuildnow"
-echo "Vertex statistics:"
-curl -X POST "http://127.0.0.1:9000/builtins/ldbc_snb" -d  '{"function":"stat_vertex_number","type":"*"}'
-echo
-echo
-echo "Edge statistics:"
-curl -X POST "http://127.0.0.1:9000/builtins/ldbc_snb" -d  '{"function":"stat_edge_number","type":"*"}'
-echo
+#echo "==============================================================================="
+#echo "Data Statisitcs Check (Optional)"
+#echo "-------------------------------------------------------------------------------"
+#echo 'update delta ...'
+#curl -s -H "GSQL-TIMEOUT:2500000" "http://127.0.0.1:9000/rebuildnow"
+#echo "Vertex statistics:"
+#curl -X POST "http://127.0.0.1:9000/builtins/ldbc_snb" -d  '{"function":"stat_vertex_number","type":"*"}'
+#echo
+#echo
+#echo "Edge statistics:"
+#curl -X POST "http://127.0.0.1:9000/builtins/ldbc_snb" -d  '{"function":"stat_edge_number","type":"*"}'
+#echo
 
 echo
 echo "====================================================================================="
