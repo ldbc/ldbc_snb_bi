@@ -17,6 +17,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi3(STRING tagClass, STRING country) SYNTAX 
     SELECT f
     FROM messages:m -(REPLY_OF>*.<CONTAINER_OF)- Forum:f
     WHERE f.@selected
+    PER(m,f) // Since each message finally replies to one Post, this PER does not change results but improve performance.
     ACCUM f.@messageCount += 1
     POST-ACCUM @@result += RESULT(f.id, f.title, ms_to_string(f.creationDate), f.@personId, f.@messageCount);
 

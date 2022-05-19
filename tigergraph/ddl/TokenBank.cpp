@@ -1,9 +1,12 @@
 
+/* Token Functon to convert time to INT
+ * We did not use TigerGraph DATETIME because it does not have millisecond precision
+ * We did not use std functions (memset and strptime) because they make loading slow
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <cstring>
 #include <TokenLib.hpp>
-
 uint32_t nextInt(char*& timestamp_ptr, const char* timestamp_end_ptr){
   uint32_t int_value = 0;
   while (*timestamp_ptr >= '0' && *timestamp_ptr <= '9'
