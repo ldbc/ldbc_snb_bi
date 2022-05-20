@@ -22,5 +22,6 @@ fi
 
 sudo $installer -y update
 sudo $installer -y install net-tools sshpass parallel git gzip python3-pip
+sudo python3 -m pip install --upgrade pip
 sudo pip3 install google-cloud-storage
 echo 'done setup'
