@@ -13,8 +13,8 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi19precompute() syntax v2 {
   
   PersonReplied = SELECT p FROM Comment:m -(HAS_CREATOR>)- Person:p    
     WHERE m.@replyto IN p.@neighbor
-    ACCUM p.@replyToCount += (m.@replyto -> 1);
-  
+    ACCUM p.@replyToCount += (m.@replyto -> 1)
+    POST-ACCUM p.@neighbor.clear();
   tmp =
     SELECT p2
     FROM Person:p1 -(KNOWS:e)- Person:p2
