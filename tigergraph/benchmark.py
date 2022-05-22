@@ -33,10 +33,10 @@ if __name__ == '__main__':
     while batch_date < end_date:
         start = time.time()
         duration = run_batch_update(batch_date, args)
-        # For SF-10k and larger, sleep time may be needed after batch update to release memory
-        # time.sleep(duration * 0.2)
         if needClean:
             for query_num in [19,20]:
+                # For SF-10k and larger, sleep time is needed before bi19precompute to release memory
+                # if query_num == 19: time.sleep(300)
                 if query_num in query_nums:
                     cleanup(query_num, args.endpoint)
         needClean = False
