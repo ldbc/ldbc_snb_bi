@@ -88,15 +88,16 @@ t3=$SECONDS
 #echo "==============================================================================="
 #echo "Data Statisitcs Check (Optional)"
 #echo "-------------------------------------------------------------------------------"
-#echo 'update delta ...'
-#curl -s -H "GSQL-TIMEOUT:2500000" "http://127.0.0.1:9000/rebuildnow"
-#echo "Vertex statistics:"
-#curl -X POST "http://127.0.0.1:9000/builtins/ldbc_snb" -d  '{"function":"stat_vertex_number","type":"*"}'
-#echo
-#echo
-#echo "Edge statistics:"
-#curl -X POST "http://127.0.0.1:9000/builtins/ldbc_snb" -d  '{"function":"stat_edge_number","type":"*"}'
-#echo
+echo 'update delta ...'
+curl -s -H "GSQL-TIMEOUT:2500000" "http://127.0.0.1:9000/rebuildnow"
+echo "Vertex statistics:"
+curl -X POST "http://127.0.0.1:9000/builtins/ldbc_snb" -d  '{"function":"stat_vertex_number","type":"*"}'
+echo
+echo
+echo "Edge statistics:"
+curl -X POST "http://127.0.0.1:9000/builtins/ldbc_snb" -d  '{"function":"stat_edge_number","type":"*"}'
+echo
+t4=$SECONDS
 
 echo
 echo "====================================================================================="
@@ -104,4 +105,5 @@ echo "TigerGraph database is ready for benchmark"
 echo "Schema setup:       $((t1-t0)) s"
 echo "Load Data:          $((t2-t1)) s"
 echo "Query install:      $((t3-t2)) s"
+echo "Rebuild (optional): $((t4-t3)) s"
 echo "====================================================================================="

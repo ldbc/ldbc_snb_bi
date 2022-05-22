@@ -6,6 +6,7 @@ from batches import run_batch_update
 import os
 import time
 import re
+import requests
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='LDBC TigerGraph BI workload Benchmark')
@@ -35,8 +36,9 @@ if __name__ == '__main__':
         duration = run_batch_update(batch_date, args)
         if needClean:
             for query_num in [19,20]:
-                # For SF-10k and larger, sleep time is needed before bi19precompute to release memory
-                # if query_num == 19: time.sleep(300)
+                # For SF-10k and larger, ensure rebuild is done and memory is released for bi19precompute
+                if query_num == 19:
+                    requests.get(f'{args.endpoint}/rebuildnow', headers={'GSQL-TIMEOUT': '36000000'})
                 if query_num in query_nums:
                     cleanup(query_num, args.endpoint)
         needClean = False
