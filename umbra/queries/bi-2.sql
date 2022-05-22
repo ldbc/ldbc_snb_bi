@@ -28,6 +28,6 @@ SELECT t.name AS "tag.name"
      , countMonth2
      , abs(countMonth1-countMonth2) AS diff
   FROM MyTag t LEFT JOIN detail ON t.id = detail.TagId
- ORDER BY diff desc, t.name
+ ORDER BY diff desc nulls last, t.name
  LIMIT 100
 ;

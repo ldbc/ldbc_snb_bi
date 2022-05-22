@@ -111,8 +111,9 @@ DROP TABLE IF EXISTS PathQ19;
 CREATE TABLE PathQ19 (
     src bigint,
     dst bigint,
-    w double precision
-);
+    w double precision,
+    primary key (src, dst)
+) with (storage = paged);
 INSERT INTO PathQ19(src, dst, w)
 WITH
 weights(src, dst, c) as (
@@ -132,8 +133,9 @@ DROP TABLE IF EXISTS PathQ20;
 CREATE TABLE PathQ20 (
     src bigint,
     dst bigint,
-    w int
-);
+    w int,
+    primary key (src, dst)
+) with (storage = paged);
 INSERT INTO PathQ20(src, dst, w)
 select p1.personid, p2.personid, min(abs(p1.classYear - p2.classYear)) + 1
 from Person_knows_person pp, Person_studyAt_University p1, Person_studyAt_University p2
