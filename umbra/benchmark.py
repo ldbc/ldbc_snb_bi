@@ -257,7 +257,7 @@ run_script(pg_con, cur, f"ddl/schema-delete-candidates.sql");
 
 
 network_start_date = datetime.date(2012, 11, 29)
-network_end_date = datetime.date(2012, 12, 2)
+network_end_date = datetime.date(2013, 1, 1)
 batch_size = relativedelta(days=1)
 batch_start_date = network_start_date
 

@@ -34,13 +34,14 @@ shorts(dir, gsrc, dst, w, dead, iter) as (
     union all
     (
         with
-        toExplore as (select * from shorts where dead = false order by w limit 1000),
+        ss as (select * from shorts),
+        toExplore as (select * from ss where dead = false order by w limit 1000),
         -- assumes graph is undirected
         newPoints(dir, gsrc, dst, w, dead) as (
             select e.dir, e.gsrc as gsrc, p.dst as dst, e.w + p.w as w, false as dead
-            from path p join toExplore e on forceorder(e.dst = p.src)
+            from path p join toExplore e on (e.dst = p.src)
             union all
-            select dir, gsrc, dst, w, dead or exists (select * from toExplore e where e.dir = o.dir and e.gsrc = o.gsrc and e.dst = o.dst) from shorts o
+            select dir, gsrc, dst, w, dead or exists (select * from toExplore e where e.dir = o.dir and e.gsrc = o.gsrc and e.dst = o.dst) from ss o
         ),
         fullTable as (
             select distinct on(dir, gsrc, dst) dir, gsrc, dst, w, dead

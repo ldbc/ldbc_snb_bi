@@ -24,9 +24,9 @@ SELECT t.id as TagId
  GROUP BY t.id
 )
 SELECT t.name AS "tag.name"
-     , countMonth1
-     , countMonth2
-     , abs(countMonth1-countMonth2) AS diff
+     , coalesce(countMonth1, 0)
+     , coalesce(countMonth2, 0)
+     , abs(coalesce(countMonth1, 0)-coalesce(countMonth2, 0)) AS diff
   FROM MyTag t LEFT JOIN detail ON t.id = detail.TagId
  ORDER BY diff desc, t.name
  LIMIT 100
