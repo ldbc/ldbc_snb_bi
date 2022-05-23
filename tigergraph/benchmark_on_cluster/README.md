@@ -1,12 +1,16 @@
 
 # Benchmark on Google Cloud Cluster
+
 # Pre-requisites
+
 1. Google Cloud Command line `gcloud`. The default project and region/zone need to be configured using `gcloud init`.
 
 ## Set up the cluster
+
 1. Create intance template. The number of machines is dependent on the data size and machine memory. NUMBER_OF_NODES * MEMORY_PER_MACHINE >= 1.3 * SCALE_FACTOR. In SF-10000, we created 20 instances of `n2d-highmem-96`. To achieve we created a template `n2d-96` in the [GCP Console](https://cloud.google.com/compute/docs/instance-templates/create-instance-templates):  machine type ``n2d-highmem-96``, Boot system `CentOS 7` (we once had bug on Ubuntu) and `persistent SSD` of `4096 GB`. Others are default settings.
 
 1. Reserve IP and create instances
+
     ```sh
     for i in $(seq 0 19)
     do
@@ -22,13 +26,16 @@
     done
     ```
 
-1. log into instances 
+1. Log into instances
+
     ```sh
     # on local machine
     gcloud compute config-ssh
     gcloud compute ssh m1
     ```
-1. Setup instances 
+
+1. Setup instances
+
     ```sh
     # on GCP m1 
     git clone https://github.com/ldbc/ldbc_snb_bi.git
@@ -37,11 +44,14 @@
     ```
 
 1. TigerGraph will be installed under user `tigergraph`. The password need to be modified in `setup_centOS.sh`. Run
+
     ```sh
     ./setup_GCP.sh
     # press enter and skip paraphrase
     ```
-1. Download TigerGraph pacakge and modify `install_conf.json`. Please provide the license, IP address, and sudo username (here is tigergraph) and password. Then run
+
+1. Download TigerGraph package and modify `install_conf.json`. Please provide the license, IP address, and sudo username (here is tigergraph) and password. Then run
+
     ```
     ./install.sh -n
     ```
@@ -75,12 +85,15 @@ nohup ./k8s/setup.sh > log.setup 2>&1 < /dev/null &
 
 ## Run benchmark
 To run benchmark scripts
+
 ```bash
 nohup ./k8s/benchmark.sh > log.benchmark 2>&1 < /dev/null &
 ```
-The `queries.sh` and `batches.sh` can be run in the similar approach. To download, 
+
+The `queries.sh` and `batches.sh` can be run using a similar approach. To download, 
 
 To clear the TigerGraph database
+
 ```bash
 gsql drop all
 ```
