@@ -85,9 +85,10 @@ gsql --graph ldbc_snb $DML_PATH/del_Post.gsql
 gsql --graph ldbc_snb INSTALL QUERY ALL
 t3=$SECONDS
 
-#echo "==============================================================================="
-#echo "Data Statisitcs Check (Optional)"
-#echo "-------------------------------------------------------------------------------"
+echo "==============================================================================="
+echo "Data Statisitcs Check (Optional)"
+echo "this step wait for the database to rebuild delta, subsequent queries sometimes run out of memory without this step"
+echo "-------------------------------------------------------------------------------"
 echo 'update delta ...'
 curl -s -H "GSQL-TIMEOUT:2500000" "http://127.0.0.1:9000/rebuildnow"
 echo "Vertex statistics:"
