@@ -36,7 +36,8 @@ if __name__ == '__main__':
         duration = run_batch_update(batch_date, args)
         if needClean:
             for query_num in [19,20]:
-                # For SF-10k and larger, ensure rebuild is done and memory is released for bi19precompute
+                # bi19precompute is sometimes aborted because the memory used by previous operations is not released,
+                # we wait for the rebuild and then run bi19precompute query.
                 if query_num == 19:
                     requests.get(f'{args.endpoint}/rebuildnow', headers={'GSQL-TIMEOUT': '36000000'})
                 if query_num in query_nums:
