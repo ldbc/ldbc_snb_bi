@@ -7,7 +7,7 @@
 
 ## Set up the cluster
 
-1. Create intance template. The number of machines is dependent on the data size and machine memory. NUMBER_OF_NODES * MEMORY_PER_MACHINE >= 1.3 * SCALE_FACTOR. In SF-10000, we created 20 instances of `n2d-highmem-96`. To achieve we created a template `n2d-96` in the [GCP Console](https://cloud.google.com/compute/docs/instance-templates/create-instance-templates):  machine type ``n2d-highmem-96``, Boot system `CentOS 7` (we once had bug on Ubuntu) and `persistent SSD` of `4096 GB`. Others are default settings.
+1. Create intance template. The number of machines is dependent on the data size and machine memory. NUMBER_OF_NODES * MEMORY_PER_MACHINE >= 1.3 * SCALE_FACTOR. In SF-10000, we created 30 instances of `n2d-highmem-96`. To achieve we created a template `n2d-96` in the [GCP Console](https://cloud.google.com/compute/docs/instance-templates/create-instance-templates):  machine type ``n2d-highmem-96``, Boot system `CentOS 7` (we once had bug on Ubuntu) and `persistent SSD` of `3200 GB`. Others are default settings.
 
 1. Reserve IP and create instances
 
@@ -43,7 +43,7 @@
     gcloud init --console-only
     ```
 
-1. TigerGraph will be installed under user `tigergraph`. The password need to be modified in `setup_centOS.sh`. Run
+1. TigerGraph will be installed under user `tigergraph`. The password need to be modified in `setup.sh`. Run
 
     ```sh
     ./setup_GCP.sh
@@ -66,13 +66,13 @@ su - tigergraph
 sudo python3 -m pip install --upgrade pip
 sudo pip3 install paramiko scp
 git clone https://github.com/ldbc/ldbc_snb_bi.git
-cd ldbc_snb_bi/tigergraph
+cd ldbc_snb_bi/tigergraph/benchmark_on_cluster
 ```
-Modify the password of TigerGraph user `download_all.py`, then run
+Modify the password of TigerGraph user in `download_all.py`, then run
 ```sh
-python3 benchmark_on_cluster/download_all.py 10000 10.128.0.10 20 -t 10
+python3 download_all.py 10000 10.128.0.10 20 -t 10
 ```
-This script will run `./k8s/download_one_pod.sh` on all the machines. Usage of the `download_all.py` is 
+This script will run `./k8s/download_decompress.sh` on all the machines, the downloaded data is located in `~/sf10000`. Usage of the `download_all.py` is 
 ```sh
 download_all.py [scale factor] [m1 ip address] [number of nodes] -t [download threads]`
 ```
@@ -90,7 +90,7 @@ To run benchmark scripts
 nohup ./k8s/benchmark.sh > log.benchmark 2>&1 < /dev/null &
 ```
 
-The `queries.sh` and `batches.sh` can be run using a similar approach. To download, 
+The `queries.sh` and `batches.sh` can be run using a similar approach.
 
 To clear the TigerGraph database
 

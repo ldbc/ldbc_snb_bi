@@ -11,6 +11,17 @@ sudo sed -i 's/\#PubkeyAuthentication yes/PubkeyAuthentication yes/' /etc/ssh/ss
 sudo sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/' /etc/ssh/sshd_config
 sudo service sshd reload
 
-sudo yum -y update
-sudo yum -y install net-tools sshpass parallel git gzip
-echo 'done CentOS setup'
+if command -v apt >/dev/null; then
+  installer=apt
+elif command -v yum >/dev/null; then
+  installer=yum
+else
+  echo "Require apt or yum"
+  exit 0
+fi
+
+sudo $installer -y update
+sudo $installer -y install net-tools sshpass parallel git gzip python3-pip
+sudo python3 -m pip install --upgrade pip
+sudo pip3 install google-cloud-storage
+echo 'done setup'

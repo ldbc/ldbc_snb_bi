@@ -17,7 +17,7 @@ if args.key:
   os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = args.key
 
 bucket = 'ldbc_bi'
-root = f'sf{args.data}-bi/'
+root = f'sf{args.data}/'
 target = args.target / f'sf{args.data}'
 
 PARTITION_OR_NOT = {

@@ -15,6 +15,6 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi6(STRING tag) SYNTAX v2 {
       FOREACH (p,score) IN p1.@pScore DO
         p1.@authorityScore += score
       END,
-      @@result += RESULT(p1.id, p1.@authorityScore);
+      @@result += RESULT(p1.id, p1.@authorityScore), p1.@pScore.clear();
   PRINT @@result as result;
 }
