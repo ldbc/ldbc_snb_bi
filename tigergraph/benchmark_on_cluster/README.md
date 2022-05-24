@@ -7,7 +7,7 @@
 
 ## Set up the cluster
 
-1. Create intance template. The number of machines is dependent on the data size and machine memory. NUMBER_OF_NODES * MEMORY_PER_MACHINE >= 1.3 * SCALE_FACTOR. In SF-10000, we created 30 instances of `n2d-highmem-96`. To achieve we created a template `n2d-96` in the [GCP Console](https://cloud.google.com/compute/docs/instance-templates/create-instance-templates):  machine type ``n2d-highmem-96``, Boot system `CentOS 7` (we once had bug on Ubuntu) and `persistent SSD` of `3200 GB`. Others are default settings.
+1. Create intance template. The number of machines is dependent on the data size and machine memory. NUMBER_OF_NODES * MEMORY_PER_MACHINE >= 2.0 * SCALE_FACTOR. In SF-10000, we created 30 instances of `n2d-highmem-96`. We created a template `n2d-96` in the [GCP Console](https://cloud.google.com/compute/docs/instance-templates/create-instance-templates):  machine type ``n2d-highmem-96``, boot system `CentOS 7` and `persistent SSD` of `3200 GB`. Others are default settings.
 
 1. Reserve IP and create instances
 
