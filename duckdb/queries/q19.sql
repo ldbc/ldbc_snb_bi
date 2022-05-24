@@ -27,12 +27,13 @@ CREATE TEMP TABLE weights as (select src as person1id, dst as person2id, weight 
                         order by src, dst);
 
 -- PRECOMPUTE
-CREATE TEMP TABLE PersonInteractions AS (SELECT DISTINCT Person1id as id
+CREATE TEMP TABLE PersonInteractions AS (SELECT DISTINCT r.Person1id as id, p.locationcityid
                                     FROM ((SELECT Person1id
                                            FROM weights)
                                           UNION ALL
                                           (SELECT Person2id AS Person1id
-                                           FROM weights))
+                                           FROM weights)) r
+                                    JOIN person p on p.id = r.Person1id
                                     ORDER BY id);
 
 -- CSR CREATION
@@ -60,12 +61,18 @@ create temp table results
     weight double
 );
 
-
 -- PARAMS
 INSERT INTO results (SELECT s.id AS person1id, s.LocationCityId AS City1id, s2.id AS person2id, s2.LocationCityId as City2id, cheapest_path(0, (SELECT count(*) FROM PersonInteractions), s.rowid, s2.rowid) AS weight FROM
-                (SELECT pi.id, pi.rowid, p.locationcityid FROM personinteractions pi JOIN person p ON p.id = pi.id WHERE p.locationcityid = city1id) s,
-                (SELECT pi.id, pi.rowid, p.locationcityid FROM personinteractions pi JOIN person p ON p.id = pi.id WHERE p.locationcityid = city2id) s2
-        );
+                (SELECT pi.id, pi.rowid, pi.locationcityid FROM personinteractions pi WHERE pi.locationcityid = city1id) s,
+                (SELECT pi.id, pi.rowid, pi.locationcityid FROM personinteractions pi WHERE pi.locationcityid = city2id) s2
+);
+
+
+-- PARAMS
+-- INSERT INTO results (SELECT s.id AS person1id, s.LocationCityId AS City1id, s2.id AS person2id, s2.LocationCityId as City2id, cheapest_path(0, (SELECT count(*) FROM PersonInteractions), s.rowid, s2.rowid) AS weight FROM
+--                 (SELECT pi.id, pi.rowid, p.locationcityid FROM personinteractions pi JOIN person p ON p.id = pi.id WHERE p.locationcityid = city1id) s,
+--                 (SELECT pi.id, pi.rowid, p.locationcityid FROM personinteractions pi JOIN person p ON p.id = pi.id WHERE p.locationcityid = city2id) s2
+--         );
 
 pragma delete_csr=0;
 
