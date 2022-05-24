@@ -278,7 +278,7 @@ timings_file.write(f"tool|sf|q|parameters|time\n")
 
 
 network_start_date = datetime.date(2012, 11, 29)
-network_end_date = datetime.date(2012, 12, 2)
+network_end_date = datetime.date(2013, 1, 1)
 batch_size = relativedelta(days=1)
 batch_start_date = network_start_date
 
