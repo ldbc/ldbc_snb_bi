@@ -1,96 +1,95 @@
 DROP TABLE IF EXISTS Message;
-DROP TABLE IF EXISTS Interactions;
+DROP TABLE IF EXISTS interactions;
+DROP TABLE IF EXISTS weights;
 DROP TABLE IF EXISTS PersonInteractions;
 
-CREATE TABLE Message as (SELECT p.id as id, NULL as ParentMessageId, p.CreatorPersonId
-                         FROM Post p
-                         UNION ALL
-                         SELECT c.id                                    as id,
-                                coalesce(ParentPostId, ParentCommentId) as ParentMessageId,
-                                c.CreatorPersonid
-                         FROM comment c);
-
-CREATE TABLE interactions as (SELECT Person_knows_Person.Person1Id AS Person1Id,
-                                     Person_knows_Person.Person2Id AS person2Id,
-                                     1.0 / (count(Message1.id))    AS weight
-                              FROM Person_knows_Person
-                                       JOIN Message Message1
-                                            ON Message1.CreatorPersonId = Person_knows_Person.Person1Id
-                                       JOIN Message Message2
-                                            ON Message2.CreatorPersonId = Person_knows_Person.Person2Id
-                                                AND (Message1.id = Message2.ParentMessageId
-                                                    OR Message2.id = Message1.ParentMessageId)
-                              GROUP BY Person_knows_Person.Person1Id, Person_knows_Person.Person2Id);
+CREATE TEMP TABLE Message as (SELECT p.id as messageid, NULL as ParentMessageId, p.CreatorPersonId
+     FROM Post p
+     UNION ALL
+     SELECT c.id                                    as messageid,
+            coalesce(ParentPostId, ParentCommentId) as ParentMessageId,
+            c.CreatorPersonid
+     FROM comment c);
 
 
-CREATE TABLE PersonInteractions AS (SELECT DISTINCT Person1id as id
+CREATE TEMP TABLE interactions as (select least(m1.creatorpersonid, m2.creatorpersonid) as src,
+                                         greatest(m1.creatorpersonid, m2.creatorpersonid) as dst,
+                                         count(*) as c
+                                  from Person_knows_person pp, Message m1, Message m2
+                                  where pp.person1id = m1.creatorpersonid and pp.person2id = m2.creatorpersonid and m1.parentmessageid = m2.messageid and m1.creatorpersonid <> m2.creatorpersonid
+                                  group by src, dst
+                                  order by src, dst);
+
+CREATE TEMP TABLE weights as (select src as person1id, dst as person2id, weight from (
+                            select src, dst, 1.0::double precision / c as weight from interactions
+                            union all
+                            select dst, src, 1.0::double precision / c as weight from interactions)
+                        order by src, dst);
+
+-- PRECOMPUTE
+CREATE TEMP TABLE PersonInteractions AS (SELECT DISTINCT r.Person1id as id, p.locationcityid
                                     FROM ((SELECT Person1id
-                                           FROM interactions)
+                                           FROM weights)
                                           UNION ALL
                                           (SELECT Person2id AS Person1id
-                                           FROM interactions))
+                                           FROM weights)) r
+                                    JOIN person p on p.id = r.Person1id
                                     ORDER BY id);
 
-
+-- CSR CREATION
 SELECT DISTINCT CREATE_CSR(
                0,
                v.vcount,
-               sub.dense_id,
-               sub.cnt,
+               r.ecount,
                r.src,
                r.dst,
                r.weight
            ) AS numEdges
-FROM (SELECT p.rowid as dense_id, count(k.Person1id) as cnt
-      FROM PersonInteractions p
-               LEFT JOIN interactions k ON k.Person1id = p.id
-      GROUP BY p.rowid) sub,
-     (SELECT count(p.id) as vcount FROM PersonInteractions p) v,
-     (SELECT src.rowid as src, dst.rowid as dst, t.weight as weight
-      FROM interactions t
-               JOIN PersonInteractions src ON t.Person1id = src.id
-               JOIN PersonInteractions dst ON t.Person2id = dst.id) r
-WHERE r.src = sub.dense_id;
+FROM (SELECT count(p.id) as vcount FROM PersonInteractions p) v,
+     (SELECT src.rowid as src, dst.rowid as dst, t.weight as weight, count(src.rowid) OVER (ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) as ecount
+      FROM weights t
+           JOIN PersonInteractions src ON t.Person1id = src.id
+           JOIN PersonInteractions dst ON t.Person2id = dst.id) r;
 
 
--- SELECT min(CREATE_CSR_EDGE(0, (SELECT count(p.id) as vcount FROM PersonInteractions p),
---                            CAST((SELECT sum(CREATE_CSR_VERTEX(0,
---                                                               (SELECT count(p.id) as vcount FROM PersonInteractions p),
---                                                               sub.dense_id, sub.cnt)) AS numEdges
---                                  FROM (SELECT p.rowid as dense_id, count(k.Person1id) as cnt
---                                        FROM PersonInteractions p
---                                                 LEFT JOIN interactions k ON k.Person1id = p.id
---                                        GROUP BY p.rowid) sub) AS BIGINT),
---                            src.rowid, dst.rowid, k.weight))
--- FROM interactions k
---          JOIN PersonInteractions src ON k.Person1id = src.id
---          JOIN PersonInteractions dst ON k.Person2id = dst.id;
+create temp table results
+(
+    Person1id bigint,
+    city1id bigint,
+    Person2id bigint,
+    city2id bigint,
+    weight double
+);
+
+-- PARAMS
+INSERT INTO results (SELECT s.id AS person1id, s.LocationCityId AS City1id, s2.id AS person2id, s2.LocationCityId as City2id, cheapest_path(0, (SELECT count(*) FROM PersonInteractions), s.rowid, s2.rowid) AS weight FROM
+                (SELECT pi.id, pi.rowid, pi.locationcityid FROM personinteractions pi WHERE pi.locationcityid = city1id) s,
+                (SELECT pi.id, pi.rowid, pi.locationcityid FROM personinteractions pi WHERE pi.locationcityid = city2id) s2
+);
 
 
--- CREATE TABLE interactions as (
--- SELECT c.CreatorPersonId as Person1id, m.CreatorPersonId as Person2id, count(*) as interactions
--- FROM comment c
--- JOIN Message m on m.messageid = coalesce(c.parentpostid, c.parentcommentid)
--- where c.CreatorPersonId <> m.CreatorPersonId
--- group by c.CreatorPersonId, m.CreatorPersonid
--- );
---
--- INSERT INTO interactions (SELECT Person2id, Person1id, interactions from interactions);
---
--- -- DEBUG
--- SELECT person1id, person2id, sum(interactions) as interactions
--- FROM interactions
--- GROUP BY person1id, person2id;
+-- PARAMS
+-- INSERT INTO results (SELECT s.id AS person1id, s.LocationCityId AS City1id, s2.id AS person2id, s2.LocationCityId as City2id, cheapest_path(0, (SELECT count(*) FROM PersonInteractions), s.rowid, s2.rowid) AS weight FROM
+--                 (SELECT pi.id, pi.rowid, p.locationcityid FROM personinteractions pi JOIN person p ON p.id = pi.id WHERE p.locationcityid = city1id) s,
+--                 (SELECT pi.id, pi.rowid, p.locationcityid FROM personinteractions pi JOIN person p ON p.id = pi.id WHERE p.locationcityid = city2id) s2
+--         );
 
--- DEBUG
--- CREATE TABLE Person_InteractionsKnows_Person AS (
---         SELECT pkp.person1id, pkp.person2id, 1.0 / cast((i.interactions + i2.interactions) as float) as weight
---         FROM person_knows_person pkp
---         JOIN interactions i on pkp.person1id = i.person1id and pkp.person2id = i.Person2id
---         JOIN interactions i2 on pkp.person1id = i2.person2id and pkp.person2id = i2.Person1id
---         JOIN person p on pkp.person1id = p.id
---         JOIN person p2 on pkp.person2id = p2.id
---         WHERE p.LocationCityId <> p2.LocationCityId
--- );
+pragma delete_csr=0;
+
+-- RESULTS
+WITH agg AS (SELECT min(weight) AS min_weight, city1id, city2id
+          FROM results
+          GROUP BY city1id, city2id
+          )
+SELECT person1id,
+person2id,
+weight AS totalWeight,
+results.city1id,
+results.city2id
+FROM results, agg
+WHERE results.weight BETWEEN agg.min_weight - 0.00001 AND agg.min_weight + 0.00001 AND
+      results.city1id = agg.city1id AND
+      results.city2id = agg.city2id
+-- ORDER BY totalWeight ASC, person1id ASC, person2id ASC;
 
 
