@@ -15,6 +15,7 @@ CREATE (post:Post:Message {
     locationIP: locationIP,
     browserUsed: browserUsed,
     language: language,
-    content: content
+    content: content,
+    length: length
   })
 RETURN count(*)
