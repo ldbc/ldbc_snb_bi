@@ -64,7 +64,7 @@ jobs:
             scripts/load-in-one-step.sh
             scripts/backup-database.sh
             scripts/restore-database.sh
-            scripts/benchmark.sh
+            scripts/benchmark.sh --test
             cd ..
       - run:
           name: Test Cypher toolchain with uncompressed CSVs
@@ -72,7 +72,7 @@ jobs:
             cd cypher
             export NEO4J_CSV_DIR=`pwd`/social-network-sf0.003-bi-composite-projected-fk-neo4j/graphs/csv/bi/composite-projected-fk/
             scripts/load-in-one-step.sh
-            scripts/benchmark.sh
+            scripts/benchmark.sh --test
             cd ..
             scripts/cross-validate.sh
       - run:
@@ -84,7 +84,7 @@ jobs:
             scripts/load-in-one-step.sh
             scripts/backup-database.sh
             scripts/restore-database.sh
-            scripts/benchmark.sh
+            scripts/benchmark.sh --test
             cd ..
             scripts/cross-validate.sh
       - slack/status

@@ -280,16 +280,15 @@ timings_file.write(f"tool|sf|q|parameters|time\n")
 network_start_date = datetime.date(2012, 11, 29)
 network_end_date = datetime.date(2013, 1, 1)
 batch_size = relativedelta(days=1)
-batch_start_date = network_start_date
+batch_date = network_start_date
 
 # run alternating write-read blocks
-while batch_start_date < network_end_date:
+while batch_date < network_end_date and (not test or batch_date < datetime.date(2012, 12, 2)):
     print()
-    print(f"----------------> Batch date: {batch_start_date} <---------------")
-    run_batch_updates(session, data_dir, batch_start_date, insert_entities, delete_entities, insert_queries, delete_queries)
+    print(f"----------------> Batch date: {batch_date} <---------------")
+    run_batch_updates(session, data_dir, batch_date, insert_entities, delete_entities, insert_queries, delete_queries)
     run_queries(query_variants, session, sf, test, pgtuning)
-    batch_start_date = batch_start_date + batch_size
+    batch_date = batch_date + batch_size
 
 results_file.close()
 timings_file.close()
-
