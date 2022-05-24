@@ -1,7 +1,9 @@
 DROP TABLE IF EXISTS results;
+DROP TABLE IF EXISTS person_universityknows_person;
+DROP TABLE IF EXISTS PersonUniversity;
 
 -- PRECOMPUTE
-CREATE TEMP TABLE Person_UniversityKnows_Person AS (SELECT p.id                                     as Person1id,
+CREATE TABLE Person_UniversityKnows_Person AS (SELECT p.id                                     as Person1id,
                                                       p2.id                                    as Person2id,
                                                       min(abs(u.classYear - u2.classYear) + 1) as weight --
                                                FROM Person p
@@ -15,7 +17,7 @@ CREATE TEMP TABLE Person_UniversityKnows_Person AS (SELECT p.id                 
 
 
 -- PRECOMPUTE
-CREATE TEMP TABLE PersonUniversity AS (SELECT DISTINCT Person1id as id
+CREATE TABLE PersonUniversity AS (SELECT DISTINCT Person1id as id
                                   FROM ((SELECT Person1id
                                          FROM Person_UniversityKnows_Person)
                                         UNION ALL
@@ -37,36 +39,3 @@ FROM (SELECT count(p.id) as vcount FROM PersonUniversity p) v,
       FROM Person_UniversityKnows_Person t
        JOIN PersonUniversity src ON t.Person1id = src.id
        JOIN PersonUniversity dst ON t.Person2id = dst.id) r;
-
-create temp table results
-(
-    Person1id bigint,
-    Person2id bigint,
-    company   varchar,
-    weight    bigint
-);
-
--- PARAMS
-INSERT INTO results (SELECT p.id                                                                           as Person1id,
-                            p2.id                                                                          as Person2id,
-                            c.name                                                                         as Company,
-                            cheapest_path(0, (select count(*) from PersonUniversity p), p.rowid, p2.rowid) as weight
-                     FROM PersonUniversity p
-                              JOIN Person_workAt_Company pwc on p.id = pwc.PersonId
-                              JOIN Company c on (pwc.CompanyId = c.id AND c.name = 'company')
-                              JOIN PersonUniversity p2 on p2.id = person2id
-                     where weight is not null
-                     order by weight, p.id);
-
-
--- RESULTS
-SELECT (SELECT person1id FROM results WHERE person2id = agg.person2id and company = agg.company and weight = agg.min_weight LIMIT 20)
-           as person1id,
-       person2id,
-       company,
-       min_weight as weight
-FROM (SELECT min(weight) AS min_weight, person2id, company
-      FROM results
-      GROUP BY person2id, company) agg
-;
-
