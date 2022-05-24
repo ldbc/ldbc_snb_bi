@@ -27,6 +27,13 @@ if [ ! -d "${UMBRA_CSV_DIR}" ]; then
 fi
 
 scripts/stop.sh
+
+start_time=$(date +%s)
+
 scripts/create-db.sh
 scripts/start.sh
 scripts/load.sh
+
+end_time=$(date +%s)
+elapsed=$(( end_time - start_time ))
+echo -e "time\n${elapsed}" > output/load.csv
