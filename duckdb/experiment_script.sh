@@ -1,12 +1,16 @@
 #!/bin/bash
 
-source ../../CLionProjects/duckdb-pgq/.venv/bin/activate
+source ../../duckdb-pgq/.venv/bin/activate
 
-for _ in {1..5}
+for j in {1..50..1}
 do
-  for i in 0.1 0.3 1 3 10
+  for i in 3 10 30 100 300
   do
+    echo $i $j
     python3 load.py -s $i -q 20
   done
 done
+
+deactivate 
+
 
