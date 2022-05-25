@@ -1,7 +1,8 @@
 CREATE OR REPLACE DISTRIBUTED QUERY bi19precompute() syntax v2 {
   MinAccum<VERTEX<Person>> @creator, @replyto;
   SetAccum<VERTEX<Person>> @neighbor;
-  MapAccum<VERTEX<Person>, SumAccum<UINT>> @replyToCount;  
+  MapAccum<VERTEX<Person>, SumAccum<UINT>> @replyToCount;
+  FILE f ("/tmp/bi19delta.csv");
   vMessages = SELECT m FROM Person:s -(<HAS_CREATOR)- (Comment|Post):m
     ACCUM m.@creator += s;
   
@@ -20,5 +21,13 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi19precompute() syntax v2 {
     FROM Person:p1 -(KNOWS)- Person:p2
     WHERE p1.id<p2.id AND (p1.@replyToCount.get(p2) > 0 OR p2.@replyToCount.get(p1) > 0)
     ACCUM
-      INSERT INTO KNOWS19 (FROM, TO, weight) VALUES (p1, p2, 1.0 / (p1.@replyToCount.get(p2) + p2.@replyToCount.get(p1)));
+      # dump to file to save memory
+      f.println(p1.id, p2.id, 1.0 / (p1.@replyToCount.get(p2) + p2.@replyToCount.get(p1)));
+      # INSERT INTO KNOWS19 (FROM, TO, weight) VALUES (p1, p2, 1.0 / (p1.@replyToCount.get(p2) + p2.@replyToCount.get(p1))); 
+}
+
+CREATE LOADING JOB load_precompute19 FOR GRAPH ldbc_snb {
+  DEFINE FILENAME file_delta;
+  LOAD file_delta
+    TO EDGE KNOWS19 VALUES ($0, $1, $2) USING header="false", separator=",";
 }
