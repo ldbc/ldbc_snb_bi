@@ -143,7 +143,7 @@ def run_queries(query_variants, pg_con, sf, test, pgtuning, batch_id, timings_fi
 
             (results, duration) = run_query(pg_con, query_num, query_spec, query_parameters_converted)
 
-            timings_file.write(f"Umbra|{sf}|{query_variant}|{query_parameters_in_order}|{duration}\n")
+            timings_file.write(f"Umbra|{sf}|{batch_id}|{query_variant}|{query_parameters_in_order}|{duration}\n")
             timings_file.flush()
             results_file.write(f"{query_num}|{query_variant}|{query_parameters_in_order}|{results}\n")
             results_file.flush()
@@ -158,7 +158,7 @@ def run_queries(query_variants, pg_con, sf, test, pgtuning, batch_id, timings_fi
 
     end = time.time()
     duration = end - start
-    timings_file.write(f"Umbra|{sf}|reads|{batch_id}|{duration}\n")
+    timings_file.write(f"Umbra|{sf}|{batch_id}|reads||{duration}\n")
 
 
 def run_batch_updates(pg_con, data_dir, batch_start_date, timings_file):
@@ -213,7 +213,7 @@ def run_batch_updates(pg_con, data_dir, batch_start_date, timings_file):
 
     end = time.time()
     duration = end - start
-    timings_file.write(f"Umbra|{sf}|writes|{batch_id}|{duration}\n")
+    timings_file.write(f"Umbra|{sf}|{batch_id}|writes||{duration}\n")
 
 
 query_variants = ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "15a", "15b", "16a", "16b", "17", "18", "19a", "19b", "20"]
@@ -227,7 +227,7 @@ if len(sys.argv) > 1:
     if sys.argv[1] == "--pgtuning":
         pgtuning = True
 
-data_dir = sf = os.environ.get("UMBRA_CSV_DIR")
+data_dir = os.environ.get("UMBRA_CSV_DIR")
 if data_dir is None:
     print("${UMBRA_CSV_DIR} environment variable must be set")
     exit(1)
@@ -248,7 +248,7 @@ open(f"output/timings.csv", "w").close()
 
 results_file = open(f"output/results.csv", "a")
 timings_file = open(f"output/timings.csv", "a")
-timings_file.write(f"tool|sf|q|parameters|time\n")
+timings_file.write(f"tool|sf|day|q|parameters|time\n")
 
 pg_con = psycopg2.connect(host="localhost", user="postgres", password="mysecretpassword", port=8000)
 cur = pg_con.cursor()
@@ -259,14 +259,13 @@ run_script(pg_con, cur, f"ddl/schema-delete-candidates.sql");
 network_start_date = datetime.date(2012, 11, 29)
 network_end_date = datetime.date(2013, 1, 1)
 batch_size = relativedelta(days=1)
-batch_start_date = network_start_date
+batch_date = network_start_date
 
 # run alternating write-read blocks
-while batch_start_date < network_end_date:
-    run_batch_updates(pg_con, data_dir, batch_start_date, timings_file)
-    run_queries(query_variants, pg_con, sf, test, pgtuning, batch_start_date, timings_file)
-    batch_start_date = batch_start_date + batch_size
-
+while batch_date < network_end_date and (not test or batch_date < datetime.date(2012, 12, 2)):
+    run_batch_updates(pg_con, data_dir, batch_date, timings_file)
+    run_queries(query_variants, pg_con, sf, test, pgtuning, batch_date, timings_file)
+    batch_date = batch_date + batch_size
 
 results_file.close()
 timings_file.close()
