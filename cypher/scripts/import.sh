@@ -39,14 +39,8 @@ rm -rf ${NEO4J_DATA_DIR}/*
 # [1] https://serverfault.com/a/163390/573198
 # [2] https://unix.stackexchange.com/a/120842/315847
 
+NEO4J_PART_FIND_PATTERN="part-*.csv*"
 NEO4J_HEADER_EXTENSION=".csv"
-
-if [ "${NEO4J_CSV_FLAGS}" == "--compressed" ]; then
-    NEO4J_CSV_EXTENSION=".csv.gz"
-else
-    NEO4J_CSV_EXTENSION=".csv"
-fi
-NEO4J_PART_FIND_PATTERN="part-*${NEO4J_CSV_EXTENSION}"
 
 if [ "$(uname)" == "Darwin" ]; then
     FIND_COMMAND=gfind

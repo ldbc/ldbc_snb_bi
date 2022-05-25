@@ -7,7 +7,7 @@ Note that some BI queries are not expressed (efficiently) in Cypher so they make
 
 The Neo4j implementation expects the data to be in `composite-projected-fk` CSV layout, without headers and with quoted fields.
 To generate data that confirms this requirement, run Datagen with the `--explode-edges` and the `--format-options header=false,quoteAll=true` options.
-This implementation also supports compressed data sets, both for the initial load and for batches. To generate compressed data sets, include `compression=gzip` in the Datagen's `--format-options` and set the `${NEO4J_CSV_FLAGS}` accordingly (see later).
+This implementation also supports compressed data sets, both for the initial load and for batches. To generate compressed data sets, include `compression=gzip` in the Datagen's `--format-options`. The scripts in this repository change between compressed and uncompressed representations.
 
 (Rationale: Files should not have headers as these are provided separately in the `headers/` directory and quoting the fields in the CSV is required to [preserve trailing spaces](https://neo4j.com/docs/operations-manual/4.3/tools/neo4j-admin-import/#import-tool-header-format).)
 
@@ -44,12 +44,6 @@ tools/run.py \
         export NEO4J_CSV_DIR=${LDBC_SNB_DATAGEN_DIR}/out-sf${SF}/graphs/csv/bi/composite-projected-fk/
         ```
 
-        If the data is compressed, set the following flag:
-
-        ```bash
-        export NEO4J_CSV_FLAGS="--compressed"
-        ```
-
         Or, simply run:
 
         ```bash
@@ -62,7 +56,6 @@ tools/run.py \
         wget -q https://ldbcouncil.org/ldbc_snb_datagen_spark/social-network-sf0.003-bi-composite-projected-fk-neo4j-compressed.zip
         unzip -q social-network-sf0.003-bi-composite-projected-fk-neo4j-compressed.zip
         export NEO4J_CSV_DIR=`pwd`/social-network-sf0.003-bi-composite-projected-fk-neo4j-compressed/graphs/csv/bi/composite-projected-fk/
-        export NEO4J_CSV_FLAGS="--compressed"
         ```
 
         Or, simply run:
