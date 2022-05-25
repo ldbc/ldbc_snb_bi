@@ -14,9 +14,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi20precompute() syntax v2 {
         IF w < weight THEN weight = w END
       END,
       # dump to file to save memory
-      IF weight < 10000000 THEN
-        f.println(p1.id, p2.id, weight)
-      END;
+      f.println(p1.id, p2.id, weight);
       # INSERT INTO KNOWS20 (FROM, TO, weight) VALUES (p1, p2, weight);
 }
 
