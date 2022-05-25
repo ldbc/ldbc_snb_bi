@@ -73,14 +73,6 @@ Note that unlike Postgres, Umbra does not support directly loading from compress
 
 1. The substitution parameters should be generated using the [`paramgen`](../paramgen).
 
-## Microbatches
-
-Test loading the microbatches, make sure that `${UMBRA_CSV_DIR}` is set correctly and run:
-
-```bash
-scripts/batches.sh
-```
-
 ## Queries
 
 To run the queries, issue:

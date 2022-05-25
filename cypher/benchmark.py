@@ -207,17 +207,6 @@ query_variants = ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10
 driver = neo4j.GraphDatabase.driver("bolt://localhost:7687")
 session = driver.session()
 
-if "19a" in query_variants or "19b" in query_variants:
-    print("Creating graph (precomputing weights) for Q19")
-    session.write_transaction(write_query_fun, open(f'queries/bi-19-drop-graph.cypher', 'r').read())
-    session.write_transaction(write_query_fun, open(f'queries/bi-19-create-graph.cypher', 'r').read())
-
-if "20" in query_variants:
-    print("Creating graph (precomputing weights) for Q20")
-    session.write_transaction(write_query_fun, open(f'queries/bi-20-drop-graph.cypher', 'r').read())
-    session.write_transaction(write_query_fun, open(f'queries/bi-20-create-graph.cypher', 'r').read())
-
-
 # env vars and arguments
 
 sf = os.environ.get("SF")
@@ -278,18 +267,28 @@ timings_file.write(f"tool|sf|q|parameters|time\n")
 
 
 network_start_date = datetime.date(2012, 11, 29)
-network_end_date = datetime.date(2012, 12, 2)
+network_end_date = datetime.date(2013, 1, 1)
 batch_size = relativedelta(days=1)
-batch_start_date = network_start_date
+batch_date = network_start_date
 
 # run alternating write-read blocks
-while batch_start_date < network_end_date:
+while batch_date < network_end_date and (not test or batch_date < datetime.date(2012, 12, 2)):
     print()
-    print(f"----------------> Batch date: {batch_start_date} <---------------")
-    run_batch_updates(session, data_dir, batch_start_date, insert_entities, delete_entities, insert_queries, delete_queries)
+    print(f"----------------> Batch date: {batch_date} <---------------")
+    run_batch_updates(session, data_dir, batch_date, insert_entities, delete_entities, insert_queries, delete_queries)
+
+    if "19a" in query_variants or "19b" in query_variants:
+        print("Creating graph (precomputing weights) for Q19")
+        session.write_transaction(write_query_fun, open(f'queries/bi-19-drop-graph.cypher', 'r').read())
+        session.write_transaction(write_query_fun, open(f'queries/bi-19-create-graph.cypher', 'r').read())
+
+    if "20" in query_variants:
+        print("Creating graph (precomputing weights) for Q20")
+        session.write_transaction(write_query_fun, open(f'queries/bi-20-drop-graph.cypher', 'r').read())
+        session.write_transaction(write_query_fun, open(f'queries/bi-20-create-graph.cypher', 'r').read())
+
     run_queries(query_variants, session, sf, test, pgtuning)
-    batch_start_date = batch_start_date + batch_size
+    batch_date = batch_date + batch_size
 
 results_file.close()
 timings_file.close()
-
