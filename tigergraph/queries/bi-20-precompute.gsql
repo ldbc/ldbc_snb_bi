@@ -1,7 +1,6 @@
 CREATE OR REPLACE DISTRIBUTED QUERY bi20precompute() syntax v2 {
   SetAccum<VERTEX<University>> @univ;
   MapAccum<VERTEX<University>, INT> @univYear;
-  FILE f ("/tmp/bi20delta.csv");
   P = SELECT p FROM University:u -(<STUDY_AT:e)- Person:p 
     ACCUM p.@univ += u,
       p.@univYear += (u -> e.classYear);
@@ -13,14 +12,5 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi20precompute() syntax v2 {
         UINT w = abs(p2.@univYear.get(u)-p1.@univYear.get(u)) + 1,
         IF w < weight THEN weight = w END
       END,
-      # dump to file to save memory
-      f.println(p1.id, p2.id, weight);
-      # INSERT INTO KNOWS20 (FROM, TO, weight) VALUES (p1, p2, weight);
-}
-
-  
-CREATE LOADING JOB load_precompute20 FOR GRAPH ldbc_snb {
-  DEFINE FILENAME file_delta;
-  LOAD file_delta
-    TO EDGE KNOWS20 VALUES ($0, $1, $2) USING header="false", separator=",";
+      INSERT INTO KNOWS20 (FROM, TO, weight) VALUES (p1, p2, weight);
 }

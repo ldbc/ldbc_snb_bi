@@ -5,7 +5,6 @@ import csv
 import requests
 import re
 import os
-import subprocess
 
 # query timeout value in miliseconds
 HEADERS = {'GSQL-TIMEOUT': '36000000'}
@@ -96,15 +95,6 @@ def precompute(query_num, endpoint):
     print(f"Precomputing weights for Q{query_num}")
     start = time.time()
     response = requests.get(f'{endpoint}/query/ldbc_snb/bi{query_num}precompute', headers=HEADERS).json()
-    if query_num in [19, 20]:
-        print(f'load bi{query_num}delta.csv')
-        if args.cluster:
-            gsql = f'RUN LOADING JOB load_precompute{query_num} USING file_delta=\\"ANY:/tmp/bi{query_num}delta.csv\\"'
-            subprocess.run(f'gsql -g ldbc_snb {gsql}', shell=True)
-        else:
-            url = f'{endpoint}/ddl/ldbc_snb?tag=load_precompute{query_num}&filename=file_delta&ack=all'
-            curl = f'curl -X POST -H "GSQL-TIMEOUT:3600000" --data-binary  @/tmp/bi{query_num}delta.csv "{url}"'
-
     return time.time() - start
 
 def cleanup(query_num, endpoint):
@@ -147,7 +137,6 @@ if __name__ == '__main__':
     parser.add_argument('--skip', action='store_true', help='skip precompute')
     parser.add_argument('--test', action='store_true', help='test mode only run one time')
     parser.add_argument('--nruns', '-n', type=int, default=10, help='number of runs')
-    parser.add_argument('--cluster', action='store_true', help='load concurrently on cluster')
     parser.add_argument('--endpoint', type=str, default='http://127.0.0.1:9000',help='tigergraph endpoints')
     args = parser.parse_args()
     
@@ -157,7 +146,7 @@ if __name__ == '__main__':
     timings_file = open(output/'timings.csv', 'w')
     timings_file.write(f"tool|sf|q|parameters|time\n")
     query_variants = ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "15a", "15b", "16a", "16b", "17", "18", "19a", "19b", "20"]
-    query_variants = ["19a", "19b", "20"]
+
     sf = os.environ.get("SF")
     # precomputation for BI 4, 6, 19, 20
     query_nums = [int(re.sub("[^0-9]", "", query_variant)) for query_variant in query_variants]
