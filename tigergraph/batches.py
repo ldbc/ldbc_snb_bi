@@ -3,8 +3,7 @@ import subprocess
 from pathlib import Path
 import time
 import requests
-from datetime import datetime, date, timedelta
-from glob import glob
+from datetime import date, timedelta
 import json
 import os
 

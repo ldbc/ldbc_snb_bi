@@ -1,6 +1,6 @@
 import argparse
 from pathlib import Path
-from datetime import datetime, date, timedelta
+from datetime import date, timedelta
 from queries import run_queries, precompute, cleanup
 from batches import run_batch_update
 import os
@@ -36,16 +36,14 @@ if __name__ == '__main__':
         duration = run_batch_update(batch_date, args)
         if needClean:
             for query_num in [19,20]:
-                # bi19precompute is sometimes aborted because the memory used by previous operations is not released,
-                # we wait for the rebuild and then run bi19precompute query.
-                if query_num == 19:
-                    requests.get(f'{args.endpoint}/rebuildnow', headers={'GSQL-TIMEOUT': '36000000'})
                 if query_num in query_nums:
                     cleanup(query_num, args.endpoint)
         needClean = False
         
         for query_num in [4,6,19,20]:
             if query_num in query_nums:
+                # we wait for the rebuild before run bi19precompute query, bi19precompute is sometimes aborted due to OOM                
+                if query_num == 19: requests.get(f'{args.endpoint}/rebuildnow', headers={'GSQL-TIMEOUT': '36000000'})
                 precompute(query_num, args.endpoint)
         needClean = True
         writes_time = time.time() - start
