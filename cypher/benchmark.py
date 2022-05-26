@@ -176,7 +176,7 @@ def run_batch_updates(session, data_dir, batch_start_date, insert_entities, dele
             continue
 
         print(f"{entity}:")
-        for csv_file in [f for f in os.listdir(batch_path) if f.endswith(csv_extension)]:
+        for csv_file in [f for f in os.listdir(batch_path) if f.endswith('.csv') or f.endswith('.csv.gz')]:
             print(f"- {entity}/{batch_dir}/{csv_file}")
             num_changes = run_update(session, insert_queries[entity], batch_dir, csv_file)
             if num_changes == 0:
@@ -192,7 +192,7 @@ def run_batch_updates(session, data_dir, batch_start_date, insert_entities, dele
             continue
 
         print(f"{entity}:")
-        for csv_file in [f for f in os.listdir(batch_path) if f.endswith(csv_extension)]:
+        for csv_file in [f for f in os.listdir(batch_path) if f.endswith('.csv') or f.endswith('.csv.gz')]:
             print(f"- {entity}/{batch_dir}/{csv_file}")
             num_changes = run_update(session, delete_queries[entity], batch_dir, csv_file)
             if num_changes == 0:
@@ -223,19 +223,7 @@ if data_dir is None:
     print("${NEO4J_CSV_DIR} environment variable must be set")
     exit(1)
 
-neo4j_csv_flags = os.environ.get("NEO4J_CSV_FLAGS")
-if neo4j_csv_flags is None:
-    print("${NEO4J_CSV_FLAGS} environment variable must be set")
-    exit(1)
-
 print(f"- Input data directory, ${{NEO4J_CSV_DIR}}: {data_dir}")
-print(f"- Neo4j flags, ${{NEO4J_CSV_FLAGS}}: {neo4j_csv_flags}")
-compressed = "--compressed" in neo4j_csv_flags
-
-if compressed:
-    csv_extension = ".csv.gz"
-else:
-    csv_extension = ".csv"
 
 
 # to ensure that all inserted edges have their endpoints at the time of their insertion, we insert nodes first and edges second
