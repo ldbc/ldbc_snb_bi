@@ -105,13 +105,13 @@ if __name__ == '__main__':
     output = Path('output')
     output.mkdir(exist_ok=True)
     timings_file = open(output/'timings.csv', 'w')
-    timings_file.write(f'tool|sf|q|parameters|time\n')
+    timings_file.write(f'tool|sf|day|q|parameters|time\n')
     network_start_date = date(2012, 11, 29)
     network_end_date = date(2013, 1, 1)
     batch_date = network_start_date
     batch_size = timedelta(days=1)
     while batch_date < network_end_date:
         write_time = run_batch_update(batch_date, args)
-        timings_file.write(f'TigerGraph|writes|{sf}|{batch_date}|{write_time:.6f}\n')
+        timings_file.write(f'TigerGraph|{sf}|{batch_date}|writes||{write_time:.6f}\n')
         timings_file.flush()
         batch_date = batch_date + batch_size
