@@ -57,7 +57,7 @@ for entity in static_entities:
         csv_path = f"{entity}/{csv_file}"
         print(f"- {csv_path}")
         #print(f"- {csv_path}", end='\r')
-        cur.execute(f"COPY {entity} FROM '{dbs_data_dir}/initial_snapshot/static/{entity}/{csv_file}' (DELIMITER '|', HEADER, FORMAT csv)")
+        cur.execute(f"COPY {entity} FROM '{dbs_data_dir}/initial_snapshot/static/{entity}/{csv_file}' (DELIMITER '|', HEADER, FORMAT text)")
         #print(" " * 120, end='\r')
         pg_con.commit()
 print("Loaded static entities.")
@@ -68,9 +68,9 @@ for entity in dynamic_entities:
         csv_path = f"{entity}/{csv_file}"
         print(f"- {csv_path}")
         #print(f"- {csv_path}", end='\r')
-        cur.execute(f"COPY {entity} FROM '{dbs_data_dir}/initial_snapshot/dynamic/{entity}/{csv_file}' (DELIMITER '|', HEADER, FORMAT csv)")
+        cur.execute(f"COPY {entity} FROM '{dbs_data_dir}/initial_snapshot/dynamic/{entity}/{csv_file}' (DELIMITER '|', HEADER, FORMAT text)")
         if entity == "Person_knows_Person":
-            cur.execute(f"COPY {entity} (creationDate, Person2id, Person1id) FROM '{dbs_data_dir}/initial_snapshot/dynamic/{entity}/{csv_file}' (DELIMITER '|', HEADER, FORMAT csv)")
+            cur.execute(f"COPY {entity} (creationDate, Person2id, Person1id) FROM '{dbs_data_dir}/initial_snapshot/dynamic/{entity}/{csv_file}' (DELIMITER '|', HEADER, FORMAT text)")
         #print(" " * 120, end='\r')
         pg_con.commit()
 print("Loaded dynamic entities.")
