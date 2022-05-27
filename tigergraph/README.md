@@ -54,7 +54,7 @@ We provide two methods for cluster setup.
 1. Load the data:
 
     ```bash
-    ./load-in-one-step.sh
+    scripts/load-in-one-step.sh
     ```
 
     This step may take a while, as it is responsible for defining the schema, loading the data and installing the queries. The TigerGraph container terminal can be accessed via:
