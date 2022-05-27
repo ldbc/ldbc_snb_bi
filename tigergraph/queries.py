@@ -103,7 +103,7 @@ def cleanup(query_num, endpoint):
     response = requests.get(f'{endpoint}/query/ldbc_snb/bi{query_num}cleanup', headers=HEADERS).json()
     return time.time() - start
 
-def run_queries(query_variants, results_file, timings_file, args):
+def run_queries(query_variants, results_file, timings_file, batch_date, args):
     sf = os.environ.get("SF")
     start = time.time()
     for query_variant in query_variants:
@@ -123,7 +123,7 @@ def run_queries(query_variants, results_file, timings_file, args):
 
             results_file.write(f"{query_num}|{query_variant}|{query_parameters_in_order}|{results}\n")
             results_file.flush()
-            timings_file.write(f"TigerGraph|{sf}|{query_variant}|{query_parameters_in_order}|{duration:.6f}\n")
+            timings_file.write(f"TigerGraph|{sf}|{batch_date}|{query_variant}|{query_parameters_in_order}|{duration:.6f}\n")
             timings_file.flush()
             # test run: 1 query, regular run: 10 queries
             if args.test or i == args.nruns-1:

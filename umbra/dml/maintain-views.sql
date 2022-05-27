@@ -143,11 +143,63 @@ where pp.person1id = p1.personid and pp.person2id = p2.personid and p1.universit
 group by p1.personid, p2.personid;
 
 
-DELETE FROM Comment;
-DELETE FROM Post;
+DROP TABLE IF EXISTS Comment;
+DROP TABLE IF EXISTS Post;
 
-DELETE FROM Comment_hasTag_Tag;
-DELETE FROM Post_hasTag_Tag;
+DROP TABLE IF EXISTS Comment_hasTag_Tag;
+DROP TABLE IF EXISTS Post_hasTag_Tag;
 
-DELETE FROM Person_likes_Comment;
-DELETE FROM Person_likes_Post;
+DROP TABLE IF EXISTS Person_likes_Comment;
+DROP TABLE IF EXISTS Person_likes_Post;
+
+CREATE TABLE Comment (
+    creationDate timestamp with time zone NOT NULL,
+    id bigint PRIMARY KEY,
+    locationIP varchar(40) NOT NULL,
+    browserUsed varchar(40) NOT NULL,
+    content varchar(2000) NOT NULL,
+    length int NOT NULL,
+    CreatorPersonId bigint NOT NULL,
+    LocationCountryId bigint NOT NULL,
+    ParentPostId bigint,
+    ParentCommentId bigint
+) WITH (storage = paged);
+CREATE TABLE Post (
+    creationDate timestamp with time zone NOT NULL,
+    id bigint PRIMARY KEY,
+    imageFile varchar(40),
+    locationIP varchar(40) NOT NULL,
+    browserUsed varchar(40) NOT NULL,
+    language varchar(40),
+    content varchar(2000),
+    length int NOT NULL,
+    CreatorPersonId bigint NOT NULL,
+    ContainerForumId bigint NOT NULL,
+    LocationCountryId bigint NOT NULL
+) WITH (storage = paged);
+
+CREATE TABLE Comment_hasTag_Tag (
+    creationDate timestamp with time zone NOT NULL,
+    CommentId bigint NOT NULL,
+    TagId bigint NOT NULL
+    --, PRIMARY KEY(CommentId, TagId)
+) WITH (storage = paged);
+CREATE TABLE Post_hasTag_Tag (
+    creationDate timestamp with time zone NOT NULL,
+    PostId bigint NOT NULL,
+    TagId bigint NOT NULL
+    --, PRIMARY KEY(PostId, TagId)
+) WITH (storage = paged);
+
+CREATE TABLE Person_likes_Comment (
+    creationDate timestamp with time zone NOT NULL,
+    PersonId bigint NOT NULL,
+    CommentId bigint NOT NULL
+    --, PRIMARY KEY(PersonId, CommentId)
+) WITH (storage = paged);
+CREATE TABLE Person_likes_Post (
+    creationDate timestamp with time zone NOT NULL,
+    PersonId bigint NOT NULL,
+    PostId bigint NOT NULL
+    --, PRIMARY KEY(PersonId, PostId)
+) WITH (storage = paged);
