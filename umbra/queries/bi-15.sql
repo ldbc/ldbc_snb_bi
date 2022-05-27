@@ -27,9 +27,9 @@ path(src, dst, w) as (
 ),
 shorts(dir, gsrc, dst, w, dead, iter) as (
     (
-        select false, f, f, 0, false, 0 from srcs
+        select false, f, f, 0::double precision, false, 0 from srcs
         union all
-        select true, t, t, 0, false, 0 from dsts
+        select true, t, t, 0::double precision, false, 0 from dsts
     )
     union all
     (
