@@ -4,7 +4,6 @@ import time
 import csv
 import requests
 import re
-from datetime import datetime, timedelta
 import os
 
 # query timeout value in miliseconds
