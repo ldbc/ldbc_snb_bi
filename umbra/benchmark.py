@@ -54,15 +54,19 @@ def convert_value_to_string(value, result_type, input):
         raise ValueError(f"Result type {result_type} not found")
 
 
+def escape_apostrophes(s):
+    return s.replace("'", "''")
+
+
 def cast_parameter_to_driver_input(value, parameter_type):
     if parameter_type == "INT" or parameter_type == "INT32":
         return value
     elif parameter_type == "ID" or parameter_type == "INT64":
         return f"{value}::bigint"
     elif parameter_type == "STRING[]":
-        return "(" + ', '.join([f"'{e}'" for e in value.split(';') ]) + ")"
+        return "(" + ', '.join([f"'{escape_apostrophes(e)}'" for e in value.split(';') ]) + ")"
     elif parameter_type == "STRING":
-        return f"'{value}'"
+        return f"'{escape_apostrophes(value)}'"
     elif parameter_type == "DATETIME":
         return convert_to_datetime(value)
     elif parameter_type == "DATE":
@@ -258,14 +262,18 @@ run_script(pg_con, cur, f"ddl/schema-delete-candidates.sql");
 
 network_start_date = datetime.date(2012, 11, 29)
 network_end_date = datetime.date(2013, 1, 1)
+test_end_date = datetime.date(2012, 12, 2)
 batch_size = relativedelta(days=1)
 batch_date = network_start_date
 
-# run alternating write-read blocks
-while batch_date < network_end_date and (not test or batch_date < datetime.date(2012, 12, 2)):
-    run_batch_updates(pg_con, data_dir, batch_date, timings_file)
+if pgtuning:
     run_queries(query_variants, pg_con, sf, test, pgtuning, batch_date, timings_file)
-    batch_date = batch_date + batch_size
+else:
+    # run alternating write-read blocks
+    while batch_date < network_end_date and (not test or batch_date < test_end_date):
+        run_batch_updates(pg_con, data_dir, batch_date, timings_file)
+        run_queries(query_variants, pg_con, sf, test, pgtuning, batch_date, timings_file)
+        batch_date = batch_date + batch_size
 
 results_file.close()
 timings_file.close()
