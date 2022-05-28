@@ -1,20 +1,20 @@
 ## Message
-CREATE VERTEX Comment (id UINT PRIMARY KEY, creationDate INT, locationIP STRING, browserUsed STRING, content STRING, length UINT)
-CREATE VERTEX Post (id UINT PRIMARY KEY, imageFile STRING, creationDate INT, locationIP STRING, browserUsed STRING, language STRING, content STRING, length UINT)
+CREATE VERTEX Comment (PRIMARY_ID id UINT, creationDate INT, locationIP STRING, browserUsed STRING, content STRING, length UINT) WITH primary_id_as_attribute="TRUE"
+CREATE VERTEX Post (PRIMARY_ID id UINT, imageFile STRING, creationDate INT, locationIP STRING, browserUsed STRING, language STRING, content STRING, length UINT) WITH primary_id_as_attribute="TRUE"
 ## organisation
-CREATE VERTEX Company (id UINT PRIMARY KEY, name STRING, url STRING)
-CREATE VERTEX University (id UINT PRIMARY KEY, name STRING, url STRING)
+CREATE VERTEX Company (PRIMARY_ID id UINT, name STRING, url STRING) WITH primary_id_as_attribute="TRUE"
+CREATE VERTEX University (PRIMARY_ID id UINT, name STRING, url STRING) WITH primary_id_as_attribute="TRUE"
 ## place
-CREATE VERTEX City (id UINT PRIMARY KEY, name STRING, url STRING)
-CREATE VERTEX Country (id UINT PRIMARY KEY, name STRING, url STRING)
-CREATE VERTEX Continent (id UINT PRIMARY KEY, name STRING, url STRING)
+CREATE VERTEX City (PRIMARY_ID id UINT, name STRING, url STRING) WITH primary_id_as_attribute="TRUE"
+CREATE VERTEX Country (PRIMARY_ID id UINT, name STRING, url STRING) WITH primary_id_as_attribute="TRUE"
+CREATE VERTEX Continent (PRIMARY_ID id UINT, name STRING, url STRING) WITH primary_id_as_attribute="TRUE"
 ## etc
-CREATE VERTEX Forum (id UINT PRIMARY KEY, title STRING, creationDate INT, 
-    maxMember UINT) // maxMember is for precompute in BI-4
-CREATE VERTEX Person (id UINT PRIMARY KEY, firstName STRING, lastName STRING, gender STRING, birthday INT, creationDate INT, locationIP STRING, browserUsed STRING, speaks SET<STRING>, email SET<STRING>,
-    popularityScore UINT) // popularityScore is for precompute in BI-6
-CREATE VERTEX Tag (id UINT PRIMARY KEY, name STRING, url STRING)
-CREATE VERTEX TagClass (id UINT PRIMARY KEY, name STRING, url STRING)
+CREATE VERTEX Forum (PRIMARY_ID id UINT, title STRING, creationDate INT, 
+    maxMember UINT) WITH primary_id_as_attribute="TRUE" // maxMember is for precompute in BI-4
+CREATE VERTEX Person (PRIMARY_ID id UINT, firstName STRING, lastName STRING, gender STRING, birthday INT, creationDate INT, locationIP STRING, browserUsed STRING, speaks SET<STRING>, email SET<STRING>,
+    popularityScore UINT) WITH primary_id_as_attribute="TRUE" // popularityScore is for precompute in BI-6
+CREATE VERTEX Tag (PRIMARY_ID id UINT, name STRING, url STRING) WITH primary_id_as_attribute="TRUE"
+CREATE VERTEX TagClass (PRIMARY_ID id UINT, name STRING, url STRING) WITH primary_id_as_attribute="TRUE"
 
 
 # create edge
