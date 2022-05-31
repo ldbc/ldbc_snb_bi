@@ -7,26 +7,31 @@ import getopt
 import logging
 import pandas as pd
 import timeit
+from datetime import date
 
-def sort_results(result, timing_dict, params, query, sf, subquery):
-    output_file = open('output/results.csv', 'w')
-    timing_output = open('output/timings.csv', 'w')
+lane_limits = [2, 4, 8, 16, 32, 64, 128, 256, 512, 1024]
+threads = [1, 2, 3, 4, 5, 6, 7, 8]
+
+
+def sort_results(result, timing_dict, params, query, sf, subquery, workload):
+    output_file = open(f'output/results-{sf}-{subquery}-{workload}.csv', 'w')
+    timing_output = open(f'output/timings-{sf}-{subquery}-{workload}.csv', 'w')
     timing_output.write(f"sf|q|parameters|time\n")
-
 
     filtered_param_headers = extract_headers(params)
     for idx, param in enumerate(params[1:]):
         param = param.strip().split("|")
-        r = [r for r in result if r[-2] == int(param[0]) and r[-1] == int(param[-1])]
+        r = [r for r in result if str(r[-2]) == param[0] and str(r[-1]) == param[-1]]
         formatted_parameters = f"<{';'.join(str(parameter) for parameter in param)}>"
         formatted_output = []
         for entry in r:
-            formatted_entry = f"<{','.join(str(result) for result in entry[:3])}>"
+            formatted_entry = f"<{','.join(str(result) for result in entry[:len(entry) - len(filtered_param_headers)])}>"
             formatted_output.append(formatted_entry)
         formatted_output_string = f"[{';'.join(entry for entry in formatted_output)}]"
         output_file.write(
-                f"{query}|{subquery}|{formatted_parameters}|{formatted_output_string}\n")
-        full_timing = timing_dict['precompute_timing'] + timing_dict['csr_timing'] + timing_dict['parameter_timing'][idx] + timing_dict['result_timing']
+            f"{query}|{subquery}|{formatted_parameters}|{formatted_output_string}\n")
+        full_timing = timing_dict['precompute_timing'] + timing_dict['csr_timing'] + timing_dict['parameter_timing'][
+            idx] + timing_dict['result_timing']
 
         timing_output.write(f"DuckDB|{sf}|{subquery}|{formatted_parameters}|{full_timing}\n")
     # for idx, row in result.iterrows():
@@ -34,7 +39,7 @@ def sort_results(result, timing_dict, params, query, sf, subquery):
     #     formatted_output = f"[<{','.join(str(result) for result in row.drop(labels=filtered_param_headers))}>]"
     #     output_file.write(
     #         f"{query}|{query}|{formatted_parameters}|{formatted_output}\n")
-        # timing_output.write(f"DuckDB|{sf}|{query}|{formatted_parameters}|{timing_dict[idx]}\n")
+    # timing_output.write(f"DuckDB|{sf}|{query}|{formatted_parameters}|{timing_dict[idx]}\n")
     output_file.close()
     timing_output.close()
 
@@ -46,7 +51,7 @@ def extract_headers(params):
     return filtered_param_headers
 
 
-def run_script(con, filename, params=None, sf=None):
+def run_script(con, filename, params=None, sf=None, lane=1024, thread=8):
     queries = open(filename).read().split(";")
     csr_timing = 0
     precompute_timing = 0
@@ -61,7 +66,6 @@ def run_script(con, filename, params=None, sf=None):
             stop = timeit.default_timer()
             timing = stop - start
             precompute_timing += timing
-            # Time precompute queries here
         elif "-- CSR CREATION" in query:
             start = timeit.default_timer()
             con.execute(query)
@@ -76,7 +80,7 @@ def run_script(con, filename, params=None, sf=None):
                 line = line.strip("\n")
                 split_line = line.split("|")
                 for i in range(len(filtered_param_headers)):
-                    custom_query = custom_query.replace(f"{filtered_param_headers[i]}", f"{split_line[i]}")
+                    custom_query = custom_query.replace(f":{filtered_param_headers[i]}", f"{split_line[i]}")
                 print(f"Starting {line}")
                 start = timeit.default_timer()
 
@@ -103,75 +107,94 @@ def run_script(con, filename, params=None, sf=None):
             return final_result, timing_dict
         elif "-- DEBUG" in query:
             result = con.execute(query).fetchdf()
-            print(result)
+            logging.debug(result)
+        elif "-- PRAGMA" in query:
+            logging.debug(query)
+            if "set_lane_limit" in query:
+                query = query.replace(":param", str(lane))
+            elif "threads" in query:
+                query = query.replace(":param", str(thread))
+            con.execute(query)
         else:
             start = timeit.default_timer()
             con.execute(query)
             stop = timeit.default_timer()
             timing = stop - start
         if timing == 0:
-            print(f"TIMING WAS 0 for query: {query}")
+            logging.critical(f"TIMING WAS 0 for query: {query}")
         total_timing += timing
-        print(total_timing)
+        logging.debug(total_timing)
 
 
 def process_arguments(argv):
     sf = ''
     query = ''
     only_load = False
+    workload = ''
     try:
-        opts, args = getopt.getopt(argv, "hs:q:l:", ["scalefactor=", "query=", "load="])
+        opts, args = getopt.getopt(argv, "hs:q:l:w:", ["scalefactor=", "query=", "load=", "workload="])
     except getopt.GetoptError:
         logging.info('load.py -s <scalefactor> -q <query>')
         sys.exit(2)
     for opt, arg in opts:
         if opt == '-h':
-            print('load.py -s <scalefactor> -q <query>')
+            logging.info(
+                'load.py -s <scalefactor> -q <query> -l <load only database (1 or 0)> -w <workload (bi or interactive)>')
             sys.exit()
         elif opt in ('-l', "--load"):
             only_load = bool(int(arg))
             if only_load:
-                print("Loading only the database")
+                logging.info("Loading only the database")
+        elif opt in ('-w', '--workload'):
+            if arg == 'bi' or arg == 'interactive':
+                workload = arg
+            else:
+                logging.critical("Unrecognized workload detected. Options are (bi, interactive)")
+                sys.exit()
         elif opt in ("-s", "--scalefactor"):
             sf = arg
         elif opt in ("-q", "--query"):
             query = arg
-    return sf, query, only_load
+    return sf, query, only_load, workload
 
 
-def write_timing_dict(timing_dict, sf, query):
-    filename = f'benchmark/timings-{query}.csv'
+def write_timing_dict(timing_dict, sf, query, workload, lane=1024, thread=8):
+    filename = f'benchmark/timings.csv'
     if not os.path.exists(filename):
         with open(filename, 'w') as f:
-            f.write("sf|query|total_timing|result_timing|csr_timing|precompute_timing|average_parameter_timing\n")
+            f.write(
+                "sf|query|total_timing|result_timing|csr_timing|precompute_timing|average_parameter_timing|total_parameter_timing|lanes|threads|workload|date|parameter_timing\n")
 
+    today = date.today().strftime("%b-%d-%Y")
     with open(filename, 'a') as f:
         f.write(
-            f"{sf}|{query}|{timing_dict['total_timing']}|{timing_dict['result_timing']}|{timing_dict['csr_timing']}|{timing_dict['precompute_timing']}|{timing_dict['average_parameter_timing']}\n")
+            f"{sf}|{query}|{timing_dict['total_timing']}|{timing_dict['result_timing']}|{timing_dict['csr_timing']}|{timing_dict['precompute_timing']}|{timing_dict['average_parameter_timing']}|{sum(timing_dict['parameter_timing'])}|{lane}|{thread}|{workload}|{today}|{timing_dict['parameter_timing']}\n")
 
 
 def main(argv):
-    sf, query, only_load = process_arguments(argv)
-    file_location = validate_input(query)
+    sf, query, only_load, workload = process_arguments(argv)
+    file_location = validate_input(query, workload)
 
-    con = duckdb.connect("snb_benchmark.duckdb", read_only=False)
-    run_script(con, "ddl/drop-tables.sql")
-    run_script(con, "ddl/schema-composite-merged-fk.sql")
+    for lane in lane_limits:
+        for thread in threads:
+            con = duckdb.connect("snb_benchmark.duckdb", read_only=False)
+            run_script(con, "ddl/drop-tables.sql")
+            run_script(con, "ddl/schema-composite-merged-fk.sql")
 
-    data_dir = f'../../ldbc_snb_datagen_spark/out-sf{sf}/graphs/csv/bi/composite-merged-fk'
+            data_dir = f'../../ldbc_snb_datagen_spark/out-sf{sf}/graphs/csv/bi/composite-merged-fk'
+            params = open(f'../parameters/parameters-sf{sf}/{workload}-{query}.csv').readlines()  # parameters-sf{sf}/
+            load_entities(con, data_dir, query)
+            if not only_load:
+                subquery = query
+                if query == '19a' or query == '19b':
+                    query = '19'
 
-    load_entities(con, data_dir, query)
-    params = open(f'../parameters/parameters-sf{sf}/bi-{query}.csv').readlines()  # parameters-sf{sf}/
-    if not only_load:
-        subquery = query
-        if query == '19a' or query == '19b':
-            query = '19'
-        result, timing_dict = run_script(con, file_location, params, sf)
-        sort_results(result, timing_dict, params, query, sf, subquery)
-        write_timing_dict(timing_dict, sf, subquery)
+                result, timing_dict = run_script(con, file_location, params, sf, lane, thread)
+                sort_results(result, timing_dict, params, query, sf, subquery, workload)
+                write_timing_dict(timing_dict, sf, subquery, workload, lane, thread)
 
 
-def validate_input(query):
+def validate_input(query, workload):
     try:
         if query.isnumeric():
             assert (1 <= int(query) <= 20), "Invalid query number, should be in range (1,20)."
@@ -185,10 +208,9 @@ def validate_input(query):
         sys.exit(1)
     file_location = None
     if query == '19a' or query == '19b':
-        file_location = f"queries/q19.sql"
+        file_location = f"queries/{workload}/q19.sql"
     else:
-        file_location = f"queries/q{query}.sql"
-
+        file_location = f"queries/{workload}/q{query}.sql"
     try:
         open(file_location)
     except FileNotFoundError:
@@ -213,7 +235,10 @@ def load_entities(con, data_dir: str, query: str):
         # Query 19
         static_entities = ["Place"]
         dynamic_entities = ["Comment", "Person", "Person_knows_Person", "Post"]
-
+    elif query == '13':
+        # Query 13 Interactive
+        static_entities = []
+        dynamic_entities = ["Person", "Person_knows_Person"]
     logging.info("## Static entities")
     for entity in static_entities:
         for csv_file in [f for f in os.listdir(f"{static_path}/{entity}") if
