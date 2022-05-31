@@ -108,10 +108,35 @@ INSERT INTO Message_hasTag_Tag
 ;
 
 
+DROP TABLE IF EXISTS Top100PopularForumsQ04;
+CREATE TABLE Top100PopularForumsQ04(
+    id bigint not null,
+    creationDate timestamp with time zone NOT NULL,
+    maxNumberOfMembers bigint not null,
+    primary key(id)
+);
+INSERT INTO Top100PopularForumsQ04(id, creationDate, maxNumberOfMembers)
+SELECT ForumId AS id, ForumCreationDate as creationDate, max(numberOfMembers) AS maxNumberOfMembers
+FROM (
+SELECT Forum.id AS ForumId, Forum.creationDate as ForumCreationDate, count(Person.id) AS numberOfMembers, Country.id AS CountryId
+    FROM Forum_hasMember_Person
+    JOIN Person
+    ON Person.id = Forum_hasMember_Person.PersonId
+    JOIN City
+    ON City.id = Person.LocationCityId
+    JOIN Country
+    ON Country.id = City.PartOfCountryId
+    JOIN Forum
+    ON Forum_hasMember_Person.ForumId = Forum.id
+    GROUP BY Country.Id, Forum.Id, Forum.creationDate
+) ForumMembershipPerCountry
+GROUP BY ForumId, ForumCreationDate;
+
+
 DROP TABLE IF EXISTS PopularityScoreQ06;
 CREATE TABLE PopularityScoreQ06 (
-    person2id bigint,
-    popularityScore bigint,
+    person2id bigint not null,
+    popularityScore bigint not null,
     primary key (person2id)
 ) with (storage = paged);
 INSERT INTO PopularityScoreQ06(person2id, popularityScore)
@@ -126,9 +151,9 @@ GROUP BY message2.CreatorPersonId;
 
 DROP TABLE IF EXISTS PathQ19;
 CREATE TABLE PathQ19 (
-    src bigint,
-    dst bigint,
-    w double precision,
+    src bigint not null,
+    dst bigint not null,
+    w double precision not null,
     primary key (src, dst)
 ) with (storage = paged);
 INSERT INTO PathQ19(src, dst, w)
@@ -148,9 +173,9 @@ select dst, src, 1.0::double precision / c from weights;
 
 DROP TABLE IF EXISTS PathQ20;
 CREATE TABLE PathQ20 (
-    src bigint,
-    dst bigint,
-    w int,
+    src bigint not null,
+    dst bigint not null,
+    w int not null,
     primary key (src, dst)
 ) with (storage = paged);
 INSERT INTO PathQ20(src, dst, w)
