@@ -1,3 +1,5 @@
+DROP TABLE IF EXISTS Person_UniversityKnows_Person;
+DROP TABLE IF EXISTS PersonUniversity;
 DROP TABLE IF EXISTS results;
 
 -- PRECOMPUTE
@@ -36,7 +38,8 @@ FROM (SELECT count(p.id) as vcount FROM PersonUniversity p) v,
      (SELECT src.rowid as src, dst.rowid as dst, t.weight as weight, count(src.rowid) OVER (ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) as ecount
       FROM Person_UniversityKnows_Person t
        JOIN PersonUniversity src ON t.Person1id = src.id
-       JOIN PersonUniversity dst ON t.Person2id = dst.id) r;
+       JOIN PersonUniversity dst ON t.Person2id = dst.id
+      ORDER BY src.rowid, dst.rowid) r;
 
 create temp table results
 (
@@ -46,6 +49,13 @@ create temp table results
     weight    bigint
 );
 
+-- PRAGMA
+pragma set_lane_limit=:param;
+
+-- PRAGMA
+pragma threads=:param;
+
+
 -- PARAMS
 INSERT INTO results (SELECT p.id                                                                           as Person1id,
                             p2.id                                                                          as Person2id,
@@ -53,8 +63,8 @@ INSERT INTO results (SELECT p.id                                                
                             cheapest_path(0, (select count(*) from PersonUniversity p), p.rowid, p2.rowid) as weight
                      FROM PersonUniversity p
                               JOIN Person_workAt_Company pwc on p.id = pwc.PersonId
-                              JOIN Company c on (pwc.CompanyId = c.id AND c.name = 'company')
-                              JOIN PersonUniversity p2 on p2.id = person2id
+                              JOIN Company c on (pwc.CompanyId = c.id AND c.name = ':company')
+                              JOIN PersonUniversity p2 on p2.id = :person2id
                      where weight is not null
                      order by weight, p.id);
 
@@ -62,9 +72,10 @@ INSERT INTO results (SELECT p.id                                                
 -- RESULTS
 SELECT (SELECT person1id FROM results WHERE person2id = agg.person2id and company = agg.company and weight = agg.min_weight LIMIT 20)
            as person1id,
-       person2id,
-       company,
-       min_weight as weight
+        min_weight as weight,
+        company,
+        person2id
+
 FROM (SELECT min(weight) AS min_weight, person2id, company
       FROM results
       GROUP BY person2id, company) agg

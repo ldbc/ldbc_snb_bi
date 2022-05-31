@@ -44,12 +44,13 @@ SELECT DISTINCT CREATE_CSR(
                r.src,
                r.dst,
                r.weight
-           ) AS numEdges
+           )
 FROM (SELECT count(p.id) as vcount FROM PersonInteractions p) v,
      (SELECT src.rowid as src, dst.rowid as dst, t.weight as weight, count(src.rowid) OVER (ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) as ecount
       FROM weights t
            JOIN PersonInteractions src ON t.Person1id = src.id
-           JOIN PersonInteractions dst ON t.Person2id = dst.id) r;
+           JOIN PersonInteractions dst ON t.Person2id = dst.id
+      order by src.rowid, dst.rowid) r;
 
 
 create temp table results
@@ -63,16 +64,10 @@ create temp table results
 
 -- PARAMS
 INSERT INTO results (SELECT s.id AS person1id, s.LocationCityId AS City1id, s2.id AS person2id, s2.LocationCityId as City2id, cheapest_path(0, (SELECT count(*) FROM PersonInteractions), s.rowid, s2.rowid) AS weight FROM
-                (SELECT pi.id, pi.rowid, pi.locationcityid FROM personinteractions pi WHERE pi.locationcityid = city1id) s,
-                (SELECT pi.id, pi.rowid, pi.locationcityid FROM personinteractions pi WHERE pi.locationcityid = city2id) s2
+                (SELECT pi.id, pi.rowid, pi.locationcityid FROM personinteractions pi WHERE pi.locationcityid = :city1id) s,
+                (SELECT pi.id, pi.rowid, pi.locationcityid FROM personinteractions pi WHERE pi.locationcityid = :city2id) s2
 );
 
-
--- PARAMS
--- INSERT INTO results (SELECT s.id AS person1id, s.LocationCityId AS City1id, s2.id AS person2id, s2.LocationCityId as City2id, cheapest_path(0, (SELECT count(*) FROM PersonInteractions), s.rowid, s2.rowid) AS weight FROM
---                 (SELECT pi.id, pi.rowid, p.locationcityid FROM personinteractions pi JOIN person p ON p.id = pi.id WHERE p.locationcityid = city1id) s,
---                 (SELECT pi.id, pi.rowid, p.locationcityid FROM personinteractions pi JOIN person p ON p.id = pi.id WHERE p.locationcityid = city2id) s2
---         );
 
 pragma delete_csr=0;
 
@@ -89,7 +84,7 @@ results.city2id
 FROM results, agg
 WHERE results.weight BETWEEN agg.min_weight - 0.00001 AND agg.min_weight + 0.00001 AND
       results.city1id = agg.city1id AND
-      results.city2id = agg.city2id
+      results.city2id = agg.city2id;
 -- ORDER BY totalWeight ASC, person1id ASC, person2id ASC;
 
 
