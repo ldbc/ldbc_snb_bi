@@ -54,3 +54,8 @@ Note that the cross-validation uses the [numdiff](scripts/numdiff.md) tool.
 ## Usage
 
 See [`.circleci/config.yml`](.circleci/config.yml) for an up-to-date example on how to use the projects in this repository.
+
+## Data sets
+
+BI sets are being uploaded to the [SURF CWI repository](https://repository.surfsara.nl/datasets/cwi/snb).
+(See [download instructions](https://github.com/ldbc/data-sets-surf-repository/).)
