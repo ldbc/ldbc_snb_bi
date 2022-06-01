@@ -9,5 +9,5 @@ cd ..
 numdiff \
     --separators='\|\n;,<>' \
     --absolute-tolerance 0.001 \
-    cypher/output/results.csv \
-    umbra/output/results.csv
+    ${1}/output/results.csv \
+    ${2}/output/results.csv

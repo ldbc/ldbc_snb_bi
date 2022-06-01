@@ -18,15 +18,15 @@ The repository contains the following implementations:
 * [`umbra`](umbra/): queries are expressed in SQL and run in [Umbra JIT-compiled columnar relational database management system](https://dbdb.io/db/umbra).
 * [`tigergraph`](tigergraph/): queries are expressed in the [GSQL language](https://www.tigergraph.com/gsql/) and run in the [TigerGraph graph database management system](https://tigergraph.com/)
 
-All implementations use Docker for ease of setup and execution. However, the setups can be adjusted to use a non-containerized DBMS.
+All implementations use Docker containers for ease of setup and execution. However, the setups can be adjusted to use a non-containerized DBMS.
 
-## Getting started
+## Reproducing SNB BI experiments
 
-Running a benchmark requires the following steps. Note that running _audited benchmarks_ requires a more complex process. See [the specification's Auditing chapter](https://ldbcouncil.org/ldbc_snb_docs/ldbc-snb-specification.pdf#chapter.7) for details.
+Running an SNB BI experiment requires the following steps.
 
-1. Pick a tool, e.g. TigerGraph. Make sure you have the required binaries and licenses available.
+1. Pick a tool, e.g. [Umbra](umbra/). Make sure you have the required binaries and licenses available.
 
-1. Generate the data sets using the [Spark Datagen](https://github.com/ldbc/ldbc_snb_datagen_spark/) according to the format described in the tool's README.
+1. Generate the data sets using the [SNB Datagen](https://github.com/ldbc/ldbc_snb_datagen_spark/) according to the format described in the tool's README.
 
 1. Generate the substitution parameters using the [`paramgen`](paramgen/) tool.
 
@@ -34,28 +34,22 @@ Running a benchmark requires the following steps. Note that running _audited ben
 
 1. Run the benchmark: set the required environment variables and run the tool's `scripts/benchmark.sh` script.
 
+1. Collect the results in the [`output`](output/) directory of the tool.
+
+:warning:
+Note that deriving official LDBC results requires commissioning an _audited benchmark_, which is a more complex process as it entails code review, ACID tests, etc.
+See [the specification's Auditing chapter](https://ldbcouncil.org/ldbc_snb_docs/ldbc-snb-specification.pdf#chapter.7) for details.
+
 ## Cross-validation
 
-To cross-validate the results of two implementations, run the queries using the `scripts/queries.sh` script. The results are saved in the implementation's `output/result.csv` file.
-Then, use the [numdiff](scripts/numdiff.md) tool:
+To cross-validate the results of two implementations, run the power test for both tools, e.g. [Cypher](cypher/) and [Umbra](umbra/) results.
+Then, run:
 
 ```bash
-numdiff \
-    --separators='\|\n;,<>' \
-    --absolute-tolerance 0.001 \
-    cypher/output/results.csv \
-    umbra/output/results.csv
+scripts/cross-validate.sh cypher umbra
 ```
 
-Or, simply run:
-
-```bash
-scripts/cross-validate.sh
-```
-
-## Parameter generation
-
-The query input parameter generator is implemented in the [`paramgen/`](paramgen/) directory.
+Note that the cross-validation uses the [numdiff](scripts/numdiff.md) tool.
 
 ## Usage
 
