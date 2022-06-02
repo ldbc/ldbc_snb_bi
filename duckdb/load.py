@@ -8,9 +8,6 @@ from datetime import date
 import multiprocessing
 
 lane_limits = [16, 32, 64, 128, 256, 512, 1024]
-threads = [2, 4, 6, 8]
-
-
 
 def sort_results(result, timing_dict, params, query, sf, subquery, workload):
     output_file = open(f'output/results-{sf}-{subquery}-{workload}.csv', 'w')
