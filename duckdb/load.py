@@ -136,7 +136,7 @@ def process_arguments(argv):
     query = ''
     only_load = False
     workload = ''
-    threads = multiprocessing.cpu_count()
+    threads = list(range(2,multiprocessing.cpu_count() + 1, 2))
     lanes = 1024
     experimental_mode = False
     try:
@@ -188,7 +188,7 @@ def write_timing_dict(timing_dict, sf, query, workload, lane=1024, thread=8):
 
 
 def main(argv):
-    sf, query, only_load, workload, lanes, num_threads, experimental_mode = process_arguments(argv)
+    sf, query, only_load, workload, lanes, threads, experimental_mode = process_arguments(argv)
     file_location = validate_input(query, workload)
     if experimental_mode:
         for lane in lane_limits:
@@ -196,7 +196,11 @@ def main(argv):
                 timing_dict, subquery = run_duckdb(file_location, lane, only_load, query, sf, thread, workload)
                 write_timing_dict(timing_dict, sf, subquery, workload, lane, thread)
     else:
-        run_duckdb(file_location, lanes, only_load, query, sf, num_threads, workload)
+        if isinstance(threads, list):
+            run_duckdb(file_location, lanes, only_load, query, sf, max(threads), workload)
+        else:
+            run_duckdb(file_location, lanes, only_load, query, sf, threads, workload)
+
 
 
 def run_duckdb(file_location, lanes, only_load, query, sf, threads, workload):
@@ -217,6 +221,7 @@ def run_duckdb(file_location, lanes, only_load, query, sf, threads, workload):
 
 
 def validate_input(query, workload):
+    # TODO Update validating input based on new parameters
     try:
         if query.isnumeric():
             assert (1 <= int(query) <= 20), "Invalid query number, should be in range (1,20)."
