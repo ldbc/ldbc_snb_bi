@@ -155,7 +155,7 @@ if __name__ == '__main__':
             timings_file.write(f"TigerGraph|{sf}|bi{query_num}precompute|{precompute(query_num, args.endpoint):.6f}\n")
             timings_file.flush()
     
-    run_queries(query_variants, results_file, timings_file, args)
+    run_queries(query_variants, results_file, timings_file, 'None', args)
     # cleanup for 19 and 20
     for query_num in [19,20]:
         if not args.skip and query_num in query_nums:
