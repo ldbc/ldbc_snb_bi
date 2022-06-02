@@ -1,16 +1,15 @@
 import sys
 import os
-import re
-import time
 import duckdb
 import getopt
 import logging
-import pandas as pd
 import timeit
 from datetime import date
+import multiprocessing
 
-lane_limits = [2, 4, 8, 16, 32, 64, 128, 256, 512, 1024]
-threads = [1, 2, 3, 4, 5, 6, 7, 8]
+lane_limits = [16, 32, 64, 128, 256, 512, 1024]
+threads = [2, 4, 6, 8]
+
 
 
 def sort_results(result, timing_dict, params, query, sf, subquery, workload):
@@ -58,6 +57,7 @@ def run_script(con, filename, params=None, sf=None, lane=1024, thread=8):
     parameter_timing = []
     total_timing = 0
     timing = 0
+    path_timing = 0
     for query in queries:
         logging.debug(query)
         if "-- PRECOMPUTE" in query:
@@ -81,12 +81,11 @@ def run_script(con, filename, params=None, sf=None, lane=1024, thread=8):
                 split_line = line.split("|")
                 for i in range(len(filtered_param_headers)):
                     custom_query = custom_query.replace(f":{filtered_param_headers[i]}", f"{split_line[i]}")
-                print(f"Starting {line}")
+                logging.debug(f"Starting {line}")
                 start = timeit.default_timer()
 
                 con.execute(custom_query)
                 stop = timeit.default_timer()
-                print(f"Executed {line}")
 
                 timing = stop - start
                 total_timing += timing
@@ -103,18 +102,24 @@ def run_script(con, filename, params=None, sf=None, lane=1024, thread=8):
             timing_dict = {"precompute_timing": precompute_timing, "csr_timing": csr_timing,
                            "average_parameter_timing": sum(parameter_timing) / len(parameter_timing),
                            "result_timing": result_timing, "total_timing": total_timing,
-                           "parameter_timing": parameter_timing}
+                           "parameter_timing": parameter_timing, "path_timing": path_timing}
             return final_result, timing_dict
         elif "-- DEBUG" in query:
             result = con.execute(query).fetchdf()
             logging.debug(result)
         elif "-- PRAGMA" in query:
-            logging.debug(query)
             if "set_lane_limit" in query:
                 query = query.replace(":param", str(lane))
             elif "threads" in query:
                 query = query.replace(":param", str(thread))
+            logging.debug(query)
             con.execute(query)
+        elif "-- PATH" in query:
+            start = timeit.default_timer()
+            con.execute(query)
+            stop = timeit.default_timer()
+            timing = stop - start
+            path_timing += timing
         else:
             start = timeit.default_timer()
             con.execute(query)
@@ -131,15 +136,20 @@ def process_arguments(argv):
     query = ''
     only_load = False
     workload = ''
+    threads = multiprocessing.cpu_count()
+    lanes = 1024
+    experimental_mode = False
     try:
-        opts, args = getopt.getopt(argv, "hs:q:l:w:", ["scalefactor=", "query=", "load=", "workload="])
+        opts, args = getopt.getopt(argv, "hs:q:l:w:a:t:e:",
+                                   ["scalefactor=", "query=", "load=", "workload=", "lanes=", "threads=", "experiment="])
     except getopt.GetoptError:
-        logging.info('load.py -s <scalefactor> -q <query>')
+        logging.info('load.py -s <scalefactor> -q <query> -l <load only> -w <workload> -a <lanes> -t <threads>')
         sys.exit(2)
     for opt, arg in opts:
         if opt == '-h':
             logging.info(
-                'load.py -s <scalefactor> -q <query> -l <load only database (1 or 0)> -w <workload (bi or interactive)>')
+                'load.py -s <scalefactor> -q <query> -l <load only database (1 or 0)> '
+                '-w <workload (bi or interactive)> -a <number of lanes> -t <number of threads>')
             sys.exit()
         elif opt in ('-l', "--load"):
             only_load = bool(int(arg))
@@ -153,9 +163,15 @@ def process_arguments(argv):
                 sys.exit()
         elif opt in ("-s", "--scalefactor"):
             sf = arg
+        elif opt in ("-a", "--lanes"):
+            lanes = arg
+        elif opt in ("-t", "--threads"):
+            threads = arg
         elif opt in ("-q", "--query"):
             query = arg
-    return sf, query, only_load, workload
+        elif opt in ("-e", "--experiment"):
+            experimental_mode = bool(int(arg))
+    return sf, query, only_load, workload, lanes, threads, experimental_mode
 
 
 def write_timing_dict(timing_dict, sf, query, workload, lane=1024, thread=8):
@@ -163,35 +179,41 @@ def write_timing_dict(timing_dict, sf, query, workload, lane=1024, thread=8):
     if not os.path.exists(filename):
         with open(filename, 'w') as f:
             f.write(
-                "sf|query|total_timing|result_timing|csr_timing|precompute_timing|average_parameter_timing|total_parameter_timing|lanes|threads|workload|date|parameter_timing\n")
+                "sf|query|total_timing|result_timing|csr_timing|precompute_timing|average_parameter_timing|total_parameter_timing|path_timing|lanes|threads|workload|date|parameter_timing\n")
 
     today = date.today().strftime("%b-%d-%Y")
     with open(filename, 'a') as f:
         f.write(
-            f"{sf}|{query}|{timing_dict['total_timing']}|{timing_dict['result_timing']}|{timing_dict['csr_timing']}|{timing_dict['precompute_timing']}|{timing_dict['average_parameter_timing']}|{sum(timing_dict['parameter_timing'])}|{lane}|{thread}|{workload}|{today}|{timing_dict['parameter_timing']}\n")
+            f"{sf}|{query}|{timing_dict['total_timing']}|{timing_dict['result_timing']}|{timing_dict['csr_timing']}|{timing_dict['precompute_timing']}|{timing_dict['average_parameter_timing']}|{sum(timing_dict['parameter_timing'])}|{timing_dict['path_timing']}|{lane}|{thread}|{workload}|{today}|{timing_dict['parameter_timing']}\n")
 
 
 def main(argv):
-    sf, query, only_load, workload = process_arguments(argv)
+    sf, query, only_load, workload, lanes, num_threads, experimental_mode = process_arguments(argv)
     file_location = validate_input(query, workload)
-
-    for lane in lane_limits:
-        for thread in threads:
-            con = duckdb.connect("snb_benchmark.duckdb", read_only=False)
-            run_script(con, "ddl/drop-tables.sql")
-            run_script(con, "ddl/schema-composite-merged-fk.sql")
-
-            data_dir = f'../../ldbc_snb_datagen_spark/out-sf{sf}/graphs/csv/bi/composite-merged-fk'
-            params = open(f'../parameters/parameters-sf{sf}/{workload}-{query}.csv').readlines()  # parameters-sf{sf}/
-            load_entities(con, data_dir, query)
-            if not only_load:
-                subquery = query
-                if query == '19a' or query == '19b':
-                    query = '19'
-
-                result, timing_dict = run_script(con, file_location, params, sf, lane, thread)
-                sort_results(result, timing_dict, params, query, sf, subquery, workload)
+    if experimental_mode:
+        for lane in lane_limits:
+            for thread in threads:
+                timing_dict, subquery = run_duckdb(file_location, lane, only_load, query, sf, thread, workload)
                 write_timing_dict(timing_dict, sf, subquery, workload, lane, thread)
+    else:
+        run_duckdb(file_location, lanes, only_load, query, sf, num_threads, workload)
+
+
+def run_duckdb(file_location, lanes, only_load, query, sf, threads, workload):
+    con = duckdb.connect("snb_benchmark.duckdb", read_only=False)
+    run_script(con, "ddl/drop-tables.sql")
+    run_script(con, "ddl/schema-composite-merged-fk.sql")
+    data_dir = f'../../ldbc_snb_datagen_spark/out-sf{sf}/graphs/csv/bi/composite-merged-fk'
+    params = open(f'../parameters/parameters-sf{sf}/{workload}-{query}.csv').readlines()  # parameters-sf{sf}/
+    load_entities(con, data_dir, query)
+    if not only_load:
+        subquery = query
+        if query == '19a' or query == '19b':
+            query = '19'
+
+        result, timing_dict = run_script(con, file_location, params, sf, lanes, threads)
+        sort_results(result, timing_dict, params, query, sf, subquery, workload)
+        return timing_dict, subquery
 
 
 def validate_input(query, workload):

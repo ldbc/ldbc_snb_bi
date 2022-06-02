@@ -1,6 +1,7 @@
 DROP TABLE IF EXISTS Person_UniversityKnows_Person;
 DROP TABLE IF EXISTS PersonUniversity;
 DROP TABLE IF EXISTS results;
+DROP TABLE IF EXISTS all_options;
 
 -- PRECOMPUTE
 CREATE TEMP TABLE Person_UniversityKnows_Person AS (SELECT p.id                                     as Person1id,
@@ -55,19 +56,30 @@ pragma set_lane_limit=:param;
 -- PRAGMA
 pragma threads=:param;
 
+PRAGMA verify_parallelism;
+
+create table all_options(
+    person1id bigint,
+    person1rowid bigint,
+    person2id bigint,
+    person2rowid bigint,
+    company varchar
+);
 
 -- PARAMS
-INSERT INTO results (SELECT p.id                                                                           as Person1id,
-                            p2.id                                                                          as Person2id,
-                            c.name                                                                         as Company,
-                            cheapest_path(0, (select count(*) from PersonUniversity p), p.rowid, p2.rowid) as weight
+INSERT INTO all_options(SELECT  p.id                                                                            as Person1id,
+                                p.rowid                                                                         as person1rowid,
+                                p2.id                                                                           as Person2id,
+                                p2.rowid                                                                        as person2rowid,
+                                c.name                                                                          as Company
                      FROM PersonUniversity p
                               JOIN Person_workAt_Company pwc on p.id = pwc.PersonId
                               JOIN Company c on (pwc.CompanyId = c.id AND c.name = ':company')
                               JOIN PersonUniversity p2 on p2.id = :person2id
-                     where weight is not null
-                     order by weight, p.id);
+                        );
 
+-- PATH
+INSERT INTO results (SELECT p.person1id, p.person2id, p.company, cheapest_path(0, (select count(*) from personuniversity), p.person1rowid, p.person2rowid) as weight from all_options p);
 
 -- RESULTS
 SELECT (SELECT person1id FROM results WHERE person2id = agg.person2id and company = agg.company and weight = agg.min_weight LIMIT 20)
@@ -75,7 +87,6 @@ SELECT (SELECT person1id FROM results WHERE person2id = agg.person2id and compan
         min_weight as weight,
         company,
         person2id
-
 FROM (SELECT min(weight) AS min_weight, person2id, company
       FROM results
       GROUP BY person2id, company) agg
