@@ -9,6 +9,7 @@ import multiprocessing
 
 lane_limits = [16, 32, 64, 128, 256, 512, 1024]
 
+
 def sort_results(result, timing_dict, params, query, sf, subquery, workload):
     output_file = open(f'output/results-{sf}-{subquery}-{workload}.csv', 'w')
     timing_output = open(f'output/timings-{sf}-{subquery}-{workload}.csv', 'w')
@@ -137,12 +138,13 @@ def process_arguments(argv):
     query = ''
     only_load = False
     workload = ''
-    threads = list(range(2,multiprocessing.cpu_count() + 1, 2))
+    threads = list(range(2, multiprocessing.cpu_count() + 1, 2))
     lanes = 1024
     experimental_mode = False
     try:
         opts, args = getopt.getopt(argv, "hs:q:l:w:a:t:e:",
-                                   ["scalefactor=", "query=", "load=", "workload=", "lanes=", "threads=", "experiment="])
+                                   ["scalefactor=", "query=", "load=", "workload=", "lanes=", "threads=",
+                                    "experiment="])
     except getopt.GetoptError:
         logging.info('load.py -s <scalefactor> -q <query> -l <load only> -w <workload> -a <lanes> -t <threads>')
         sys.exit(2)
@@ -187,20 +189,26 @@ def write_timing_dict(timing_dict, sf, query, workload, csr, paths, lane=1024, t
         f.write(
             f"{sf}|{query}|{timing_dict['total_timing']}|{timing_dict['result_timing']}|{timing_dict['csr_timing']}|{timing_dict['precompute_timing']}|{timing_dict['average_parameter_timing']}|{sum(timing_dict['parameter_timing'])}|{timing_dict['path_timing']}|{lane}|{thread}|{csr['vertices']}|{csr['edges']}|{paths}|{workload}|{today}|{timing_dict['parameter_timing']}\n")
 
+
 def main(argv):
     sf, query, only_load, workload, lanes, threads, experimental_mode = process_arguments(argv)
     file_location = validate_input(query, workload)
     if experimental_mode:
         for lane in lane_limits:
-            for thread in threads:
-                timing_dict, subquery, csr, paths = run_duckdb(file_location, lane, only_load, query, sf, thread, workload)
-                write_timing_dict(timing_dict, sf, subquery, workload, csr, paths, lane, thread)
+            if isinstance(threads, list):
+                for thread in threads:
+                    timing_dict, subquery, csr, paths = run_duckdb(file_location, lane, only_load, query, sf, thread,
+                                                                   workload)
+                    write_timing_dict(timing_dict, sf, subquery, workload, csr, paths, lane, thread)
+            else:
+                timing_dict, subquery, csr, paths = run_duckdb(file_location, lane, only_load, query, sf, threads,
+                                                               workload)
+                write_timing_dict(timing_dict, sf, subquery, workload, csr, paths, lane, threads)
     else:
         if isinstance(threads, list):
             run_duckdb(file_location, lanes, only_load, query, sf, max(threads), workload)
         else:
             run_duckdb(file_location, lanes, only_load, query, sf, threads, workload)
-
 
 
 def run_duckdb(file_location, lanes, only_load, query, sf, threads, workload):

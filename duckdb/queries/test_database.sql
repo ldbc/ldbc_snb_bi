@@ -20,3 +20,27 @@ EXPLAIN SELECT Person_knows_Person.Person1Id AS Person1Id,
                                                 AND (Message1.id = Message2.ParentMessageId
                                                     OR Message2.id = Message1.ParentMessageId)
                               GROUP BY Person_knows_Person.Person1Id, Person_knows_Person.Person2Id;
+
+
+INSERT INTO results (SELECT p.id                                                                           as Person1id,
+                            p2.id                                                                          as Person2id,
+                            c.name                                                                         as Company,
+                            cheapest_path(0, (select count(*) from PersonUniversity p), p.rowid, p2.rowid) as weight
+                     FROM PersonUniversity p
+                              JOIN Person_workAt_Company pwc on p.id = pwc.PersonId
+                              JOIN Company c on (pwc.CompanyId = c.id AND c.name = 'British_NorthWest_Airlines')
+                              JOIN PersonUniversity p2 on p2.id = 30786325592518
+                     order by weight, p.id);
+
+
+-- -- PARAMS
+-- -- INSERT INTO results (SELECT p.id                                                                           as Person1id,
+-- --                             p2.id                                                                          as Person2id,
+-- --                             c.name                                                                         as Company,
+-- --                             cheapest_path(0, (select count(*) from PersonUniversity p), p.rowid, p2.rowid) as weight
+-- --                      FROM PersonUniversity p
+-- --                               JOIN Person_workAt_Company pwc on p.id = pwc.PersonId
+-- --                               JOIN Company c on (pwc.CompanyId = c.id AND c.name = ':company')
+-- --                               JOIN PersonUniversity p2 on p2.id = :person2id
+-- --                      where weight is not null
+-- --                      order by weight, p.id);

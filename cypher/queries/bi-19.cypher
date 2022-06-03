@@ -3,8 +3,8 @@
 /*
 :param [{ city1Id, city2Id }] => {
   RETURN
-    669 AS city1Id,
-    648 AS city2Id
+    655 AS city1Id,
+    1138 AS city2Id
   }
 */
 MATCH

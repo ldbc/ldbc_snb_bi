@@ -16,7 +16,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     results_file = open('output/results.csv', 'w')
-    timings_file = open('output/timings.csv', 'w')
+    timings_file = open('output/timings-old.csv', 'w')
     batch_timing = open('output/batch_timing.csv', 'w')
     timings_file.write(f"sf|q|parameters|time\n")
     batch_timing.write(f'date|operation|time\n')
