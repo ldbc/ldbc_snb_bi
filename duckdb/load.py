@@ -165,9 +165,9 @@ def process_arguments(argv):
         elif opt in ("-s", "--scalefactor"):
             sf = arg
         elif opt in ("-a", "--lanes"):
-            lanes = arg
+            lanes = int(arg)
         elif opt in ("-t", "--threads"):
-            threads = arg
+            threads = int(arg)
         elif opt in ("-q", "--query"):
             query = arg
         elif opt in ("-e", "--experiment"):
