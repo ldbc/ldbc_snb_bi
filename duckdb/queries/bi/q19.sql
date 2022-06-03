@@ -3,6 +3,8 @@ DROP TABLE IF EXISTS interactions;
 DROP TABLE IF EXISTS weights;
 DROP TABLE IF EXISTS PersonInteractions;
 
+pragma verify_parallelism;
+
 CREATE TEMP TABLE Message as (SELECT p.id as messageid, NULL as ParentMessageId, p.CreatorPersonId
      FROM Post p
      UNION ALL
@@ -62,12 +64,28 @@ create temp table results
     weight double
 );
 
+create temp table all_options
+(
+  Person1id bigint,
+  Person1rowid bigint,
+  City1id bigint,
+  Person2id bigint,
+  Person2rowid bigint,
+  City2id bigint
+);
+
 -- PARAMS
-INSERT INTO results (SELECT s.id AS person1id, s.LocationCityId AS City1id, s2.id AS person2id, s2.LocationCityId as City2id, cheapest_path(0, (SELECT count(*) FROM PersonInteractions), s.rowid, s2.rowid) AS weight FROM
+INSERT INTO all_options (SELECT s.id AS person1id, s.rowid as person1rowid, s.LocationCityId AS City1id, s2.id AS person2id, s2.rowid as person2rowid, s2.LocationCityId as City2id FROM
                 (SELECT pi.id, pi.rowid, pi.locationcityid FROM personinteractions pi WHERE pi.locationcityid = :city1id) s,
                 (SELECT pi.id, pi.rowid, pi.locationcityid FROM personinteractions pi WHERE pi.locationcityid = :city2id) s2
 );
 
+-- DEBUG
+select count(*) as parameter_timing from all_options;
+
+
+-- PATH
+INSERT INTO results (SELECT p.person1id, p.city1id, p.person2id, p.city2id, cheapest_path(0, (select count(*) from personinteractions), p.person1rowid, p.person2rowid) as weight from all_options p);
 
 pragma delete_csr=0;
 

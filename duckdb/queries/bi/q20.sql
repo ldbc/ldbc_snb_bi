@@ -78,8 +78,15 @@ INSERT INTO all_options(SELECT  p.id                                            
                               JOIN PersonUniversity p2 on p2.id = :person2id
                         );
 
+-- NUMPATHS
+select count(*) from all_options;
+
+
+
 -- PATH
 INSERT INTO results (SELECT p.person1id, p.person2id, p.company, cheapest_path(0, (select count(*) from personuniversity), p.person1rowid, p.person2rowid) as weight from all_options p);
+
+pragma delete_csr=0;
 
 -- RESULTS
 SELECT (SELECT person1id FROM results WHERE person2id = agg.person2id and company = agg.company and weight = agg.min_weight LIMIT 20)

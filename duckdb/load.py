@@ -27,7 +27,7 @@ def sort_results(result, timing_dict, params, query, sf, subquery, workload):
         output_file.write(
             f"{query}|{subquery}|{formatted_parameters}|{formatted_output_string}\n")
         full_timing = timing_dict['precompute_timing'] + timing_dict['csr_timing'] + timing_dict['parameter_timing'][
-            idx] + timing_dict['result_timing']
+            idx] + timing_dict['result_timing'] + (timing_dict['path_timing'] / len(timing_dict['parameter_timing']))
 
         timing_output.write(f"DuckDB|{sf}|{subquery}|{formatted_parameters}|{full_timing}\n")
     # for idx, row in result.iterrows():
@@ -55,6 +55,8 @@ def run_script(con, filename, params=None, sf=None, lane=1024, thread=8):
     total_timing = 0
     timing = 0
     path_timing = 0
+    csr = None
+    paths = 0
     for query in queries:
         logging.debug(query)
         if "-- PRECOMPUTE" in query:
@@ -65,7 +67,7 @@ def run_script(con, filename, params=None, sf=None, lane=1024, thread=8):
             precompute_timing += timing
         elif "-- CSR CREATION" in query:
             start = timeit.default_timer()
-            con.execute(query)
+            csr = con.execute(query).fetchall()[0][0]
             stop = timeit.default_timer()
             timing = stop - start
             csr_timing += timing
@@ -89,6 +91,8 @@ def run_script(con, filename, params=None, sf=None, lane=1024, thread=8):
 
                 parameter_timing.append(timing)
             timing = 0
+        elif "-- NUMPATHS" in query:
+            paths = con.execute(query).fetchone()[0]
         elif "-- RESULTS" in query:
             start = timeit.default_timer()
             final_result = con.execute(query).fetchall()
@@ -100,7 +104,7 @@ def run_script(con, filename, params=None, sf=None, lane=1024, thread=8):
                            "average_parameter_timing": sum(parameter_timing) / len(parameter_timing),
                            "result_timing": result_timing, "total_timing": total_timing,
                            "parameter_timing": parameter_timing, "path_timing": path_timing}
-            return final_result, timing_dict
+            return final_result, timing_dict, csr, paths
         elif "-- DEBUG" in query:
             result = con.execute(query).fetchdf()
             logging.debug(result)
@@ -171,18 +175,17 @@ def process_arguments(argv):
     return sf, query, only_load, workload, lanes, threads, experimental_mode
 
 
-def write_timing_dict(timing_dict, sf, query, workload, lane=1024, thread=8):
+def write_timing_dict(timing_dict, sf, query, workload, csr, paths, lane=1024, thread=8):
     filename = f'benchmark/timings.csv'
     if not os.path.exists(filename):
         with open(filename, 'w') as f:
             f.write(
-                "sf|query|total_timing|result_timing|csr_timing|precompute_timing|average_parameter_timing|total_parameter_timing|path_timing|lanes|threads|workload|date|parameter_timing\n")
+                "sf|query|total_timing|result_timing|csr_timing|precompute_timing|average_parameter_timing|total_parameter_timing|path_timing|lanes|threads|vertices|edges|paths|workload|date|parameter_timing\n")
 
     today = date.today().strftime("%b-%d-%Y")
     with open(filename, 'a') as f:
         f.write(
-            f"{sf}|{query}|{timing_dict['total_timing']}|{timing_dict['result_timing']}|{timing_dict['csr_timing']}|{timing_dict['precompute_timing']}|{timing_dict['average_parameter_timing']}|{sum(timing_dict['parameter_timing'])}|{timing_dict['path_timing']}|{lane}|{thread}|{workload}|{today}|{timing_dict['parameter_timing']}\n")
-
+            f"{sf}|{query}|{timing_dict['total_timing']}|{timing_dict['result_timing']}|{timing_dict['csr_timing']}|{timing_dict['precompute_timing']}|{timing_dict['average_parameter_timing']}|{sum(timing_dict['parameter_timing'])}|{timing_dict['path_timing']}|{lane}|{thread}|{csr['vertices']}|{csr['edges']}|{paths}|{workload}|{today}|{timing_dict['parameter_timing']}\n")
 
 def main(argv):
     sf, query, only_load, workload, lanes, threads, experimental_mode = process_arguments(argv)
@@ -190,8 +193,8 @@ def main(argv):
     if experimental_mode:
         for lane in lane_limits:
             for thread in threads:
-                timing_dict, subquery = run_duckdb(file_location, lane, only_load, query, sf, thread, workload)
-                write_timing_dict(timing_dict, sf, subquery, workload, lane, thread)
+                timing_dict, subquery, csr, paths = run_duckdb(file_location, lane, only_load, query, sf, thread, workload)
+                write_timing_dict(timing_dict, sf, subquery, workload, csr, paths, lane, thread)
     else:
         if isinstance(threads, list):
             run_duckdb(file_location, lanes, only_load, query, sf, max(threads), workload)
@@ -212,9 +215,9 @@ def run_duckdb(file_location, lanes, only_load, query, sf, threads, workload):
         if query == '19a' or query == '19b':
             query = '19'
 
-        result, timing_dict = run_script(con, file_location, params, sf, lanes, threads)
+        result, timing_dict, csr, paths = run_script(con, file_location, params, sf, lanes, threads)
         sort_results(result, timing_dict, params, query, sf, subquery, workload)
-        return timing_dict, subquery
+        return timing_dict, subquery, csr, paths
 
 
 def validate_input(query, workload):

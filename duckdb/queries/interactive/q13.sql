@@ -31,16 +31,34 @@ create temp table results
 );
 
 
+-- -- PARAMS
+-- INSERT INTO results (SELECT s.id AS person1id, s2.id AS person2id, shortest_path(0, false, (SELECT count(*) FROM PersonKnows), s.rowid, s2.rowid) AS weight FROM
+--                 (SELECT p.id, p.rowid FROM PersonKnows p WHERE p.id = :person1id) s,
+--                 (SELECT p.id, p.rowid FROM PersonKnows p WHERE p.id = :person2id) s2
+-- );
+
+pragma verify_parallelism;
+
+
+create temp table all_options
+(
+    Person1id bigint,
+    Person1rowid bigint,
+    Person2id bigint,
+    Person2rowid bigint
+);
+
 -- PARAMS
-INSERT INTO results (SELECT s.id AS person1id, s2.id AS person2id, shortest_path(0, false, (SELECT count(*) FROM PersonKnows), s.rowid, s2.rowid) AS weight FROM
+INSERT INTO all_options(
+                SELECT s.id AS person1id, s.rowid as person1rowid, s2.id AS person2id, s2.rowid as person2rowid FROM
                 (SELECT p.id, p.rowid FROM PersonKnows p WHERE p.id = :person1id) s,
                 (SELECT p.id, p.rowid FROM PersonKnows p WHERE p.id = :person2id) s2
 );
 
-INSERT INTO results (SELECT s.id AS person1id, s2.id AS person2id, shortest_path(0, false, (SELECT count(*) FROM PersonKnows), s.rowid, s2.rowid) AS weight FROM
-                (SELECT p.id, p.rowid FROM PersonKnows p WHERE p.id = 15393162790310) s,
-                (SELECT p.id, p.rowid FROM PersonKnows p WHERE p.id = 2199023255851) s2
-);
+-- PATH
+INSERT INTO results (SELECT p.person1id, p.person2id, shortest_path(0, true, (select count(*) from PersonKnows), p.person1rowid, p.person2rowid) as weight from all_options p);
+
+pragma delete_csr=0;
 
 -- RESULTS
 SELECT weight as totalWeight, person1id, person2id from results;
