@@ -107,7 +107,7 @@ if len(sys.argv) > 1:
     if sys.argv[1] == "--test":
         test = True
 
-query_variants = ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "15a", "15b", "16a", "16b", "17", "18", "19a", "19b", "20"]
+query_variants = ["19a"]
 
 driver = neo4j.GraphDatabase.driver("bolt://localhost:7687")
 session = driver.session()
@@ -122,14 +122,16 @@ if "20" in query_variants:
     session.write_transaction(write_query_fun, open(f'queries/bi-20-drop-graph.cypher', 'r').read())
     session.write_transaction(write_query_fun, open(f'queries/bi-20-create-graph.cypher', 'r').read())
 
-open(f"output/results.csv", "w").close()
-open(f"output/timings.csv", "w").close()
 
-results_file = open(f"output/results.csv", "a")
-timings_file = open(f"output/timings.csv", "a")
-timings_file.write(f"sf|q|parameters|time\n")
+
+
 
 for query_variant in query_variants:
+    open(f"output/results-{sf}-{query_variant}.csv", "w").close()
+    open(f"output/timings-{sf}-{query_variant}.csv", "w").close()
+    results_file = open(f"output/results-{sf}-{query_variant}.csv", "a")
+    timings_file = open(f"output/timings-{sf}-{query_variant}.csv", "a")
+    timings_file.write(f"sf|q|parameters|time\n")
     query_num = int(re.sub("[^0-9]", "", query_variant))
     query_subvariant = re.sub("[^ab]", "", query_variant)
 
@@ -138,7 +140,7 @@ for query_variant in query_variants:
     query_file = open(f'queries/bi-{query_num}.cypher', 'r')
     query_spec = query_file.read()
 
-    parameters_csv = csv.DictReader(open(f'../parameters/bi-{query_variant}.csv'), delimiter='|')
+    parameters_csv = csv.DictReader(open(f'../parameters/parameters-sf{sf}/bi-{query_variant}.csv'), delimiter='|')
     parameters = [{"name": t[0], "type": t[1]} for t in [f.split(":") for f in parameters_csv.fieldnames]]
 
     i = 0
@@ -158,8 +160,8 @@ for query_variant in query_variants:
         results_file.flush()
 
         # test run: 1 query, regular run: 10 queries
-        if test or i == 10:
-            break
+        # if test or i == 10:
+        #     break
 
     query_file.close()
 
