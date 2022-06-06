@@ -6,6 +6,13 @@ CREATE TEMP TABLE PersonKnows AS (SELECT DISTINCT r.Person1id as id
                                            FROM person_knows_person)) r
                                     ORDER BY id);
 
+-- PRAGMA
+pragma set_lane_limit=:param;
+
+-- PRAGMA
+pragma threads=:param;
+
+PRAGMA verify_parallelism;
 
 -- CSR CREATION
 SELECT DISTINCT CREATE_CSR(
