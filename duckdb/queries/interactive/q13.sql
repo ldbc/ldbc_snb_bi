@@ -55,6 +55,10 @@ INSERT INTO all_options(
                 (SELECT p.id, p.rowid FROM PersonKnows p WHERE p.id = :person2id) s2
 );
 
+-- NUMPATHS
+select count(*) from all_options;
+
+
 -- PATH
 INSERT INTO results (SELECT p.person1id, p.person2id, shortest_path(0, true, (select count(*) from PersonKnows), p.person1rowid, p.person2rowid) as weight from all_options p);
 
