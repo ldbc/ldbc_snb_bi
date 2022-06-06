@@ -44,8 +44,6 @@ create temp table results
 --                 (SELECT p.id, p.rowid FROM PersonKnows p WHERE p.id = :person2id) s2
 -- );
 
-pragma verify_parallelism;
-
 
 create temp table all_options
 (
