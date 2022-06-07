@@ -1,6 +1,6 @@
 CREATE TEMP TABLE PersonKnows AS (SELECT DISTINCT r.Person1id as id
                                     FROM ((SELECT Person1id
-                                           FROM person_knows_person)
+                                            FROM person_knows_person)
                                           UNION ALL
                                           (SELECT Person2id AS Person1id
                                            FROM person_knows_person)) r
