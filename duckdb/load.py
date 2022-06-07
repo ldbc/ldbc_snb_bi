@@ -58,6 +58,7 @@ def run_script(con, filename, params=None, sf=None, lane=1024, thread=8):
     path_timing = 0
     csr = None
     paths = 0
+    other_timing = 0
     for query in queries:
         logging.debug(query)
         if "-- PRECOMPUTE" in query:
@@ -93,7 +94,11 @@ def run_script(con, filename, params=None, sf=None, lane=1024, thread=8):
                 parameter_timing.append(timing)
             timing = 0
         elif "-- NUMPATHS" in query:
+            start = timeit.default_timer()
             paths = con.execute(query).fetchone()[0]
+            stop = timeit.default_timer()
+            timing = (stop - start)
+            other_timing += timing
         elif "-- RESULTS" in query:
             start = timeit.default_timer()
             final_result = con.execute(query).fetchall()
@@ -104,7 +109,8 @@ def run_script(con, filename, params=None, sf=None, lane=1024, thread=8):
             timing_dict = {"precompute_timing": precompute_timing, "csr_timing": csr_timing,
                            "average_parameter_timing": sum(parameter_timing) / len(parameter_timing),
                            "result_timing": result_timing, "total_timing": total_timing,
-                           "parameter_timing": parameter_timing, "path_timing": path_timing}
+                           "parameter_timing": parameter_timing, "path_timing": path_timing,
+                           "other_timing": other_timing}
             return final_result, timing_dict, csr, paths
         elif "-- DEBUG" in query:
             result = con.execute(query).fetchdf()
@@ -115,7 +121,11 @@ def run_script(con, filename, params=None, sf=None, lane=1024, thread=8):
             elif "threads" in query:
                 query = query.replace(":param", str(thread))
             logging.debug(query)
+            start = timeit.default_timer()
             con.execute(query)
+            stop = timeit.default_timer()
+            timing = (stop - start)
+            other_timing += timing
         elif "-- PATH" in query:
             start = timeit.default_timer()
             con.execute(query)
@@ -127,6 +137,7 @@ def run_script(con, filename, params=None, sf=None, lane=1024, thread=8):
             con.execute(query)
             stop = timeit.default_timer()
             timing = stop - start
+            other_timing += timing
         if timing == 0:
             logging.critical(f"TIMING WAS 0 for query: {query}")
         total_timing += timing
@@ -182,12 +193,12 @@ def write_timing_dict(timing_dict, sf, query, workload, csr, paths, lane=1024, t
     if not os.path.exists(filename):
         with open(filename, 'w') as f:
             f.write(
-                "sf|query|total_timing|result_timing|csr_timing|precompute_timing|average_parameter_timing|total_parameter_timing|path_timing|lanes|threads|vertices|edges|paths|workload|date|parameter_timing\n")
+                "sf|query|total_timing|result_timing|csr_timing|precompute_timing|average_parameter_timing|total_parameter_timing|path_timing|other_timing|lanes|threads|vertices|edges|paths|workload|date|parameter_timing\n")
 
     today = date.today().strftime("%b-%d-%Y")
     with open(filename, 'a') as f:
         f.write(
-            f"{sf}|{query}|{timing_dict['total_timing']}|{timing_dict['result_timing']}|{timing_dict['csr_timing']}|{timing_dict['precompute_timing']}|{timing_dict['average_parameter_timing']}|{sum(timing_dict['parameter_timing'])}|{timing_dict['path_timing']}|{lane}|{thread}|{csr['vertices']}|{csr['edges']}|{paths}|{workload}|{today}|{timing_dict['parameter_timing']}\n")
+            f"{sf}|{query}|{timing_dict['total_timing']}|{timing_dict['result_timing']}|{timing_dict['csr_timing']}|{timing_dict['precompute_timing']}|{timing_dict['average_parameter_timing']}|{sum(timing_dict['parameter_timing'])}|{timing_dict['path_timing']}|{timing_dict['other_timing']}|{lane}|{thread}|{csr['vertices']}|{csr['edges']}|{paths}|{workload}|{today}|{timing_dict['parameter_timing']}\n")
 
 
 def main(argv):
@@ -198,7 +209,8 @@ def main(argv):
             for lane in lane_limits:
                 if isinstance(threads, list):
                     for thread in threads:
-                        timing_dict, subquery, csr, paths = run_duckdb(file_location, lane, only_load, query, sf, thread,
+                        timing_dict, subquery, csr, paths = run_duckdb(file_location, lane, only_load, query, sf,
+                                                                       thread,
                                                                        workload)
                         write_timing_dict(timing_dict, sf, subquery, workload, csr, paths, lane, thread)
                 else:
