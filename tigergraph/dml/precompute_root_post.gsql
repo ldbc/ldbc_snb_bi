@@ -1,0 +1,12 @@
+CREATE OR REPLACE DISTRIBUTED QUERY precompute_root_post() SYNTAX v2 {
+  MaxAccum<UINT> @postId;
+  
+  M(ANY) = {Post.*};
+  M =   SELECT p FROM Post:p ACCUM p.@postId = p.id;
+  WHILE M.size() > 0 DO
+    M = SELECT t FROM M:s -(<REPLY_OF)- Comment:t
+      ACCUM t.@postId += s.@postId,
+      INSERT INTO ROOT_POST (FROM, TO) VALUES (t.id, s.@postId);
+  COMMIT;
+  END;
+}
