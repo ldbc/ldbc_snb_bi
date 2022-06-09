@@ -44,3 +44,18 @@ INSERT INTO results (SELECT p.id                                                
 -- --                               JOIN PersonUniversity p2 on p2.id = :person2id
 -- --                      where weight is not null
 -- --                      order by weight, p.id);
+
+
+-- SELECT DISTINCT CREATE_CSR(
+-- --                0,
+-- --                v.vcount,
+-- --                r.ecount,
+-- --                r.src,
+-- --                r.dst
+-- --            )
+-- -- FROM (SELECT count(p.id) as vcount FROM PersonKnows p) v,
+-- --      (SELECT src.rowid as src, dst.rowid as dst, count(src.rowid) OVER (ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) as ecount
+-- --       FROM Person_knows_Person t
+-- --        JOIN PersonKnows src ON t.Person1id = src.id
+-- --        JOIN PersonKnows dst ON t.Person2id = dst.id
+-- --        order by src.rowid, dst.rowid) r;
