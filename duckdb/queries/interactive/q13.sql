@@ -15,19 +15,35 @@ pragma threads=:param;
 PRAGMA verify_parallelism;
 
 -- CSR CREATION
-SELECT DISTINCT CREATE_CSR(
-               0,
-               v.vcount,
-               r.ecount,
-               r.src,
-               r.dst
-           )
-FROM (SELECT count(p.id) as vcount FROM PersonKnows p) v,
-     (SELECT src.rowid as src, dst.rowid as dst, count(src.rowid) OVER (ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) as ecount
-      FROM Person_knows_Person t
-       JOIN PersonKnows src ON t.Person1id = src.id
-       JOIN PersonKnows dst ON t.Person2id = dst.id
-       order by src.rowid, dst.rowid) r;
+SELECT CREATE_CSR_VERTEX(
+0,
+v.vcount,
+sub.dense_id,
+sub.cnt
+) AS numEdges
+FROM (
+    SELECT c.rowid as dense_id, count(t.person1id) as cnt
+    FROM PersonKnows c
+    LEFT JOIN  Person_knows_Person t ON t.person1id = c.id
+    GROUP BY c.rowid
+) sub, (SELECT count(c.id) as vcount FROM PersonKnows c) v;
+
+-- CSR CREATION
+SELECT min(CREATE_CSR_EDGE(0, (SELECT count(c.id) as vcount FROM PersonKnows c),
+CAST ((SELECT sum(CREATE_CSR_VERTEX(0, (SELECT count(c.id) as vcount FROM PersonKnows c),
+sub.dense_id, sub.cnt)) AS numEdges
+FROM (
+    SELECT c.rowid as dense_id, count(t.person1id) as cnt
+    FROM PersonKnows c
+    LEFT JOIN  Person_knows_Person t ON t.person1id = c.id
+    GROUP BY c.rowid
+) sub) AS BIGINT),
+src.rowid, dst.rowid))
+FROM
+  Person_knows_Person t
+  JOIN PersonKnows src ON t.person1id = src.id
+  JOIN PersonKnows dst ON t.person2id = dst.id;
+
 
 -- PRECOMPUTE
 create temp table results
@@ -62,6 +78,10 @@ INSERT INTO all_options(
 
 -- NUMPATHS
 select count(*) from all_options;
+
+-- NUMVERTICESEDGES
+select num_vertices, num_edges from (select count(*) as num_vertices from PersonKnows),
+                                    (select count(*) as num_edges from Person_knows_Person);
 
 
 -- PATH

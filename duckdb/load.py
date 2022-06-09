@@ -6,6 +6,7 @@ import logging
 import timeit
 from datetime import date
 import multiprocessing
+import csv
 
 lane_limits = [16, 32, 64, 128, 256, 512, 1024]
 
@@ -56,9 +57,9 @@ def run_script(con, filename, params=None, sf=None, lane=1024, thread=8):
     total_timing = 0
     timing = 0
     path_timing = 0
-    csr = None
-    paths = 0
     other_timing = 0
+
+    graph_stats = {'vertices': 0, 'edges': 0, 'paths': 0}
     for query in queries:
         logging.debug(query)
         if "-- PRECOMPUTE" in query:
@@ -69,7 +70,7 @@ def run_script(con, filename, params=None, sf=None, lane=1024, thread=8):
             precompute_timing += timing
         elif "-- CSR CREATION" in query:
             start = timeit.default_timer()
-            csr = con.execute(query).fetchall()[0][0]
+            con.execute(query)
             stop = timeit.default_timer()
             timing = stop - start
             csr_timing += timing
@@ -95,7 +96,13 @@ def run_script(con, filename, params=None, sf=None, lane=1024, thread=8):
             timing = 0
         elif "-- NUMPATHS" in query:
             start = timeit.default_timer()
-            paths = con.execute(query).fetchone()[0]
+            graph_stats['paths'] = con.execute(query).fetchone()[0]
+            stop = timeit.default_timer()
+            timing = (stop - start)
+            other_timing += timing
+        elif "-- NUMVERTICESEDGES" in query:
+            start = timeit.default_timer()
+            graph_stats['vertices'], graph_stats['edges'] = con.execute(query).fetchall()[0]
             stop = timeit.default_timer()
             timing = (stop - start)
             other_timing += timing
@@ -111,7 +118,7 @@ def run_script(con, filename, params=None, sf=None, lane=1024, thread=8):
                            "result_timing": result_timing, "total_timing": total_timing,
                            "parameter_timing": parameter_timing, "path_timing": path_timing,
                            "other_timing": other_timing}
-            return final_result, timing_dict, csr, paths
+            return final_result, timing_dict, graph_stats
         elif "-- DEBUG" in query:
             result = con.execute(query).fetchdf()
             logging.debug(result)
@@ -188,17 +195,28 @@ def process_arguments(argv):
     return sf, query, only_load, workload, lanes, threads, experimental_mode
 
 
-def write_timing_dict(timing_dict, sf, query, workload, csr, paths, lane=1024, thread=8):
+def write_timing_dict(timing_dict, sf, query, workload, graph_stats, lane=1024, thread=8):
     filename = f'benchmark/timings.csv'
-    if not os.path.exists(filename):
-        with open(filename, 'w') as f:
-            f.write(
-                "sf|query|total_timing|result_timing|csr_timing|precompute_timing|average_parameter_timing|total_parameter_timing|path_timing|other_timing|lanes|threads|vertices|edges|paths|workload|date|parameter_timing\n")
+    fieldnames = ["sf", "query", "total_timing", "result_timing", "csr_timing", "precompute_timing",
+                  "average_parameter_timing", "total_parameter_timing", "path_timing", "other_timing", "lanes",
+                  "threads",
+                  "vertices", "edges", "paths", "workload", "date"]
 
-    today = date.today().strftime("%b-%d-%Y")
-    with open(filename, 'a') as f:
-        f.write(
-            f"{sf}|{query}|{timing_dict['total_timing']}|{timing_dict['result_timing']}|{timing_dict['csr_timing']}|{timing_dict['precompute_timing']}|{timing_dict['average_parameter_timing']}|{sum(timing_dict['parameter_timing'])}|{timing_dict['path_timing']}|{timing_dict['other_timing']}|{lane}|{thread}|{csr['vertices']}|{csr['edges']}|{paths}|{workload}|{today}|{timing_dict['parameter_timing']}\n")
+    with open(filename, 'a', newline='\n') as csvfile:
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        if os.path.getsize(filename) == 0:
+            writer.writeheader()
+        today = date.today().strftime("%b-%d-%Y")
+        writer.writerow(
+            {"sf": sf, "query": query, "total_timing": timing_dict['total_timing'],
+             "result_timing": timing_dict['result_timing'], "csr_timing": timing_dict['csr_timing'],
+             "precompute_timing": timing_dict['precompute_timing'],
+             "average_parameter_timing": timing_dict['average_parameter_timing'],
+             "total_parameter_timing": sum(timing_dict['parameter_timing']), "path_timing": timing_dict['path_timing'],
+             "other_timing": timing_dict['other_timing'], "lanes": lane,
+             "threads": thread, "vertices": graph_stats['vertices'], "edges": graph_stats['edges'], "paths": graph_stats['paths'],
+             "workload": workload, "date": today
+             })
 
 
 def main(argv):
@@ -209,24 +227,24 @@ def main(argv):
             for lane in lane_limits:
                 if isinstance(threads, list):
                     for thread in threads:
-                        timing_dict, subquery, csr, paths = run_duckdb(file_location, lane, only_load, query, sf,
-                                                                       thread,
-                                                                       workload)
-                        write_timing_dict(timing_dict, sf, subquery, workload, csr, paths, lane, thread)
+                        timing_dict, subquery, graph_stats = run_duckdb(file_location, lane, only_load, query, sf,
+                                                                        thread,
+                                                                        workload)
+                        write_timing_dict(timing_dict, sf, subquery, workload, graph_stats, lane, thread)
                 else:
-                    timing_dict, subquery, csr, paths = run_duckdb(file_location, lane, only_load, query, sf, threads,
-                                                                   workload)
-                    write_timing_dict(timing_dict, sf, subquery, workload, csr, paths, lane, threads)
+                    timing_dict, subquery, graph_stats = run_duckdb(file_location, lane, only_load, query, sf, threads,
+                                                                    workload)
+                    write_timing_dict(timing_dict, sf, subquery, workload, graph_stats, lane, threads)
         else:
             if isinstance(threads, list):
                 for thread in threads:
-                    timing_dict, subquery, csr, paths = run_duckdb(file_location, lanes, only_load, query, sf, thread,
-                                                                   workload)
-                    write_timing_dict(timing_dict, sf, subquery, workload, csr, paths, lanes, thread)
+                    timing_dict, subquery, graph_stats = run_duckdb(file_location, lanes, only_load, query, sf, thread,
+                                                                    workload)
+                    write_timing_dict(timing_dict, sf, subquery, workload, graph_stats, lanes, thread)
             else:
-                timing_dict, subquery, csr, paths = run_duckdb(file_location, lanes, only_load, query, sf, threads,
-                                                               workload)
-                write_timing_dict(timing_dict, sf, subquery, workload, csr, paths, lanes, threads)
+                timing_dict, subquery, graph_stats = run_duckdb(file_location, lanes, only_load, query, sf, threads,
+                                                                workload)
+                write_timing_dict(timing_dict, sf, subquery, workload, graph_stats, lanes, threads)
 
     else:
         if isinstance(threads, list):
@@ -247,9 +265,9 @@ def run_duckdb(file_location, lanes, only_load, query, sf, threads, workload):
         if query == '19a' or query == '19b':
             query = '19'
 
-        result, timing_dict, csr, paths = run_script(con, file_location, params, sf, lanes, threads)
+        result, timing_dict, graph_stats = run_script(con, file_location, params, sf, lanes, threads)
         sort_results(result, timing_dict, params, query, sf, subquery, workload)
-        return timing_dict, subquery, csr, paths
+        return timing_dict, subquery, graph_stats
 
 
 def validate_input(query, workload):
