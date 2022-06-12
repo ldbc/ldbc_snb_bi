@@ -1,3 +1,7 @@
+#Pre compute for bi-9 insert data for ROOT_POST edge
+#gsql -g ldbc_snb precompute_root_post.gsql
+#gsql -g ldbc_snb install query [query name]
+
 CREATE OR REPLACE DISTRIBUTED QUERY precompute_root_post() SYNTAX v2 {
   MaxAccum<UINT> @postId;
   
@@ -7,6 +11,6 @@ CREATE OR REPLACE DISTRIBUTED QUERY precompute_root_post() SYNTAX v2 {
     M = SELECT t FROM M:s -(<REPLY_OF)- Comment:t
       ACCUM t.@postId += s.@postId,
       INSERT INTO ROOT_POST (FROM, TO) VALUES (t.id, s.@postId);
-  COMMIT;
+  #COMMIT;
   END;
 }
