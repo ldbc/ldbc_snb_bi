@@ -257,7 +257,7 @@ def run_duckdb(file_location, lanes, only_load, query, sf, threads, workload):
     con = duckdb.connect("snb_benchmark.duckdb", read_only=False)
     run_script(con, "ddl/drop-tables.sql")
     run_script(con, "ddl/schema-composite-merged-fk.sql")
-    data_dir = f'../../ldbc_snb_datagen_spark/out-sf{sf}/graphs/csv/bi/composite-merged-fk'
+    data_dir = f'../../ldbc_snb_datagen_spark/out-sf{sf}'
     params = open(f'../parameters/parameters-sf{sf}/{workload}-{query}.csv').readlines()  # parameters-sf{sf}/
     load_entities(con, data_dir, query)
     if not only_load:
@@ -298,7 +298,7 @@ def validate_input(query, workload):
 
 def load_entities(con, data_dir: str, query: str):
     static_path = f"{data_dir}/initial_snapshot/static"
-    dynamic_path = f"{data_dir}/initial_snapshot/dynamic"
+    dynamic_path = f"{data_dir}"
     static_entities = ["Organisation", "Place", "Tag", "TagClass"]
     dynamic_entities = ["Comment", "Comment_hasTag_Tag", "Forum", "Forum_hasMember_Person", "Forum_hasTag_Tag",
                         "Person", "Person_hasInterest_Tag", "Person_knows_Person", "Person_likes_Comment",
@@ -332,10 +332,10 @@ def load_entities(con, data_dir: str, query: str):
             csv_path = f"{entity}/{csv_file}"
             logging.debug(f"- {csv_path}")
             con.execute(
-                f"COPY {entity} FROM '{data_dir}/initial_snapshot/dynamic/{entity}/{csv_file}' (DELIMITER '|', HEADER, FORMAT csv)")
+                f"COPY {entity} FROM '{data_dir}/{entity}/{csv_file}' (DELIMITER '|', HEADER, FORMAT csv)")
             if entity == "Person_knows_Person":
                 con.execute(
-                    f"COPY {entity} (creationDate, Person2id, Person1id) FROM '{data_dir}/initial_snapshot/dynamic/{entity}/{csv_file}' (DELIMITER '|', HEADER, FORMAT csv)")
+                    f"COPY {entity} (creationDate, Person2id, Person1id) FROM '{data_dir}/{entity}/{csv_file}' (DELIMITER '|', HEADER, FORMAT csv)")
     logging.info("Loaded dynamic entities.")
     logging.info("Load initial snapshot")
 
