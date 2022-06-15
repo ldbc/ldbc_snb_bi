@@ -27,20 +27,35 @@ CREATE TEMP TABLE PersonUniversity AS (SELECT DISTINCT Person1id as id
                                   ORDER BY id);
 
 -- CSR CREATION
-SELECT DISTINCT CREATE_CSR(
-               0,
-               v.vcount,
-               r.ecount,
-               r.src,
-               r.dst,
-               r.weight
-           )
-FROM (SELECT count(p.id) as vcount FROM PersonUniversity p) v,
-     (SELECT src.rowid as src, dst.rowid as dst, t.weight as weight, count(src.rowid) OVER (ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) as ecount
-      FROM Person_UniversityKnows_Person t
-       JOIN PersonUniversity src ON t.Person1id = src.id
-       JOIN PersonUniversity dst ON t.Person2id = dst.id
-      ORDER BY src.rowid, dst.rowid) r;
+SELECT CREATE_CSR_VERTEX(
+0,
+v.vcount,
+sub.dense_id,
+sub.cnt
+) AS numEdges
+FROM (
+    SELECT c.rowid as dense_id, count(t.person1id) as cnt
+    FROM PersonUniversity c
+    LEFT JOIN  Person_UniversityKnows_Person t ON t.person1id = c.id
+    GROUP BY c.rowid
+) sub, (SELECT count(c.id) as vcount FROM PersonUniversity c) v;
+
+-- CSR CREATION
+SELECT min(CREATE_CSR_EDGE(0, (SELECT count(c.id) as vcount FROM PersonUniversity c),
+CAST ((SELECT sum(CREATE_CSR_VERTEX(0, (SELECT count(c.id) as vcount FROM PersonUniversity c),
+sub.dense_id, sub.cnt)) AS numEdges
+FROM (
+    SELECT c.rowid as dense_id, count(t.person1id) as cnt
+    FROM PersonUniversity c
+    LEFT JOIN  Person_UniversityKnows_Person t ON t.person1id = c.id
+    GROUP BY c.rowid
+) sub) AS BIGINT),
+src.rowid, dst.rowid, t.weight))
+FROM
+  Person_UniversityKnows_Person t
+  JOIN PersonUniversity src ON t.person1id = src.id
+  JOIN PersonUniversity dst ON t.person2id = dst.id;
+
 
 create temp table results
 (
@@ -81,7 +96,9 @@ INSERT INTO all_options(SELECT  p.id                                            
 -- NUMPATHS
 select count(*) from all_options;
 
-
+-- NUMVERTICESEDGES
+select num_vertices, num_edges from (select count(*) as num_vertices from PersonUniversity),
+                                    (select count(*) as num_edges from Person_UniversityKnows_Person);
 
 -- PATH
 INSERT INTO results (SELECT p.person1id, p.person2id, p.company, cheapest_path(0, (select count(*) from personuniversity), p.person1rowid, p.person2rowid) as weight from all_options p);
