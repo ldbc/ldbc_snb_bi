@@ -17,12 +17,14 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi9(DATETIME startDate, DATETIME endDate) SY
       p.@messageCount += 1;
 
   M(ANY) = threads;
+  #WHILE M.size() > 0 DO
     M = SELECT t FROM M:s -(<ROOT_POST)- Comment:t
     WHERE t.creationDate BETWEEN startEpoch AND endEpoch
     ACCUM
       FOREACH p IN s.@root DO
         p.@messageCount += 1
       END;
+  #END;
   tmp =SELECT p FROM persons:p
     ACCUM @@result += RESULT(p.id, p.firstName, p.lastName, p.@threadCount, p.@messageCount);
 
