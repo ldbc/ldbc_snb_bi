@@ -70,12 +70,12 @@ for i in $(seq 1 20); do
   gsql --graph ldbc_snb $QUERY_PATH/bi-${i}.gsql
 done
 
-gsql --graph ldbc_snb $QUERY_PATH/bi-4-precompute.gsql
-gsql --graph ldbc_snb $QUERY_PATH/bi-6-precompute.gsql
-gsql --graph ldbc_snb $QUERY_PATH/bi-19-precompute.gsql
-gsql --graph ldbc_snb $QUERY_PATH/bi-20-precompute.gsql
-gsql --graph ldbc_snb $QUERY_PATH/bi-19-cleanup.gsql
-gsql --graph ldbc_snb $QUERY_PATH/bi-20-cleanup.gsql
+gsql --graph ldbc_snb $DML_PATH/bi-4-precompute.gsql
+gsql --graph ldbc_snb $DML_PATH/bi-6-precompute.gsql
+gsql --graph ldbc_snb $DML_PATH/bi-19-precompute.gsql
+gsql --graph ldbc_snb $DML_PATH/bi-20-precompute.gsql
+gsql --graph ldbc_snb $DML_PATH/bi-19-cleanup.gsql
+gsql --graph ldbc_snb $DML_PATH/bi-20-cleanup.gsql
 
 gsql --graph ldbc_snb $DML_PATH/del_Comment.gsql
 gsql --graph ldbc_snb $DML_PATH/del_Forum.gsql
