@@ -91,10 +91,14 @@ def run_query(endpoint, query_num, parameters):
     ]) + "]"
     return results, duration
 
+#Add bi9 precompute together
 def precompute(query_num, endpoint):
     print(f"Precomputing weights for Q{query_num}")
     start = time.time()
-    response = requests.get(f'{endpoint}/query/ldbc_snb/bi{query_num}precompute', headers=HEADERS).json()
+    if query_num != 9:
+        response = requests.get(f'{endpoint}/query/ldbc_snb/bi{query_num}precompute', headers=HEADERS).json()
+    else:
+        response = requests.get(f'{endpoint}/query/ldbc_snb/precompute_root_post', headers=HEADERS).json()
     return time.time() - start
 
 def cleanup(query_num, endpoint):
@@ -150,7 +154,9 @@ if __name__ == '__main__':
     sf = os.environ.get("SF")
     # precomputation for BI 4, 6, 19, 20
     query_nums = [int(re.sub("[^0-9]", "", query_variant)) for query_variant in query_variants]
-    for query_num in [4,6,19,20]:
+
+    #TODO add bi9 here together
+    for query_num in [4,6,9,19,20]:
         if not args.skip and query_num in query_nums:
             timings_file.write(f"TigerGraph|{sf}|bi{query_num}precompute|{precompute(query_num, args.endpoint):.6f}\n")
             timings_file.flush()

@@ -4,30 +4,22 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi9(DATETIME startDate, DATETIME endDate) SY
   SetAccum<VERTEX<Person>> @root;
   SumAccum<UINT> @messageCount;
   SumAccum<UINT> @threadCount;
+  MaxAccum<UINT> @postId;
 
   INT startEpoch = datetime_to_epoch(startDate) * 1000;
   INT endEpoch = datetime_to_epoch(endDate) * 1000;
+
   threads = SELECT p FROM Post:p WHERE p.creationDate BETWEEN startEpoch AND endEpoch;
-  persons =
-    SELECT p
-    FROM threads:t -(HAS_CREATOR>)- Person:p
+  M = SELECT s FROM threads:s -(<ROOT_POST)- Comment:t
+    WHERE t.creationDate BETWEEN startEpoch AND endEpoch
+    ACCUM s.@messageCount += 1;
+
+  persons = SELECT p FROM threads:t -(HAS_CREATOR>)- Person:p
     ACCUM
-      t.@root += p,
       p.@threadCount += 1,
-      p.@messageCount += 1;
-  
-  M(ANY) = threads;
-  WHILE M.size() > 0 DO
-    M = SELECT t FROM M:s -(<REPLY_OF)- Comment:t
-      WHERE t.creationDate BETWEEN startEpoch AND endEpoch
-      ACCUM t.@root += s.@root,
-        FOREACH p IN s.@root DO # t.@root may not be updated here
-          p.@messageCount += 1
-        END;
-  END;
-  
-  tmp =
-    SELECT p FROM persons:p
+      p.@messageCount += t.@messageCount;
+
+  tmp =SELECT p FROM persons:p
     ACCUM @@result += RESULT(p.id, p.firstName, p.lastName, p.@threadCount, p.@messageCount);
 
   PRINT @@result as result;
