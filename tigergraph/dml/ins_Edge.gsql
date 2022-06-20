@@ -45,7 +45,7 @@ CREATE LOADING JOB insert_edge FOR GRAPH ldbc_snb {
   LOAD file_Person_isLocatedIn_City
     TO EDGE IS_LOCATED_IN VALUES ($1 Person, $2 City) USING header="false", separator="|", VERTEX_MUST_EXIST="true";
   LOAD file_Person_knows_Person
-    TO EDGE KNOWS VALUES ($1, $2, ToMiliSeconds($0)) USING header="false", separator="|", VERTEX_MUST_EXIST="true";
+    TO EDGE KNOWS VALUES ($1, $2, ToMiliSeconds($0), _, _) USING header="false", separator="|", VERTEX_MUST_EXIST="true";
   LOAD file_Person_likes_Comment
     TO EDGE LIKES VALUES ($1, $2 Comment, ToMiliSeconds($0)) USING header="false", separator="|", VERTEX_MUST_EXIST="true";
   LOAD file_Person_likes_Post

@@ -4,20 +4,12 @@
 #CREATE DIRECTED EDGE ROOT_POST (FROM Comment, TO Post) WITH REVERSE_EDGE="ROOT_POST_REVERSE" //FOR BI-9
 
 CREATE OR REPLACE DISTRIBUTED QUERY precompute_root_post() SYNTAX v2 {
-  ListAccum<UINT> @postId;
-
-  #the only one with different result: cmd+f in result.csv <13194139936417,"Ludwig","Fischer",235
-  #add time interval save A LOT OF time from 400+ to 43-48s! Using same date boundary from benchmark.py
-  INT startEpoch = datetime_to_epoch(to_datetime("2012-11-29")) * 1000;
-  INT endEpoch = datetime_to_epoch(to_datetime("2013-01-01")) * 1000;
-
-  M(ANY) = {Post.*};
-  M = SELECT p FROM Post:p WHERE p.creationDate BETWEEN startEpoch AND endEpoch
-  ACCUM p.@postId += p.id;
+  MinAccum<VERTEX<Post>> ;
+  M = SELECT p FROM Post:p ACCUM p.@postId += p;
   WHILE M.size() > 0 DO
   M = SELECT t FROM M:s -(<REPLY_OF)- Comment:t
-    ACCUM t.@postId += s.@postId.get(0),
-    INSERT INTO ROOT_POST (FROM, TO) VALUES (t.id, s.@postId.get(0));
+    ACCUM t.@postId += s.@postId,
+    INSERT INTO ROOT_POST (FROM, TO) VALUES (t, t.@postId);
   #COMMIT;
   END;
 }
