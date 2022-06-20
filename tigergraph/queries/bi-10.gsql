@@ -8,7 +8,6 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi10(VERTEX<Person> personId, STRING country
     WHERE cn.name == country;
 
   sources = {personId};
-  targets (Person) = {};
   WHILE @@pathLength < minPathDistance DO
     sources =
       SELECT t
@@ -17,6 +16,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi10(VERTEX<Person> personId, STRING country
       POST-ACCUM s.@visited = TRUE;
     @@pathLength += 1;
   END;
+  targets = sources;
   WHILE @@pathLength < maxPathDistance DO
     sources =
       SELECT t
@@ -24,7 +24,6 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi10(VERTEX<Person> personId, STRING country
       WHERE NOT t.@visited
       POST-ACCUM s.@visited = TRUE;
     @@pathLength += 1;
-
     targets = targets UNION sources;
   END;
 
