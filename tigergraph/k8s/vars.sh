@@ -10,11 +10,8 @@ export DOWNLOAD_THREAD=5 # number of download threads
 export TG_HEADER=true # whether data has header, provided data has header
 export NRUNS=10 # number of query runs
 
-#export TG_DATA_DIR=$HOME/tigergraph/data/sf${SF}
-#export TG_PARAMETER=$HOME/tigergraph/data/parameters-sf${SF}
-
-export TG_DATA_DIR=/home/yuchen.zhang/data/sf100-bi
-export TG_PARAMETER=/home/yuchen.zhang/parameters-sf100
+export TG_DATA_DIR=$HOME/tigergraph/data/sf${SF}
+export TG_PARAMETER=$HOME/tigergraph/data/parameters-sf${SF}
 
 export DDL_PATH=`pwd`/ddl
 export QUERY_PATH=`pwd`/queries
