@@ -32,12 +32,6 @@ def sort_results(result, timing_dict, params, query, sf, subquery, workload):
             idx] + timing_dict['result_timing'] + (timing_dict['path_timing'] / len(timing_dict['parameter_timing']))
 
         timing_output.write(f"DuckDB|{sf}|{subquery}|{formatted_parameters}|{full_timing}\n")
-    # for idx, row in result.iterrows():
-    #     formatted_parameters = f"<{';'.join(str(parameter) for parameter in row[filtered_param_headers])}>"
-    #     formatted_output = f"[<{','.join(str(result) for result in row.drop(labels=filtered_param_headers))}>]"
-    #     output_file.write(
-    #         f"{query}|{query}|{formatted_parameters}|{formatted_output}\n")
-    # timing_output.write(f"DuckDB|{sf}|{query}|{formatted_parameters}|{timing_dict[idx]}\n")
     output_file.close()
     timing_output.close()
 
@@ -159,12 +153,14 @@ def process_arguments(argv):
     threads = list(range(2, multiprocessing.cpu_count() + 1, 2))
     lanes = None
     experimental_mode = False
+    file_format = 'parquet'
     try:
-        opts, args = getopt.getopt(argv, "hs:q:l:w:a:t:e:",
+        opts, args = getopt.getopt(argv, "hs:q:l:w:a:t:e:f:",
                                    ["scalefactor=", "query=", "load=", "workload=", "lanes=", "threads=",
-                                    "experiment="])
+                                    "experiment=", "format="])
     except getopt.GetoptError:
-        logging.info('load.py -s <scalefactor> -q <query> -l <load only> -w <workload> -a <lanes> -t <threads>')
+        logging.info(
+            'load.py -s <scalefactor> -q <query> -l <load only> -w <workload> -a <lanes> -t <threads>, -e <experimental> -f <file format>')
         sys.exit(2)
     for opt, arg in opts:
         if opt == '-h':
@@ -192,7 +188,9 @@ def process_arguments(argv):
             query = arg
         elif opt in ("-e", "--experiment"):
             experimental_mode = bool(int(arg))
-    return sf, query, only_load, workload, lanes, threads, experimental_mode
+        elif opt in ("-f", "--format"):
+            file_format = arg
+    return sf, query, only_load, workload, lanes, threads, experimental_mode, file_format
 
 
 def write_timing_dict(timing_dict, sf, query, workload, graph_stats, lane=1024, thread=8):
@@ -214,52 +212,75 @@ def write_timing_dict(timing_dict, sf, query, workload, graph_stats, lane=1024, 
              "average_parameter_timing": timing_dict['average_parameter_timing'],
              "total_parameter_timing": sum(timing_dict['parameter_timing']), "path_timing": timing_dict['path_timing'],
              "other_timing": timing_dict['other_timing'], "lanes": lane,
-             "threads": thread, "vertices": graph_stats['vertices'], "edges": graph_stats['edges'], "paths": graph_stats['paths'],
+             "threads": thread, "vertices": graph_stats['vertices'], "edges": graph_stats['edges'],
+             "paths": graph_stats['paths'],
              "workload": workload, "date": today
              })
 
 
 def main(argv):
-    sf, query, only_load, workload, lanes, threads, experimental_mode = process_arguments(argv)
+    sf, query, only_load, workload, lanes, threads, experimental_mode, file_format = process_arguments(argv)
     file_location = validate_input(query, workload)
     if experimental_mode:
         if lanes is None:
             for lane in lane_limits:
-                if isinstance(threads, list):
-                    for thread in threads:
-                        timing_dict, subquery, graph_stats = run_duckdb(file_location, lane, only_load, query, sf,
-                                                                        thread,
-                                                                        workload)
-                        write_timing_dict(timing_dict, sf, subquery, workload, graph_stats, lane, thread)
-                else:
-                    timing_dict, subquery, graph_stats = run_duckdb(file_location, lane, only_load, query, sf, threads,
-                                                                    workload)
-                    write_timing_dict(timing_dict, sf, subquery, workload, graph_stats, lane, threads)
+                run_per_lane(file_location, lane, only_load, query, sf, threads, workload, file_format)
         else:
-            if isinstance(threads, list):
-                for thread in threads:
-                    timing_dict, subquery, graph_stats = run_duckdb(file_location, lanes, only_load, query, sf, thread,
-                                                                    workload)
-                    write_timing_dict(timing_dict, sf, subquery, workload, graph_stats, lanes, thread)
-            else:
-                timing_dict, subquery, graph_stats = run_duckdb(file_location, lanes, only_load, query, sf, threads,
-                                                                workload)
-                write_timing_dict(timing_dict, sf, subquery, workload, graph_stats, lanes, threads)
+            run_per_lane(file_location, lanes, only_load, query, sf, threads, workload, file_format)
 
     else:
         if isinstance(threads, list):
-            run_duckdb(file_location, lanes, only_load, query, sf, max(threads), workload)
+            run_duckdb(file_location, lanes, only_load, query, sf, max(threads), workload, file_format)
         else:
-            run_duckdb(file_location, lanes, only_load, query, sf, threads, workload)
+            run_duckdb(file_location, lanes, only_load, query, sf, threads, workload, file_format)
 
 
-def run_duckdb(file_location, lanes, only_load, query, sf, threads, workload):
+def run_per_lane(file_location, lane, only_load, query, sf, threads, workload, file_format):
+    if isinstance(threads, list):
+        for thread in threads:
+            timing_dict, subquery, graph_stats = run_duckdb(file_location, lane, only_load, query, sf,
+                                                            thread,
+                                                            workload, file_format)
+            write_timing_dict(timing_dict, sf, subquery, workload, graph_stats, lane, thread)
+    else:
+        timing_dict, subquery, graph_stats = run_duckdb(file_location, lane, only_load, query, sf, threads,
+                                                        workload, file_format)
+        write_timing_dict(timing_dict, sf, subquery, workload, graph_stats, lane, threads)
+
+
+def load_entities_parquet(con, data_dir, query):
+    run_script(con, "ddl/drop-tables-parquet.sql")
+    file_location = f"{data_dir}/parquet"
+    schema = open(f"{file_location}/schema.sql").read().split(';')
+    for query in schema:
+        con.execute(query)
+    load = open(f"{file_location}/load.sql").read().split(';')
+    for query in load:
+        con.execute(query)
+        if "person_knows_person" in query:
+            file_location = query.split("'")[1]
+            con.execute(f"COPY person_knows_person (creationDate, Person2id, Person1id) FROM '{file_location}' (FORMAT 'parquet')")
+
+
+def run_duckdb(file_location, lanes, only_load, query, sf, threads, workload, file_format):
     con = duckdb.connect("snb_benchmark.duckdb", read_only=False)
     run_script(con, "ddl/drop-tables.sql")
     run_script(con, "ddl/schema-composite-merged-fk.sql")
     data_dir = f'../../ldbc_snb_datagen_spark/out-sf{sf}'
     params = open(f'../parameters/parameters-sf{sf}/{workload}-{query}.csv').readlines()  # parameters-sf{sf}/
-    load_entities(con, data_dir, query)
+    if file_format == 'csv':
+        start = timeit.default_timer()
+        run_script(con, "ddl/drop-tables.sql")
+        run_script(con, "ddl/schema-composite-merged-fk.sql")
+        load_entities_csv(con, data_dir, query)
+        stop = timeit.default_timer()
+        print(stop - start)
+
+    else:
+        start = timeit.default_timer()
+        load_entities_parquet(con, data_dir, query)
+        stop = timeit.default_timer()
+        print(stop - start)
     if not only_load:
         subquery = query
         if query == '19a' or query == '19b':
@@ -296,9 +317,9 @@ def validate_input(query, workload):
     return file_location
 
 
-def load_entities(con, data_dir: str, query: str):
-    static_path = f"{data_dir}/initial_snapshot/static"
-    dynamic_path = f"{data_dir}"
+def load_entities_csv(con, data_dir: str, query: str):
+    static_path = f"{data_dir}/graphs/csv/bi/composite-merged-fk/initial_snapshot/static"
+    dynamic_path = f"{data_dir}/graphs/csv/bi/composite-merged-fk/initial_snapshot/dynamic"
     static_entities = ["Organisation", "Place", "Tag", "TagClass"]
     dynamic_entities = ["Comment", "Comment_hasTag_Tag", "Forum", "Forum_hasMember_Person", "Forum_hasTag_Tag",
                         "Person", "Person_hasInterest_Tag", "Person_knows_Person", "Person_likes_Comment",
@@ -320,22 +341,22 @@ def load_entities(con, data_dir: str, query: str):
     for entity in static_entities:
         for csv_file in [f for f in os.listdir(f"{static_path}/{entity}") if
                          f.startswith("part-") and (f.endswith(".csv") or f.endswith(".csv.gz"))]:
-            csv_path = f"{entity}/{csv_file}"
+            csv_path = f"{static_path}/{entity}/{csv_file}"
             logging.debug(f"- {csv_path}")
             con.execute(
-                f"COPY {entity} FROM '{data_dir}/initial_snapshot/static/{entity}/{csv_file}' (DELIMITER '|', HEADER, FORMAT csv)")
+                f"COPY {entity} FROM '{csv_path}' (DELIMITER '|', HEADER, FORMAT csv)")
             logging.info("Loaded static entities.")
     logging.info("## Dynamic entities")
     for entity in dynamic_entities:
         for csv_file in [f for f in os.listdir(f"{dynamic_path}/{entity}") if
                          f.startswith("part-") and (f.endswith(".csv") or f.endswith(".csv.gz"))]:
-            csv_path = f"{entity}/{csv_file}"
+            csv_path = f"{dynamic_path}/{entity}/{csv_file}"
             logging.debug(f"- {csv_path}")
             con.execute(
-                f"COPY {entity} FROM '{data_dir}/{entity}/{csv_file}' (DELIMITER '|', HEADER, FORMAT csv)")
+                f"COPY {entity} FROM '{csv_path}' (DELIMITER '|', HEADER, FORMAT csv)")
             if entity == "Person_knows_Person":
                 con.execute(
-                    f"COPY {entity} (creationDate, Person2id, Person1id) FROM '{data_dir}/{entity}/{csv_file}' (DELIMITER '|', HEADER, FORMAT csv)")
+                    f"COPY {entity} (creationDate, Person2id, Person1id) FROM '{csv_path}' (DELIMITER '|', HEADER, FORMAT csv)")
     logging.info("Loaded dynamic entities.")
     logging.info("Load initial snapshot")
 

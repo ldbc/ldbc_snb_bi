@@ -1,7 +1,7 @@
 import logging
 import os
 
-from load import load_entities, run_script, process_arguments
+from load import load_entities_csv, run_script, process_arguments
 import duckdb
 import sys
 
@@ -14,7 +14,7 @@ def main(argv):
         run_script(con, "ddl/drop-tables.sql")
         run_script(con, "ddl/schema-composite-merged-fk.sql")
         data_dir = f'../../ldbc_snb_datagen_spark/out-sf{sf}/graphs/csv/bi/composite-merged-fk'
-        load_entities(con, data_dir, query)
+        load_entities_csv(con, data_dir, query)
         logging.debug("writing to parquet")
         out_dir = f'../../ldbc_snb_datagen_spark/out-sf{sf}/parquet'
         if not os.path.exists(out_dir):
