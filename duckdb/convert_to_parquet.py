@@ -7,7 +7,7 @@ import sys
 
 
 def main(argv):
-    sf, query, only_load, workload, lanes, threads, experimental_mode = process_arguments(argv)
+    sf, query, _, _, _, _, _, _ = process_arguments(argv)
 
     for sf in [10]:
         con = duckdb.connect("snb_benchmark.duckdb", read_only=False)
