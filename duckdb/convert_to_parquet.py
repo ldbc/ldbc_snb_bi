@@ -13,7 +13,7 @@ def main(argv):
         con = duckdb.connect("snb_benchmark.duckdb", read_only=False)
         run_script(con, "ddl/drop-tables.sql")
         run_script(con, "ddl/schema-composite-merged-fk.sql")
-        data_dir = f'../../ldbc_snb_datagen_spark/out-sf{sf}/graphs/csv/bi/composite-merged-fk'
+        data_dir = f'../../ldbc_snb_datagen_spark/out-sf{sf}/'
         load_entities_csv(con, data_dir, query)
         logging.debug("writing to parquet")
         out_dir = f'../../ldbc_snb_datagen_spark/out-sf{sf}/parquet'
