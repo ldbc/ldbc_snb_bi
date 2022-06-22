@@ -13,7 +13,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi1(DATETIME date) SYNTAX v2 {
 
   UINT total;
   INT epoch = datetime_to_epoch(date) * 1000;
-  messages =SELECT m FROM (Comment|Post):m WHERE m.creationDate < epoch;
+  messages = SELECT m FROM (Comment|Post):m WHERE m.creationDate < epoch;
   total = messages.size();
   messages =
     SELECT m
@@ -21,14 +21,15 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi1(DATETIME date) SYNTAX v2 {
     WHERE m.creationDate < epoch AND m.length>0 # or m.content != "\"\""
     ACCUM
       m.@isComment = (m.type == "Comment"),
-      IF m.length < 40 THEN
-        m.@lengthCategory = 0
-      ELSE IF m.length < 80 THEN
-        m.@lengthCategory = 1
-      ELSE IF m.length < 160 THEN
-        m.@lengthCategory = 2
-      ELSE
-        m.@lengthCategory = 3
+      CASE 
+        WHEN m.length < 40 THEN
+          m.@lengthCategory = 0
+        WHEN m.length < 80 THEN
+          m.@lengthCategory = 1
+        WHEN m.length < 160 THEN
+          m.@lengthCategory = 2
+        ELSE
+          m.@lengthCategory = 3
       END
     POST-ACCUM @@midResult += (year(epoch_to_datetime(m.creationDate/1000)), m.@isComment, m.@lengthCategory -> 1, m.length);
 

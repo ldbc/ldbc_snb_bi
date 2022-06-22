@@ -1,48 +1,50 @@
-CREATE OR REPLACE DISTRIBUTED QUERY bi10(VERTEX<Person> personId, STRING country, 
-    STRING tagClass, UINT minPathDistance, UINT maxPathDistance) SYNTAX v2 {
-
-  SumAccum<UINT> @@pathLength;
-  OrAccum @visited;
-
+CREATE OR REPLACE DISTRIBUTED QUERY bi10(VERTEX<Person> personId, STRING country, STRING tagClass) SYNTAX v2 {
+  TYPEDEF TUPLE <UINT personId, STRING tagName, UINT messageCount> RESULT;
+  OrAccum @visited, @selected;
+  SetAccum<VERTEX<Tag>> @tags;
+  MapAccum<VERTEX<Tag>, SumAccum<UINT>> @messageCount;
+  HeapAccum<RESULT> (100, messageCount DESC, tagName ASC, personId ASC) @@result;
   candidates = SELECT p FROM Country:cn -(<IS_PART_OF.<IS_LOCATED_IN)- Person:p
     WHERE cn.name == country;
 
-  sources = {personId};
-  WHILE @@pathLength < minPathDistance DO
-    sources =
+  S = {personId};
+  UINT pathLength = 0;
+  S = SELECT s FROM S:s ACCUM s.@visited = TRUE;
+  WHILE pathLength < 3 DO
+    S =
       SELECT t
-      FROM sources:s -(KNOWS)- Person:t
+      FROM S:s -(KNOWS)- Person:t
       WHERE NOT t.@visited
-      POST-ACCUM s.@visited = TRUE;
-    @@pathLength += 1;
+      POST-ACCUM t.@visited = TRUE;
+    pathLength += 1;
   END;
-  targets = sources;
-  WHILE @@pathLength < maxPathDistance DO
-    sources =
-      SELECT t
-      FROM sources:s -(KNOWS)- Person:t
-      WHERE NOT t.@visited
-      POST-ACCUM s.@visited = TRUE;
-    @@pathLength += 1;
-    targets = targets UNION sources;
-  END;
+  # Here, S is the Person with shortest length of 3
+  persons = SELECT t
+    FROM S:s -(KNOWS)- Person:t
+    WHERE NOT t.@visited;
+  persons = (persons UNION S) INTERSECT candidates;
 
-  expertCandidatePersons = targets INTERSECT candidates;
-  messages =
-    SELECT m
-    FROM expertCandidatePersons:p -(<HAS_CREATOR)- (Comment|Post):m -(HAS_TAG>.HAS_TYPE>)- TagClass:tc
-    WHERE tc.name == tagClass;
+  messages = SELECT m
+    FROM persons:p -(<HAS_CREATOR)- (Comment|Post):m
+    ACCUM m.@selected += TRUE;
 
-  SELECT
-    p.id AS expertCandidatePersonId,
-    t.name AS tagName,
-    COUNT(m) AS messageCount
-  INTO result
-  FROM
-    messages:m -(HAS_TAG>)- Tag:t,
-    :m -(HAS_CREATOR>)- expertCandidatePersons:p
-  ORDER BY messageCount DESC, tagName ASC, expertCandidatePersonId ASC
-  LIMIT 100;
+  messages = SELECT m
+    FROM TagClass:tc -(<HAS_TYPE)- Tag:t -(<HAS_TAG)- (Comment|Post):m
+    WHERE tc.name == tagClass AND m.@selected;
 
-  PRINT result;
+  messages = SELECT m
+    FROM messages:m -(HAS_TAG>)- Tag:t
+    ACCUM m.@tags += t;
+
+  persons = SELECT p
+    FROM messages:m -(HAS_CREATOR>)- Person:p
+    ACCUM
+      FOREACH t IN m.@tags DO
+        p.@messageCount += (t -> 1)
+      END
+    POST-ACCUM
+      FOREACH (t,cnt) IN p.@messageCount DO
+        @@result += RESULT(p.id, t.name, cnt)
+      END;
+  PRINT @@result as result;
 }

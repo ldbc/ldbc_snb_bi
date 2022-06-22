@@ -30,7 +30,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi17(STRING tag, INT delta) SYNTAX v2 {
 
   forum12 =
     SELECT f
-    FROM messagesWithTag:m -(REPLY_OF>*.<CONTAINER_OF)- Forum:f
+    FROM messagesWithTag:m -(ROOT_POST>.<CONTAINER_OF)- Forum:f
     ACCUM 
       m.@forum = f, f.@messages += m,
       @@Forum2Creator += (f -> (m.@creator-> m.creationDate));
