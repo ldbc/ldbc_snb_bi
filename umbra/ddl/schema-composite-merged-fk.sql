@@ -189,7 +189,7 @@ CREATE TABLE Person_knows_Person (
 ) WITH (storage = paged);
 
 
--- Materialized views
+-- materialized views
 
 -- A recursive materialized view containing the root Post of each Message (for Posts, themselves, for Comments, traversing up the Message thread to the root Post of the tree)
 CREATE TABLE Message (
