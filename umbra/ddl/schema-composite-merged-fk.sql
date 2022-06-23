@@ -60,7 +60,6 @@ CREATE TABLE University (
     LocationPlaceId bigint not null
 ) WITH (storage = paged);
 
-
 -- dynamic tables
 
 CREATE TABLE Comment (
@@ -76,14 +75,12 @@ CREATE TABLE Comment (
     ParentCommentId bigint
 ) WITH (storage = paged);
 
-
 CREATE TABLE Forum (
     creationDate timestamp with time zone NOT NULL,
     id bigint PRIMARY KEY,
     title varchar(256) NOT NULL,
     ModeratorPersonId bigint -- can be null as its cardinality is 0..1
 ) WITH (storage = paged);
-
 
 CREATE TABLE Post (
     creationDate timestamp with time zone NOT NULL,
@@ -98,7 +95,6 @@ CREATE TABLE Post (
     ContainerForumId bigint NOT NULL,
     LocationCountryId bigint NOT NULL
 ) WITH (storage = paged);
-
 
 CREATE TABLE Person (
     creationDate timestamp with time zone NOT NULL,
