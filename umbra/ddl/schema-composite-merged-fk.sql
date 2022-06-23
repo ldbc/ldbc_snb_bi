@@ -32,6 +32,35 @@ CREATE TABLE TagClass (
 
 -- static tables / separate table per individual subtype
 
+CREATE TABLE Country (
+    id bigint primary key,
+    name varchar(256) not null,
+    url varchar(256) not null,
+    PartOfContinentId bigint
+) WITH (storage = paged);
+
+CREATE TABLE City (
+    id bigint primary key,
+    name varchar(256) not null,
+    url varchar(256) not null,
+    PartOfCountryId bigint
+) WITH (storage = paged);
+
+CREATE TABLE Company (
+    id bigint primary key,
+    name varchar(256) not null,
+    url varchar(256) not null,
+    LocationPlaceId bigint not null
+) WITH (storage = paged);
+
+CREATE TABLE University (
+    id bigint primary key,
+    name varchar(256) not null,
+    url varchar(256) not null,
+    LocationPlaceId bigint not null
+) WITH (storage = paged);
+
+
 -- dynamic tables
 
 CREATE TABLE Comment (
@@ -194,33 +223,7 @@ CREATE TABLE Message_hasTag_Tag (
     TagId bigint NOT NULL
 ) WITH (storage = paged);
 
-CREATE TABLE Country (
-    id bigint primary key,
-    name varchar(256) not null,
-    url varchar(256) not null,
-    PartOfContinentId bigint
-) WITH (storage = paged);
-
-CREATE TABLE City (
-    id bigint primary key,
-    name varchar(256) not null,
-    url varchar(256) not null,
-    PartOfCountryId bigint
-) WITH (storage = paged);
-
-CREATE TABLE Company (
-    id bigint primary key,
-    name varchar(256) not null,
-    url varchar(256) not null,
-    LocationPlaceId bigint not null
-) WITH (storage = paged);
-
-CREATE TABLE University (
-    id bigint primary key,
-    name varchar(256) not null,
-    url varchar(256) not null,
-    LocationPlaceId bigint not null
-) WITH (storage = paged);
+-- views
 
 CREATE VIEW Comment_View AS
     SELECT creationDate, MessageId AS id, locationIP, browserUsed, content, length, CreatorPersonId, LocationCountryId, ParentPostId, ParentCommentId
