@@ -26,15 +26,6 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi13(STRING country, DATETIME endDate) SYNTA
         (month(endDate) - month(epoch_to_datetime(p.creationDate/1000))) + 1
     ACCUM p.@selected += true;
 
-  /* This block is sub-optimal and a liitle slower, we spilt the path into three select clauses
-  tmp = SELECT z FROM zombies:z -(<HAS_CREATOR)- (Comment|Post):m -(<LIKES)- Person:p
-    WHERE p.creationDate < endEpoch
-    ACCUM
-      z.@totalLikeCount += 1,
-      IF p.@selected THEN
-        z.@zombieLikeCount += 1
-      END;
-  */
   M = SELECT m FROM zombies:z -(<HAS_CREATOR)- (Comment|Post):m;
   M = SELECT m FROM M:m -(<LIKES)- Person:p
     WHERE p.creationDate < endEpoch

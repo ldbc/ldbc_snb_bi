@@ -12,7 +12,9 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi4 (DATETIME date) SYNTAX v2 {
     LIMIT 100;
 
   P = SELECT p FROM popularForums -(HAS_MEMBER>)- Person:p ACCUM p.@inForum += true;
-  M = SELECT m FROM popularForums -(CONTAINER_OF>)- Post -(<ROOT_POST)- (Comment|Post):m;
+  P = SELECT m FROM popularForums -(CONTAINER_OF>)- Post:p
+  M = SELECT m FROM P-(<ROOT_POST)- (Comment|Post):m;
+  M = P UNION M;
   tmp = SELECT p FROM M-(HAS_CREATOR>)- Person:p 
     WHERE p.@inForum 
     ACCUM p.@messageCount += 1
