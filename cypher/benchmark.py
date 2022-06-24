@@ -202,7 +202,7 @@ def run_batch_updates(session, data_dir, batch_start_date, insert_entities, dele
             print()
 
 
-query_variants = ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "15a", "15b", "16a", "16b", "17", "18", "19a", "19b", "20"]
+query_variants = ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "15a", "15b", "16a", "16b", "17", "18", "19a", "19b", "20a", "20b"]
 
 driver = neo4j.GraphDatabase.driver("bolt://localhost:7687")
 session = driver.session()
@@ -270,7 +270,7 @@ while batch_date < network_end_date and (not test or batch_date < datetime.date(
         session.write_transaction(write_query_fun, open(f'queries/bi-19-drop-graph.cypher', 'r').read())
         session.write_transaction(write_query_fun, open(f'queries/bi-19-create-graph.cypher', 'r').read())
 
-    if "20" in query_variants:
+    if "20a" in query_variants or "20b" in query_variants:
         print("Creating graph (precomputing weights) for Q20")
         session.write_transaction(write_query_fun, open(f'queries/bi-20-drop-graph.cypher', 'r').read())
         session.write_transaction(write_query_fun, open(f'queries/bi-20-create-graph.cypher', 'r').read())

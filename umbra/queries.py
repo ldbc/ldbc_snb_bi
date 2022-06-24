@@ -115,7 +115,7 @@ if len(sys.argv) > 1:
     if sys.argv[1] == "--pgtuning":
         pgtuning = True
 
-query_variants = ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "15a", "15b", "16a", "16b", "17", "18", "19a", "19b", "20"]
+query_variants = ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "15a", "15b", "16a", "16b", "17", "18", "19a", "19b", "20a", "20b"]
 
 open(f"output/results.csv", "w").close()
 open(f"output/timings.csv", "w").close()
