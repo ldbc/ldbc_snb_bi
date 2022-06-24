@@ -32,6 +32,34 @@ CREATE TABLE TagClass (
 
 -- static tables / separate table per individual subtype
 
+CREATE TABLE Country (
+    id bigint primary key,
+    name varchar(256) not null,
+    url varchar(256) not null,
+    PartOfContinentId bigint
+) WITH (storage = paged);
+
+CREATE TABLE City (
+    id bigint primary key,
+    name varchar(256) not null,
+    url varchar(256) not null,
+    PartOfCountryId bigint
+) WITH (storage = paged);
+
+CREATE TABLE Company (
+    id bigint primary key,
+    name varchar(256) not null,
+    url varchar(256) not null,
+    LocationPlaceId bigint not null
+) WITH (storage = paged);
+
+CREATE TABLE University (
+    id bigint primary key,
+    name varchar(256) not null,
+    url varchar(256) not null,
+    LocationPlaceId bigint not null
+) WITH (storage = paged);
+
 -- dynamic tables
 
 CREATE TABLE Comment (
@@ -47,14 +75,12 @@ CREATE TABLE Comment (
     ParentCommentId bigint
 ) WITH (storage = paged);
 
-
 CREATE TABLE Forum (
     creationDate timestamp with time zone NOT NULL,
     id bigint PRIMARY KEY,
     title varchar(256) NOT NULL,
     ModeratorPersonId bigint -- can be null as its cardinality is 0..1
 ) WITH (storage = paged);
-
 
 CREATE TABLE Post (
     creationDate timestamp with time zone NOT NULL,
@@ -69,7 +95,6 @@ CREATE TABLE Post (
     ContainerForumId bigint NOT NULL,
     LocationCountryId bigint NOT NULL
 ) WITH (storage = paged);
-
 
 CREATE TABLE Person (
     creationDate timestamp with time zone NOT NULL,
@@ -160,7 +185,7 @@ CREATE TABLE Person_knows_Person (
 ) WITH (storage = paged);
 
 
--- Materialized views
+-- materialized views
 
 -- A recursive materialized view containing the root Post of each Message (for Posts, themselves, for Comments, traversing up the Message thread to the root Post of the tree)
 CREATE TABLE Message (
@@ -194,33 +219,7 @@ CREATE TABLE Message_hasTag_Tag (
     TagId bigint NOT NULL
 ) WITH (storage = paged);
 
-CREATE TABLE Country (
-    id bigint primary key,
-    name varchar(256) not null,
-    url varchar(256) not null,
-    PartOfContinentId bigint
-) WITH (storage = paged);
-
-CREATE TABLE City (
-    id bigint primary key,
-    name varchar(256) not null,
-    url varchar(256) not null,
-    PartOfCountryId bigint
-) WITH (storage = paged);
-
-CREATE TABLE Company (
-    id bigint primary key,
-    name varchar(256) not null,
-    url varchar(256) not null,
-    LocationPlaceId bigint not null
-) WITH (storage = paged);
-
-CREATE TABLE University (
-    id bigint primary key,
-    name varchar(256) not null,
-    url varchar(256) not null,
-    LocationPlaceId bigint not null
-) WITH (storage = paged);
+-- views
 
 CREATE VIEW Comment_View AS
     SELECT creationDate, MessageId AS id, locationIP, browserUsed, content, length, CreatorPersonId, LocationCountryId, ParentPostId, ParentCommentId
