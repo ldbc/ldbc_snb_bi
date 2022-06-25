@@ -18,7 +18,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi1(DATETIME date) SYNTAX v2 {
   messages =
     SELECT m
     FROM messages:m
-    WHERE m.creationDate < epoch AND m.length>0 # or m.content != "\"\""
+    WHERE m.length>0
     ACCUM
       m.@isComment = (m.type == "Comment"),
       IF m.length < 40 THEN
