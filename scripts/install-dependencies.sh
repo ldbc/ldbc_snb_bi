@@ -21,9 +21,9 @@ if [[ ! -z $(which yum) ]]; then
     make
     sudo make install
     cd ..
-elif [[ ! -z $(which apt) ]]; then
-    sudo apt update
-    sudo apt install -y numdiff
+elif [[ ! -z $(which apt-get) ]]; then
+    sudo apt-get update
+    sudo apt-get install -y numdiff
 else
     echo "Operating system not supported, please install the dependencies manually"
 fi
