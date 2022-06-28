@@ -70,7 +70,8 @@ CREATE LOADING JOB load_dynamic FOR GRAPH ldbc_snb {
   LOAD file_Comment_replyOf_Comment
     TO EDGE REPLY_OF VALUES ($1, $2 Comment) USING header="false", separator="|";
   LOAD file_Comment_replyOf_Post
-    TO EDGE REPLY_OF VALUES ($1, $2 Post) USING header="false", separator="|";
+    TO EDGE REPLY_OF VALUES ($1, $2 Post),
+    TO EDGE ROOT_POST VALUES ($1, $2) USING header="false", separator="|";  // ROOT_POST edge
   LOAD file_Person_studyAt_University
     TO EDGE STUDY_AT VALUES ($1, $2, $3) USING header="false", separator="|";
   LOAD file_Person_workAt_Company

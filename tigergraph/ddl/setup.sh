@@ -89,10 +89,24 @@ echo "==========================================================================
 echo "Precompute"
 echo "-------------------------------------------------------------------------------"
 curl -H "GSQL-TIMEOUT:3600000" -X GET 'http://127.0.0.1:9000/query/ldbc_snb/precompute_root_post'
+tt1=$SECONDS
+echo "precompute_root_post: $((tt1-t3)) s"
+
 curl -H "GSQL-TIMEOUT:3600000" -X GET 'http://127.0.0.1:9000/query/ldbc_snb/precompute_bi4'
+tt2=$SECONDS
+echo "precompute_bi4: $((tt2-tt1)) s"
+
 curl -H "GSQL-TIMEOUT:3600000" -X GET 'http://127.0.0.1:9000/query/ldbc_snb/precompute_bi6'
+tt3=$SECONDS
+echo "precompute_bi6: $((tt3-tt2)) s"
+
 curl -H "GSQL-TIMEOUT:3600000" -X GET 'http://127.0.0.1:9000/query/ldbc_snb/precompute_bi19'
+tt4=$SECONDS
+echo "precompute_bi19: $((tt4-tt3)) s"
+
 curl -H "GSQL-TIMEOUT:3600000" -X GET 'http://127.0.0.1:9000/query/ldbc_snb/precompute_bi20'
+t4=$SECONDS
+echo "precompute_bi20: $((t4-tt3)) s"
 
 echo "==============================================================================="
 echo "Data Statisitcs Check (Optional)"
@@ -107,7 +121,7 @@ echo
 echo "Edge statistics:"
 curl -X POST "http://127.0.0.1:9000/builtins/ldbc_snb" -d  '{"function":"stat_edge_number","type":"*"}'
 echo
-t4=$SECONDS
+t5=$SECONDS
 
 echo
 echo "====================================================================================="
@@ -115,5 +129,6 @@ echo "TigerGraph database is ready for benchmark"
 echo "Schema setup:       $((t1-t0)) s"
 echo "Load Data:          $((t2-t1)) s"
 echo "Query install:      $((t3-t2)) s"
-echo "Rebuild (optional): $((t4-t3)) s"
+echo "Precompute:         $((t4-t3)) s"
+echo "Rebuild(optional):  $((t5-t4)) s"
 echo "====================================================================================="

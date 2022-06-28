@@ -90,13 +90,22 @@ def run_batch_update(batch_date, args):
                 print(f'> {result} changes')
     #tot_del_time = time.time() - t1
     load(f'delete_edge', args.data_dir/'deletes', DEL_EDGES, batch_dir, args)
-    return time.time() - t0        
+    print("## Maintain materialized views ...")
+    parameters = {"startDate": batch_date, "endDate": batch_date + timedelta(days=1)}
+    queries = [f'cleanup_bi{q}' for q in [19,20]]
+        + [f'precompute_bi{q}' for q in [4,6,19,20]] 
+        + ['delta_root_post']
+    for q in queries:
+        print(f'run precompute query {q}')
+        result, duration = run_query(q, parameters, args.endpoint)
+    return time.time() - t0
 
 # main functions
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Batch updates for TigerGraph BI workloads')
     parser.add_argument('data_dir', type=Path, help='The directory to load data from')
     parser.add_argument('--header', action='store_true', help='whether data has the header')
+    #parser.add_argument('--skip', action='store_true', help='skip precompute')
     parser.add_argument('--cluster', action='store_true', help='load concurrently on cluster')
     parser.add_argument('--endpoint', type=str, default = 'http://127.0.0.1:9000', help='tigergraph rest port')
     args = parser.parse_args()

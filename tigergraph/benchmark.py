@@ -14,7 +14,6 @@ if __name__ == '__main__':
     parser.add_argument('data_dir', type=Path, help='The directory to load data from')
     parser.add_argument('--header', action='store_true', help='whether data has the header')
     parser.add_argument('--cluster', action='store_true', help='load concurrently on cluster')
-    parser.add_argument('--skip', action='store_true', help='skip precompute')
     parser.add_argument('--para', type=Path, default=Path('../parameters'), help='parameter folder')
     parser.add_argument('--test', action='store_true', help='test mode only run one time')
     parser.add_argument('--nruns', '-n', type=int, default=10, help='number of runs')
@@ -33,23 +32,7 @@ if __name__ == '__main__':
     needClean = False
     batch_date = start_date
     while batch_date < end_date:
-        start = time.time()
-        duration = run_batch_update(batch_date, args)
-        if needClean:
-            for query_num in [19,20]:
-                if query_num in query_nums:
-                    cleanup(query_num, args.endpoint)
-        needClean = False
-
-        #TODO add bi9 precompute here?
-
-        for query_num in [4,6,9,19,20]:
-            if query_num in query_nums:
-                # we wait for the rebuild before run bi19precompute query, bi19precompute is sometimes aborted due to OOM                
-                if query_num == 19: requests.get(f'{args.endpoint}/rebuildnow', headers={'GSQL-TIMEOUT': '36000000'})
-                precompute(query_num, args.endpoint)
-        needClean = True
-        writes_time = time.time() - start
+        writes_time = run_batch_update(batch_date, args)
         timings_file.write(f"TigerGraph|{sf}|{batch_date}|writes||{writes_time:.6f}\n")
         reads_time = run_queries(query_variants, results_file, timings_file, batch_date, args)
         timings_file.write(f"TigerGraph|{sf}|{batch_date}|reads||{reads_time:.6f}\n")
