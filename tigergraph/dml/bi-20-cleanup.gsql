@@ -1,4 +1,0 @@
-CREATE OR REPLACE DISTRIBUTED QUERY bi20cleanup() syntax v2 {
-    S = {Person.*};
-    DELETE e FROM S:v1 -(KNOWS20:e)- Person:v2;
-}

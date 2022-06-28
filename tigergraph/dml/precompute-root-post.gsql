@@ -1,0 +1,36 @@
+CREATE OR REPLACE DISTRIBUTED QUERY precompute_root_post() SYNTAX v2 {
+  MinAccum<UINT> @postId;
+  M(ANY) = SELECT p FROM Post:p ACCUM p.@postId += p.id;
+  WHILE M.size() > 0 DO
+  M = SELECT t FROM M:s -(<REPLY_OF)- Comment:t
+    ACCUM t.@postId += s.@postId
+    POST-ACCUM
+      INSERT INTO ROOT_POST (FROM, TO) VALUES (t.id, t.@postId);
+  END;
+}
+
+CREATE OR REPLACE QUERY delta_root_post(STRING file, BOOL header) syntax v2 {
+  SetAccum<VERTEX<Comment>> @@comments, @sources;
+  MaxAccum<UINT> @postId;
+  OrAccum @found;
+  @@comments = { LoadAccum(file, $1, "|", header)};
+  S0 = {@@comments};
+  S(ANY) = SELECT s FROM S0:s ACCUM s.@sources += s;
+  WHILE S.size() > 0 DO
+    S = SELECT t FROM S:s -(REPLY_OF>)- (Comment|Post):t
+      ACCUM
+        CASE WHEN t.type == "Post" THEN
+          FOREACH ss IN s.@sources DO ss.@postId += t.id END
+        WHEN t.type == "Comment" THEN
+          t.@sources += s.@sources
+        END;
+    S = SELECT s FROM S:s WHERE s.type == "Comment";
+    S1 = SELECT s FROM S:s -(ROOT_POST>)- Post:p
+      ACCUM FOREACH ss IN s.@sources DO
+        ss.@postId += p.id
+      END;
+    S = S MINUS S1;
+  END;
+  M = SELECT s FROM S0:s
+    ACCUM INSERT INTO ROOT_POST (FROM, TO) VALUES (s.id, s.@postId);
+}

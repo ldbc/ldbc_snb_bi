@@ -70,28 +70,36 @@ for i in $(seq 1 20); do
   gsql --graph ldbc_snb $QUERY_PATH/bi-${i}.gsql
 done
 
-gsql --graph ldbc_snb $DML_PATH/bi-4-precompute.gsql
-gsql --graph ldbc_snb $DML_PATH/bi-6-precompute.gsql
-gsql --graph ldbc_snb $DML_PATH/bi-19-precompute.gsql
-gsql --graph ldbc_snb $DML_PATH/bi-20-precompute.gsql
-gsql --graph ldbc_snb $DML_PATH/bi-19-cleanup.gsql
-gsql --graph ldbc_snb $DML_PATH/bi-20-cleanup.gsql
+gsql --graph ldbc_snb $DML_PATH/precompute-bi4.gsql
+gsql --graph ldbc_snb $DML_PATH/precompute-bi6.gsql
+gsql --graph ldbc_snb $DML_PATH/precompute-bi19.gsql
+gsql --graph ldbc_snb $DML_PATH/precompute-bi20.gsql
+gsql --graph ldbc_snb $DML_PATH/precompute-root-post.gsql
 
 gsql --graph ldbc_snb $DML_PATH/del_Comment.gsql
 gsql --graph ldbc_snb $DML_PATH/del_Forum.gsql
 gsql --graph ldbc_snb $DML_PATH/del_Person.gsql
 gsql --graph ldbc_snb $DML_PATH/del_Post.gsql
-gsql --graph ldbc_snb $DML_PATH/precompute_root_post.gsql
 
 gsql --graph ldbc_snb INSTALL QUERY ALL
 t3=$SECONDS
+
+
+echo "==============================================================================="
+echo "Precompute"
+echo "-------------------------------------------------------------------------------"
+curl -H "GSQL-TIMEOUT:3600000" -X GET 'http://127.0.0.1:9000/query/ldbc_snb/precompute_root_post'
+curl -H "GSQL-TIMEOUT:3600000" -X GET 'http://127.0.0.1:9000/query/ldbc_snb/precompute_bi4'
+curl -H "GSQL-TIMEOUT:3600000" -X GET 'http://127.0.0.1:9000/query/ldbc_snb/precompute_bi6'
+curl -H "GSQL-TIMEOUT:3600000" -X GET 'http://127.0.0.1:9000/query/ldbc_snb/precompute_bi19'
+curl -H "GSQL-TIMEOUT:3600000" -X GET 'http://127.0.0.1:9000/query/ldbc_snb/precompute_bi20'
 
 echo "==============================================================================="
 echo "Data Statisitcs Check (Optional)"
 echo "this step wait for the database to rebuild delta, subsequent queries sometimes run out of memory without this step"
 echo "-------------------------------------------------------------------------------"
 echo 'update delta ...'
-curl -s -H "GSQL-TIMEOUT:2500000" "http://127.0.0.1:9000/rebuildnow"
+curl -s -H "GSQL-TIMEOUT:3600000" "http://127.0.0.1:9000/rebuildnow"
 echo "Vertex statistics:"
 curl -X POST "http://127.0.0.1:9000/builtins/ldbc_snb" -d  '{"function":"stat_vertex_number","type":"*"}'
 echo
