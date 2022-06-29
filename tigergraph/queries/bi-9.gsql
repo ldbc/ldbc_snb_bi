@@ -8,13 +8,13 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi9(DATETIME startDate, DATETIME endDate) SY
   INT endEpoch = datetime_to_epoch(endDate) * 1000;
 
   threads = SELECT s FROM Post:s WHERE s.creationDate BETWEEN startEpoch AND endEpoch;
-  threads = SELECT s FROM threads:s -(<ROOT_POST)- Comment:t
+  tmp = SELECT s FROM threads:s -(<ROOT_POST)- Comment:t
     WHERE t.creationDate BETWEEN startEpoch AND endEpoch
     ACCUM s.@messageCount += 1;
   persons = SELECT p FROM threads:t -(HAS_CREATOR>)- Person:p
     ACCUM
       p.@threadCount += 1,
-      p.@messageCount += t.@messageCount
+      p.@messageCount += t.@messageCount + 1
     POST-ACCUM
       @@result += RESULT(p.id, p.firstName, p.lastName, p.@threadCount, p.@messageCount);
 

@@ -2,7 +2,7 @@
 import argparse
 from pathlib import Path
 from datetime import date, timedelta
-from queries import run_queries, precompute, cleanup
+from queries import run_queries
 from batches import run_batch_update
 import os
 import time
