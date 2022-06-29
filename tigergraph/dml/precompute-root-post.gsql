@@ -9,11 +9,10 @@ CREATE OR REPLACE DISTRIBUTED QUERY precompute_root_post() SYNTAX v2 {
   END;
 }
 
-// Use the creationDate to get the delta in a certain batch, and insert the delta ROOT_POST edges
+// insert the ROOT_POST edges for one batch
 CREATE OR REPLACE DISTRIBUTED QUERY delta_root_post(DATETIME startDate, DATETIME endDate) syntax v2 {
   SetAccum<VERTEX<Comment>> @sources;
   MaxAccum<UINT> @postId;
-  OrAccum @found;
   INT startEpoch = datetime_to_epoch(startDate) * 1000;
   INT endEpoch = datetime_to_epoch(endDate) * 1000;
   S0 = SELECT m FROM Comment:m 
@@ -27,7 +26,8 @@ CREATE OR REPLACE DISTRIBUTED QUERY delta_root_post(DATETIME startDate, DATETIME
           FOREACH ss IN s.@sources DO ss.@postId += t.id END
         WHEN t.type == "Comment" THEN
           t.@sources += s.@sources
-        END;
+        END
+      HAVING t.type == "Comment";
   END;
   M = SELECT s FROM S0:s ACCUM INSERT INTO ROOT_POST (FROM, TO) VALUES (s.id, s.@postId);
 }

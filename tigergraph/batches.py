@@ -92,12 +92,10 @@ def run_batch_update(batch_date, args):
     load(f'delete_edge', args.data_dir/'deletes', DEL_EDGES, batch_dir, args)
     print("## Maintain materialized views ...")
     parameters = {"startDate": batch_date, "endDate": batch_date + timedelta(days=1)}
-    queries = [f'cleanup_bi{q}' for q in [19,20]]
-        + [f'precompute_bi{q}' for q in [4,6,19,20]] 
-        + ['delta_root_post']
+    queries = [f'cleanup_bi{q}' for q in [19,20]] + [f'precompute_bi{q}' for q in [4,6,19,20]] + ['delta_root_post']
     for q in queries:
         print(f'run precompute query {q}')
-        result, duration = run_query(q, parameters, args.endpoint)
+        requests.get(f'{args.endpoint}/query/ldbc_snb/{q}', params=parameters, headers={'GSQL-TIMEOUT': '36000000'})
     return time.time() - t0
 
 # main functions
@@ -116,7 +114,7 @@ if __name__ == '__main__':
     timings_file = open(output/'timings.csv', 'w')
     timings_file.write(f'tool|sf|day|q|parameters|time\n')
     network_start_date = date(2012, 11, 29)
-    network_end_date = date(2013, 1, 1)
+    network_end_date = date(2012, 11, 30)
     batch_date = network_start_date
     batch_size = timedelta(days=1)
     while batch_date < network_end_date:

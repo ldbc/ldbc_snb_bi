@@ -88,9 +88,14 @@ t3=$SECONDS
 echo "==============================================================================="
 echo "Precompute"
 echo "-------------------------------------------------------------------------------"
+echo 'update delta ...'
+curl -s -H "GSQL-TIMEOUT:3600000" "http://127.0.0.1:9000/rebuildnow"
+tt0=$SECONDS
+echo "update delta: $((tt0-t3)) s"
+
 curl -H "GSQL-TIMEOUT:3600000" -X GET 'http://127.0.0.1:9000/query/ldbc_snb/precompute_root_post'
 tt1=$SECONDS
-echo "precompute_root_post: $((tt1-t3)) s"
+echo "precompute_root_post: $((tt1-tt0)) s"
 
 curl -H "GSQL-TIMEOUT:3600000" -X GET 'http://127.0.0.1:9000/query/ldbc_snb/precompute_bi4'
 tt2=$SECONDS
@@ -106,7 +111,7 @@ echo "precompute_bi19: $((tt4-tt3)) s"
 
 curl -H "GSQL-TIMEOUT:3600000" -X GET 'http://127.0.0.1:9000/query/ldbc_snb/precompute_bi20'
 t4=$SECONDS
-echo "precompute_bi20: $((t4-tt3)) s"
+echo "precompute_bi20: $((t4-tt4)) s"
 
 echo "==============================================================================="
 echo "Data Statisitcs Check (Optional)"
