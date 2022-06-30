@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 import argparse
 from pathlib import Path
 import time
@@ -66,12 +67,7 @@ def cast_parameter_to_driver_input(value, type):
 
 def run_query(endpoint, query_num, parameters):
     start = time.time()
-    if query_num == 15:
-        requests.get(f'{endpoint}/query/ldbc_snb/bi15precompute', headers=HEADERS, params=parameters)
     response = requests.get(f'{endpoint}/query/ldbc_snb/bi{query_num}', headers=HEADERS, params=parameters).json()
-    if query_num == 15:
-        requests.get(f'{endpoint}/query/ldbc_snb/bi15cleanup', headers=HEADERS)
-
     end = time.time()
     if response['error']:
         print(response['message'])
@@ -91,17 +87,6 @@ def run_query(endpoint, query_num, parameters):
     ]) + "]"
     return results, duration
 
-def precompute(query_num, endpoint):
-    print(f"Precomputing weights for Q{query_num}")
-    start = time.time()
-    response = requests.get(f'{endpoint}/query/ldbc_snb/bi{query_num}precompute', headers=HEADERS).json()
-    return time.time() - start
-
-def cleanup(query_num, endpoint):
-    print(f"Cleaning weights for Q{query_num}")
-    start = time.time()
-    response = requests.get(f'{endpoint}/query/ldbc_snb/bi{query_num}cleanup', headers=HEADERS).json()
-    return time.time() - start
 
 def run_queries(query_variants, results_file, timings_file, batch_date, args):
     sf = os.environ.get("SF")
@@ -116,9 +101,10 @@ def run_queries(query_variants, results_file, timings_file, batch_date, args):
             query_parameters_split = {k.split(":")[0]: v for k, v in query_parameters.items()}
             query_parameters_in_order = f'<{";".join([query_parameters_split[parameter["name"]] for parameter in parameters])}>'
             query_parameters = {k.split(":")[0]: cast_parameter_to_driver_input(v, k.split(":")[1]) for k, v in query_parameters.items()}
+            if args.test:
+                print(f'Q{query_variant}: {query_parameters}')
             # Q1 parameter name is conflict with TG data type keyword 'datetime' 
             if query_num == 1: query_parameters = {'date': query_parameters['datetime']}
-
             results, duration = run_query(args.endpoint, query_num, query_parameters)
 
             results_file.write(f"{query_num}|{query_variant}|{query_parameters_in_order}|{results}\n")
@@ -126,6 +112,9 @@ def run_queries(query_variants, results_file, timings_file, batch_date, args):
             timings_file.write(f"TigerGraph|{sf}|{batch_date}|{query_variant}|{query_parameters_in_order}|{duration:.6f}\n")
             timings_file.flush()
             # test run: 1 query, regular run: 10 queries
+            if args.test:
+                print(f"-> {duration:.4f} seconds")
+                print(f"-> {results}")
             if args.test or i == args.nruns-1:
                 break
     return time.time() - start
@@ -134,7 +123,6 @@ def run_queries(query_variants, results_file, timings_file, batch_date, args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='BI query driver')
     parser.add_argument('--para', type=Path, default=Path('../parameters'), help='parameter folder')
-    parser.add_argument('--skip', action='store_true', help='skip precompute')
     parser.add_argument('--test', action='store_true', help='test mode only run one time')
     parser.add_argument('--nruns', '-n', type=int, default=10, help='number of runs')
     parser.add_argument('--endpoint', type=str, default='http://127.0.0.1:9000',help='tigergraph endpoints')
@@ -146,21 +134,6 @@ if __name__ == '__main__':
     timings_file = open(output/'timings.csv', 'w')
     timings_file.write(f"tool|sf|q|parameters|time\n")
     query_variants = ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "15a", "15b", "16a", "16b", "17", "18", "19a", "19b", "20"]
-
-    sf = os.environ.get("SF")
-    # precomputation for BI 4, 6, 19, 20
-    query_nums = [int(re.sub("[^0-9]", "", query_variant)) for query_variant in query_variants]
-    for query_num in [4,6,19,20]:
-        if not args.skip and query_num in query_nums:
-            timings_file.write(f"TigerGraph|{sf}|bi{query_num}precompute|{precompute(query_num, args.endpoint):.6f}\n")
-            timings_file.flush()
-    
-    run_queries(query_variants, results_file, timings_file, args)
-    # cleanup for 19 and 20
-    for query_num in [19,20]:
-        if not args.skip and query_num in query_nums:
-            timings_file.write(f"TigerGraph|{sf}|bi{query_num}cleanup|{cleanup(query_num, args.endpoint):.6f}\n")
-            timings_file.flush()
-    
+    run_queries(query_variants, results_file, timings_file, 'None', args)    
     results_file.close()
     timings_file.close()

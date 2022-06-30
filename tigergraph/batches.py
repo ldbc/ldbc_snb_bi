@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 import argparse
 import subprocess
 from pathlib import Path
@@ -64,6 +65,7 @@ def load_by_gsql(job, data_dir, names, batch_dir):
     subprocess.run(f'gsql -g ldbc_snb {gsql}', shell=True)
 
 def run_batch_update(batch_date, args):
+    headers = {'GSQL-TIMEOUT': '36000000'}
     docker_data = Path('/data') if not args.cluster else args.data_dir
     batch_id = batch_date.strftime('%Y-%m-%d')
     batch_dir = f"batch_id={batch_id}"
@@ -85,17 +87,30 @@ def run_batch_update(batch_date, args):
         for fp in path.glob('*.csv'):
             if fp.is_file():
                 print(f'- {fp.name}')
-                result, duration = run_query(f'del_{vertex}', {'file':str(docker_path/fp.name), 'header':args.header}, args.endpoint)
+                result, duration = run_query(f'del_{vertex}', {'file':str(docker_path/fp.name)}, args.endpoint)
                 print(f'> {result} changes')
     #tot_del_time = time.time() - t1
     load(f'delete_edge', args.data_dir/'deletes', DEL_EDGES, batch_dir, args)
-    return time.time() - t0        
+    print("\n## Rebuild")
+    t0 = time.time()
+    requests.get(f'{args.endpoint}/rebuildnow', headers=headers)
+    print(f'Rebuild: {time.time()-t0} s')
+    print("\n## Maintain materialized views ...")
+    parameters = {"startDate": batch_date, "endDate": batch_date + timedelta(days=1)}
+    queries = [f'cleanup_bi{q}' for q in [19,20]] + ['delta_root_post', 'delta_root_forum'] + [f'precompute_bi{q}' for q in [4,6,19,20]]
+    for q in queries:
+        print(f'{q}:\t', end='')
+        t0 = time.time()
+        requests.get(f'{args.endpoint}/query/ldbc_snb/{q}', params=parameters, headers=headers)
+        requests.get(f'{args.endpoint}/rebuildnow', headers=headers) # wait for memory release
+        print(f'{time.time()-t0:1.4f} s')
+    return time.time() - t0
 
 # main functions
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Batch updates for TigerGraph BI workloads')
     parser.add_argument('data_dir', type=Path, help='The directory to load data from')
-    parser.add_argument('--header', action='store_true', help='whether data has the header')
+    #parser.add_argument('--skip', action='store_true', help='skip precompute')
     parser.add_argument('--cluster', action='store_true', help='load concurrently on cluster')
     parser.add_argument('--endpoint', type=str, default = 'http://127.0.0.1:9000', help='tigergraph rest port')
     args = parser.parse_args()

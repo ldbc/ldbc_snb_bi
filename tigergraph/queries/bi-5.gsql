@@ -8,16 +8,14 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi5(STRING tag) SYNTAX v2 {
   SumAccum<UINT> @messageCount;
   SumAccum<UINT> @replyCount;
 
-  messages = SELECT m FROM Tag:t -(<HAS_TAG)- (Comment|Post):m WHERE t.name == tag;
-
-  tmp = SELECT m FROM messages:m -(<LIKES)- Person:p ACCUM m.@likeCount += 1;
-  tmp = SELECT m FROM messages:m -(<REPLY_OF)- Comment:c ACCUM m.@replyCount += 1;
+  T = SELECT t FROM Tag:t WHERE t.name == tag;
+  messages = SELECT m FROM T:t -(<HAS_TAG)- (Comment|Post):m;
   tmp =
     SELECT p
     FROM messages:m -(HAS_CREATOR>)- Person:p
     ACCUM
-      p.@replyCount += m.@replyCount,
-      p.@likeCount += m.@likeCount,
+      p.@replyCount += m.outdegree("REPLY_OF_REVERSE"),
+      p.@likeCount += m.outdegree("LIKES_REVERSE"),
       p.@messageCount += 1
     POST-ACCUM
       @@result += RESULT(p.id, p.@replyCount, p.@likeCount, p.@messageCount,

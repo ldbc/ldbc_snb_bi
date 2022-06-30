@@ -15,9 +15,10 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi20(STRING company, VERTEX<Person> person2I
   S = {person2Id};
   S = Select s FROM S:s ACCUM s.@visited += true, s.@dist += 0;
   WHILE S.size()>0 DO
-    S = SELECT t FROM S:s-(KNOWS20:e)-Person:t 
+    S = SELECT t FROM S:s-(KNOWS:e)-Person:t 
+      WHERE e.weight20 < 10000
       ACCUM 
-        UINT t_dis = s.@dist + e.weight,
+        UINT t_dis = s.@dist + e.weight20,
         IF t_dis < t.@dist AND t_dis < threshold THEN
           t.@dist += t_dis,
           t.@next += true

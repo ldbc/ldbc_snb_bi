@@ -8,14 +8,16 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi12(DATETIME startDate, INT lengthThreshold
   INT startEpoch = datetime_to_epoch(startDate) * 1000;
 
   posts = SELECT p FROM Post:p WHERE p.language IN languages;
-  M = SELECT m FROM posts:p-(<REPLY_OF*)- (Comment|Post):m;
-  M = SELECT m FROM M:m WHERE
-      m.content != "" AND
-      m.length < lengthThreshold AND
-      m.creationDate > startEpoch;
+  M = SELECT m FROM posts:p-(<ROOT_POST)- (Comment|Post):m;
+  M = M UNION posts;
+  M = SELECT m FROM M:m 
+    WHERE m.length > 0 
+      AND m.length < lengthThreshold 
+      AND m.creationDate > startEpoch;
+
   persons =
     SELECT p
-    FROM M -(HAS_CREATOR>)- Person:p 
+    FROM M -(HAS_CREATOR>)- Person:p
     ACCUM p.@messageCount += 1
     POST-ACCUM @@personCount += (p.@messageCount -> 1);
 

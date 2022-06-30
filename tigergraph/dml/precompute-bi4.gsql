@@ -4,7 +4,7 @@ CREATE GLOBAL SCHEMA_CHANGE JOB add4 {
 }
 RUN GLOBAL SCHEMA_CHANGE JOB add4
 */
-CREATE OR REPLACE DISTRIBUTED QUERY bi4precompute() SYNTAX v2 {
+CREATE OR REPLACE DISTRIBUTED QUERY precompute_bi4() SYNTAX v2 {
   MapAccum<VERTEX<Country>, UINT> @memberCount;
   MaxAccum<UINT> @maxMember;
   MinAccum<VERTEX<Country>> @country;

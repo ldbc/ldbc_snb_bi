@@ -1,71 +1,48 @@
 //USE GRAPH ldbc_snb
-CREATE OR REPLACE DISTRIBUTED QUERY bi15precompute(DATETIME startDate, DATETIME endDate) SYNTAX v2 {
-  SetAccum<VERTEX<Person>> @neighbor;
-  MinAccum<VERTEX<Person>> @creator, @replyto;
+CREATE OR REPLACE DISTRIBUTED QUERY bi15(VERTEX<Person> person1Id, VERTEX<Person> person2Id, DATETIME startDate, DATETIME endDate) syntax v2 {
+  MinAccum<DOUBLE> @@result, @dis;
+  OrAccum @next;
+  SetAccum<VERTEX<Person>> @creator;
   MapAccum<VERTEX<Person>, SumAccum<UINT>> @replyCount;
-  OrAccum @visited, @toPost;
+  OrAccum @visited;
   INT startEpoch = datetime_to_epoch(startDate) * 1000;
   INT endEpoch = datetime_to_epoch(endDate) * 1000;
 
-  M = SELECT m FROM Forum:f -(CONTAINER_OF>)- Post -(<REPLY_OF*)- (Comment|Post):m
-    WHERE f.creationDate BETWEEN startEpoch AND endEpoch ACCUM m.@visited += true;
-  M = SELECT m FROM  M:m -(HAS_CREATOR>)- Person:p ACCUM m.@creator += p;
-  tmp = SELECT p1 FROM Person:p1 -(KNOWS)- Person:p2 ACCUM p1.@neighbor += p2;
-  
-  M1 = SELECT m1 FROM M:m1 -(REPLY_OF>)- _:m2
-    WHERE m2.@visited 
-    ACCUM m1.@replyto += m2.@creator,
-      IF m2.type == "Post" THEN m1.@toPost += true END;
-  tmp = SELECT p FROM M1:m -(HAS_CREATOR>)- Person:p
-    WHERE m.@replyto IN p.@neighbor
+  F = SELECT f FROM Forum:f WHERE f.creationDate BETWEEN startEpoch AND endEpoch;
+  M = SELECT m FROM F -(<ROOT_FORUM)- :m ACCUM m.@visited += true;
+  tmp = SELECT p FROM M:m -(HAS_CREATOR>)- Person:p ACCUM m.@creator += p;
+  M1 = SELECT m1 FROM M:m1 -(<REPLY_OF)- Comment:m2
+    WHERE m2.@visited
     ACCUM 
-      IF m.@toPost THEN
-        p.@replyCount += (m.@replyto -> 2)
-      ELSE
-        p.@replyCount += (m.@replyto -> 1)
+      UINT w = 1,
+      IF m1.type == "Post" THEN w = 2 END,
+      FOREACH p1 IN m1.@creator DO 
+        FOREACH p2 IN m2.@creator DO
+          p1.@replyCount += (p2 -> w)
+        END
       END;
-  tmp =
-    SELECT p2
-    FROM Person:p1 -(KNOWS:e)- Person:p2
-    WHERE p1.id<p2.id AND (p1.@replyCount.get(p2) > 0 OR p2.@replyCount.get(p1) > 0)
-    ACCUM
-      INSERT INTO KNOWS15 (FROM, TO, weight) VALUES (p1, p2, 2.0/(2 + p1.@replyCount.get(p2) + p2.@replyCount.get(p1)));
-}
-
-CREATE OR REPLACE DISTRIBUTED QUERY bi15(VERTEX<Person> person1Id, VERTEX<Person> person2Id) syntax v2 {
-  MinAccum<DOUBLE> @@result, @dis;
-  OrAccum @next;
   P = {Person.*};
   @@result = P.size();
   S = {person1Id};
   S = SELECT s FROM S:s ACCUM s.@dis = 0; 
   WHILE S.size()>0 DO
-    S = SELECT t FROM S:s-((KNOWS15|KNOWS):e)-Person:t 
+    S = SELECT t FROM S:s-(KNOWS:e)-Person:t
       ACCUM
-        DOUBLE t_dis = s.@dis + 1,
-        IF e.type == "KNOWS15" THEN
-          t_dis = s.@dis + e.weight
-        END,
+        DOUBLE t_dis = s.@dis + 2.0/(2 + s.@replyCount.get(t) + t.@replyCount.get(s)),
         IF t_dis < @@result AND t_dis < t.@dis THEN
           t.@dis += t_dis,
-          t.@next += true, 
+          t.@next += true,
           IF t == person2Id THEN
             @@result += t_dis
-          END 
+          END
         END
       HAVING t.@next;
     S = SELECT s FROM S:s ACCUM s.@next = false;
   END;
 
   IF ABS(@@result - P.size()) < 1 THEN
-    // if no path was found
     PRINT -1 as result;
-  ELSE 
+  ELSE
     PRINT @@result as result;
   END;
-}
-
-CREATE OR REPLACE DISTRIBUTED QUERY bi15cleanup() syntax v2 {
-  S = {Person.*};
-  DELETE e FROM S:v1 -(KNOWS15:e)- Person:v2;
 }

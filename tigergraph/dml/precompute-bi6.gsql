@@ -4,7 +4,7 @@ CREATE GLOBAL SCHEMA_CHANGE JOB add6 {
 }
 RUN GLOBAL SCHEMA_CHANGE JOB add6
 */
-CREATE OR REPLACE DISTRIBUTED QUERY bi6precompute() syntax v2 {
+CREATE OR REPLACE DISTRIBUTED QUERY precompute_bi6() syntax v2 {
   SumAccum<UINT> @score;
   M = SELECT m FROM (Comment|Post):m -(<LIKES)- _ ACCUM m.@score += 1;
   tmp = SELECT p FROM Person:p -(<HAS_CREATOR)- _:m

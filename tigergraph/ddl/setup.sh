@@ -14,10 +14,14 @@ echo "QUERY_PATH: ${DML_PATH}"
 echo "==============================================================================="
 t0=$SECONDS
 #gsql drop all
-gsql $DDL_PATH/schema.gsql
 gsql PUT TokenBank FROM \"$DDL_PATH/TokenBank.cpp\"
 gsql PUT ExprFunctions FROM \"$DDL_PATH/ExprFunctions.hpp\"
-gsql --graph ldbc_snb $DDL_PATH/load.gsql
+gsql $DDL_PATH/schema.gsql
+gsql --graph ldbc_snb $DDL_PATH/load_static.gsql
+gsql --graph ldbc_snb $DDL_PATH/load_dynamic.gsql
+gsql --graph ldbc_snb $DML_PATH/ins_Vertex.gsql
+gsql --graph ldbc_snb $DML_PATH/ins_Edge.gsql
+gsql --graph ldbc_snb $DML_PATH/del_Edge.gsql
 
 echo "==============================================================================="
 echo "Load Data"
@@ -70,12 +74,12 @@ for i in $(seq 1 20); do
   gsql --graph ldbc_snb $QUERY_PATH/bi-${i}.gsql
 done
 
-gsql --graph ldbc_snb $QUERY_PATH/bi-4-precompute.gsql
-gsql --graph ldbc_snb $QUERY_PATH/bi-6-precompute.gsql
-gsql --graph ldbc_snb $QUERY_PATH/bi-19-precompute.gsql
-gsql --graph ldbc_snb $QUERY_PATH/bi-20-precompute.gsql
-gsql --graph ldbc_snb $QUERY_PATH/bi-19-cleanup.gsql
-gsql --graph ldbc_snb $QUERY_PATH/bi-20-cleanup.gsql
+gsql --graph ldbc_snb $DML_PATH/precompute-bi4.gsql
+gsql --graph ldbc_snb $DML_PATH/precompute-bi6.gsql
+gsql --graph ldbc_snb $DML_PATH/precompute-bi19.gsql
+gsql --graph ldbc_snb $DML_PATH/precompute-bi20.gsql
+gsql --graph ldbc_snb $DML_PATH/precompute-root-post.gsql
+gsql --graph ldbc_snb $DML_PATH/precompute-root-forum.gsql
 
 gsql --graph ldbc_snb $DML_PATH/del_Comment.gsql
 gsql --graph ldbc_snb $DML_PATH/del_Forum.gsql
@@ -85,20 +89,43 @@ gsql --graph ldbc_snb $DML_PATH/del_Post.gsql
 gsql --graph ldbc_snb INSTALL QUERY ALL
 t3=$SECONDS
 
+
+echo "==============================================================================="
+echo "Precompute"
+echo "-------------------------------------------------------------------------------"
+TIMEFORMAT=%R
+echo -n "rebuild:              " # wait for memory release
+time (curl -s -H "GSQL-TIMEOUT:3600000" "http://127.0.0.1:9000/rebuildnow" >/dev/null)
+echo -n "precompute_root_post: "
+time (curl -s -H "GSQL-TIMEOUT:3600000" -X GET 'http://127.0.0.1:9000/query/ldbc_snb/precompute_root_post' >/dev/null)
+echo -n "precompute_bi4:       "
+time (curl -s -H "GSQL-TIMEOUT:3600000" -X GET 'http://127.0.0.1:9000/query/ldbc_snb/precompute_bi4' >/dev/null)
+echo -n "precompute_bi6:       "
+time (curl -s -H "GSQL-TIMEOUT:3600000" -X GET 'http://127.0.0.1:9000/query/ldbc_snb/precompute_bi6' >/dev/null)
+echo -n "rebuild:              " # wait for memory release
+time (curl -s -H "GSQL-TIMEOUT:3600000" "http://127.0.0.1:9000/rebuildnow" >/dev/null)
+echo -n "precompute_bi19:      "
+time (curl -s -H "GSQL-TIMEOUT:3600000" -X GET 'http://127.0.0.1:9000/query/ldbc_snb/precompute_bi19' >/dev/null)
+echo -n "precompute_bi20:      "
+time (curl -s -H "GSQL-TIMEOUT:3600000" -X GET 'http://127.0.0.1:9000/query/ldbc_snb/precompute_bi20' >/dev/null)
+echo -n "precompute_root_forum:"
+time (curl -s -H "GSQL-TIMEOUT:3600000" -X GET 'http://127.0.0.1:9000/query/ldbc_snb/precompute_root_forum' >/dev/null)
+t4=$SECONDS
+
 echo "==============================================================================="
 echo "Data Statisitcs Check (Optional)"
 echo "this step wait for the database to rebuild delta, subsequent queries sometimes run out of memory without this step"
 echo "-------------------------------------------------------------------------------"
 echo 'update delta ...'
-curl -s -H "GSQL-TIMEOUT:2500000" "http://127.0.0.1:9000/rebuildnow"
+curl -s -H "GSQL-TIMEOUT:3600000" "http://127.0.0.1:9000/rebuildnow" >/dev/null
 echo "Vertex statistics:"
-curl -X POST "http://127.0.0.1:9000/builtins/ldbc_snb" -d  '{"function":"stat_vertex_number","type":"*"}'
+curl -s -X POST "http://127.0.0.1:9000/builtins/ldbc_snb" -d  '{"function":"stat_vertex_number","type":"*"}'
 echo
 echo
 echo "Edge statistics:"
-curl -X POST "http://127.0.0.1:9000/builtins/ldbc_snb" -d  '{"function":"stat_edge_number","type":"*"}'
+curl -s -X POST "http://127.0.0.1:9000/builtins/ldbc_snb" -d  '{"function":"stat_edge_number","type":"*"}'
 echo
-t4=$SECONDS
+t5=$SECONDS
 
 echo
 echo "====================================================================================="
@@ -106,5 +133,6 @@ echo "TigerGraph database is ready for benchmark"
 echo "Schema setup:       $((t1-t0)) s"
 echo "Load Data:          $((t2-t1)) s"
 echo "Query install:      $((t3-t2)) s"
-echo "Rebuild (optional): $((t4-t3)) s"
+echo "Precompute:         $((t4-t3)) s"
+echo "Rebuild(optional):  $((t5-t4)) s"
 echo "====================================================================================="

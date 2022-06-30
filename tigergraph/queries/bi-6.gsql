@@ -4,7 +4,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi6(STRING tag) SYNTAX v2 {
   SumAccum<UINT> @authorityScore;
   MapAccum<VERTEX<Person>, MinAccum<UINT>> @pScore;
   message1 = SELECT m FROM Tag:t -(<HAS_TAG)- (Comment|Post):m WHERE t.name == tag;
-  message1 = SELECT m FROM message1:m -(<LIKES)- Person:p2
+  tmp = SELECT m FROM message1:m -(<LIKES)- Person:p2
     ACCUM m.@pScore += (p2->p2.popularityScore);
     
   person1 =

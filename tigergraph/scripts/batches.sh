@@ -13,10 +13,4 @@ if [ ! -d "${TG_DATA_DIR}" ]; then
     exit 1
 fi
 
-if [ $TG_HEADER =  "true" ]; then
-    HEADER_STR="--header"
-else
-    HEADER_STR=""
-fi
-
-python3 -u batches.py ${TG_DATA_DIR} ${HEADER_STR} --endpoint ${TG_ENDPOINT}
+python3 -u batches.py ${TG_DATA_DIR} --endpoint ${TG_ENDPOINT}

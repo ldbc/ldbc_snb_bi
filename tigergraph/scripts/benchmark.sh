@@ -18,10 +18,4 @@ if [ ! -d "${TG_PARAMETER}" ]; then
     exit 1
 fi
 
-if [ $TG_HEADER =  "true" ]; then
-    HEADER_STR="--header"
-else
-    HEADER_STR=""
-fi
-
-python3 -u benchmark.py ${TG_DATA_DIR} --para $TG_PARAMETER --endpoint ${TG_ENDPOINT} ${HEADER_STR} $@
+python3 -u benchmark.py ${TG_DATA_DIR} --para $TG_PARAMETER --endpoint ${TG_ENDPOINT} $@

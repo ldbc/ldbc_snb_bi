@@ -30,7 +30,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi17(STRING tag, INT delta) SYNTAX v2 {
 
   forum12 =
     SELECT f
-    FROM messagesWithTag:m -(REPLY_OF>*.<CONTAINER_OF)- Forum:f
+    FROM messagesWithTag:m -(ROOT_FORUM>)- Forum:f
     ACCUM 
       m.@forum = f, f.@messages += m,
       @@Forum2Creator += (f -> (m.@creator-> m.creationDate));
@@ -50,7 +50,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi17(STRING tag, INT delta) SYNTAX v2 {
   messages2 =
     SELECT m2
     FROM  messages2:m -(REPLY_OF>)- _:m2
-    WHERE m2.@hasTag AND m.@creator != m2.@creator
+    WHERE m2.@hasTag
     ACCUM m2.@Forum1 += (m2.@CreatorForums INTERSECT m.@CreatorForums)
     POST-ACCUM m2.@Forum1.remove(m2.@forum)
     HAVING m2.@Forum1.size() > 0;

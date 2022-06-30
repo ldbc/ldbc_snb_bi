@@ -5,11 +5,11 @@ CREATE LOADING JOB delete_edge FOR GRAPH ldbc_snb {
   DEFINE FILENAME file_Person_knows_Person; // del 8
   // delete edge
   DELETE EDGE LIKES
-    (FROM $1 Person, TO $2 Post) from file_Person_likes_Post USING header="false", separator = "|";
+    (FROM $1 Person, TO $2 Post) from file_Person_likes_Post USING header="true", separator = "|";
   DELETE EDGE LIKES
-    (FROM $1 Person, TO $2 Comment) from file_Person_likes_Comment USING header="false", separator = "|";
+    (FROM $1 Person, TO $2 Comment) from file_Person_likes_Comment USING header="true", separator = "|";
   DELETE EDGE HAS_MEMBER
-    (FROM $1 Forum, TO $2 Person) from file_Forum_hasMember_Person USING header="false", separator = "|";
+    (FROM $1 Forum, TO $2 Person) from file_Forum_hasMember_Person USING header="true", separator = "|";
   DELETE EDGE KNOWS
-    (FROM $1 Person, TO $2 Person) from file_Person_knows_Person USING header="false", separator = "|";
+    (FROM $1 Person, TO $2 Person) from file_Person_knows_Person USING header="true", separator = "|";
 }
