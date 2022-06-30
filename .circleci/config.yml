@@ -105,3 +105,4 @@ jobs:
             cd ..
             scripts/cross-validate.sh tigergraph umbra
       - slack/status
+    resource_class: large
