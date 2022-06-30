@@ -27,10 +27,11 @@ if __name__ == '__main__':
     query_nums = [int(re.sub("[^0-9]", "", query_variant)) for query_variant in query_variants]
     start_date = date(2012, 11, 29)
     end_date = date(2013, 1, 1)
+    test_end_date = datetime.date(2012, 12, 2)
     batch_size = timedelta(days=1)
     needClean = False
     batch_date = start_date
-    while batch_date < end_date:
+    while batch_date < end_date and (not args.test or batch_date < test_end_date):
         writes_time = run_batch_update(batch_date, args)
         timings_file.write(f"TigerGraph|{sf}|{batch_date}|writes||{writes_time:.6f}\n")
         reads_time = run_queries(query_variants, results_file, timings_file, batch_date, args)

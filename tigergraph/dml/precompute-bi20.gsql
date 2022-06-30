@@ -18,5 +18,5 @@ CREATE OR REPLACE DISTRIBUTED QUERY precompute_bi20() syntax v2 {
 CREATE OR REPLACE DISTRIBUTED QUERY cleanup_bi20() syntax v2 {
   tmp = SELECT p2
     FROM Person:p1 -(KNOWS:e)- Person:p2
-    ACCUM e.weight20 = 0;
+    ACCUM e.weight20 = 10000;
 }

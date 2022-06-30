@@ -94,7 +94,7 @@ echo "==========================================================================
 echo "Precompute"
 echo "-------------------------------------------------------------------------------"
 TIMEFORMAT=%R
-echo -n "update delta:         "
+echo -n "rebuild:              " # wait for memory release
 time (curl -s -H "GSQL-TIMEOUT:3600000" "http://127.0.0.1:9000/rebuildnow" >/dev/null)
 echo -n "precompute_root_post: "
 time (curl -s -H "GSQL-TIMEOUT:3600000" -X GET 'http://127.0.0.1:9000/query/ldbc_snb/precompute_root_post' >/dev/null)
@@ -102,6 +102,8 @@ echo -n "precompute_bi4:       "
 time (curl -s -H "GSQL-TIMEOUT:3600000" -X GET 'http://127.0.0.1:9000/query/ldbc_snb/precompute_bi4' >/dev/null)
 echo -n "precompute_bi6:       "
 time (curl -s -H "GSQL-TIMEOUT:3600000" -X GET 'http://127.0.0.1:9000/query/ldbc_snb/precompute_bi6' >/dev/null)
+echo -n "rebuild:              " # wait for memory release
+time (curl -s -H "GSQL-TIMEOUT:3600000" "http://127.0.0.1:9000/rebuildnow" >/dev/null)
 echo -n "precompute_bi19:      "
 time (curl -s -H "GSQL-TIMEOUT:3600000" -X GET 'http://127.0.0.1:9000/query/ldbc_snb/precompute_bi19' >/dev/null)
 echo -n "precompute_bi20:      "

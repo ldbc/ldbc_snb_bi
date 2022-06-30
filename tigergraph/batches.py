@@ -65,6 +65,7 @@ def load_by_gsql(job, data_dir, names, batch_dir):
     subprocess.run(f'gsql -g ldbc_snb {gsql}', shell=True)
 
 def run_batch_update(batch_date, args):
+    headers = {'GSQL-TIMEOUT': '36000000'}
     docker_data = Path('/data') if not args.cluster else args.data_dir
     batch_id = batch_date.strftime('%Y-%m-%d')
     batch_dir = f"batch_id={batch_id}"
@@ -92,16 +93,17 @@ def run_batch_update(batch_date, args):
     load(f'delete_edge', args.data_dir/'deletes', DEL_EDGES, batch_dir, args)
     print("\n## Rebuild")
     t0 = time.time()
-    requests.get(f'{args.endpoint}/rebuildnow', headers={'GSQL-TIMEOUT': '36000000'})
+    requests.get(f'{args.endpoint}/rebuildnow', headers=headers)
     print(f'Rebuild: {time.time()-t0} s')
     print("\n## Maintain materialized views ...")
     parameters = {"startDate": batch_date, "endDate": batch_date + timedelta(days=1)}
-    queries = [f'cleanup_bi{q}' for q in [19,20]] + [f'precompute_bi{q}' for q in [4,6,19,20]] + ['delta_root_post', 'delta_root_forum']
+    queries = [f'cleanup_bi{q}' for q in [19,20]] + ['delta_root_post', 'delta_root_forum'] + [f'precompute_bi{q}' for q in [4,6,19,20]]
     for q in queries:
         print(f'{q}:\t', end='')
         t0 = time.time()
-        requests.get(f'{args.endpoint}/query/ldbc_snb/{q}', params=parameters, headers={'GSQL-TIMEOUT': '36000000'})
-        print(f'{time.time()-t0} s')
+        requests.get(f'{args.endpoint}/query/ldbc_snb/{q}', params=parameters, headers=headers)
+        requests.get(f'{args.endpoint}/rebuildnow', headers=headers) # wait for memory release
+        print(f'{time.time()-t0:1.4f} s')
     return time.time() - t0
 
 # main functions
@@ -119,7 +121,7 @@ if __name__ == '__main__':
     timings_file = open(output/'timings.csv', 'w')
     timings_file.write(f'tool|sf|day|q|parameters|time\n')
     network_start_date = date(2012, 11, 29)
-    network_end_date = date(2012, 11, 30)
+    network_end_date = date(2013, 1, 1)
     batch_date = network_start_date
     batch_size = timedelta(days=1)
     while batch_date < network_end_date:

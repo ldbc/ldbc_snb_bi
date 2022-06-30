@@ -101,9 +101,10 @@ def run_queries(query_variants, results_file, timings_file, batch_date, args):
             query_parameters_split = {k.split(":")[0]: v for k, v in query_parameters.items()}
             query_parameters_in_order = f'<{";".join([query_parameters_split[parameter["name"]] for parameter in parameters])}>'
             query_parameters = {k.split(":")[0]: cast_parameter_to_driver_input(v, k.split(":")[1]) for k, v in query_parameters.items()}
+            if args.test:
+                print(f'Q{query_variant}: {query_parameters}')
             # Q1 parameter name is conflict with TG data type keyword 'datetime' 
             if query_num == 1: query_parameters = {'date': query_parameters['datetime']}
-
             results, duration = run_query(args.endpoint, query_num, query_parameters)
 
             results_file.write(f"{query_num}|{query_variant}|{query_parameters_in_order}|{results}\n")
@@ -111,6 +112,9 @@ def run_queries(query_variants, results_file, timings_file, batch_date, args):
             timings_file.write(f"TigerGraph|{sf}|{batch_date}|{query_variant}|{query_parameters_in_order}|{duration:.6f}\n")
             timings_file.flush()
             # test run: 1 query, regular run: 10 queries
+            if args.test:
+                print(f"-> {duration:.4f} seconds")
+                print(f"-> {results}")
             if args.test or i == args.nruns-1:
                 break
     return time.time() - start
