@@ -2,7 +2,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY precompute_root_forum() SYNTAX v2 {
   MinAccum<UINT> @forumId;
   M = SELECT t FROM Forum:s -(CONTAINER_OF>)- Post:t ACCUM t.@forumId += s.id;
   M = SELECT t FROM Post:s -(<ROOT_POST)- Comment:t
-    ACCUM INSERT INTO ROOT_FORUM (FROM, TO) VALUES (t.id Comment, s.@forumId);
+    ACCUM INSERT INTO ROOT_FORUM (FROM, TO) VALUES (t.id Comment, s.@forumId Forum);
 }
 
 // insert the ROOT_FORUM edges for one batch

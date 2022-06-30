@@ -90,12 +90,18 @@ def run_batch_update(batch_date, args):
                 print(f'> {result} changes')
     #tot_del_time = time.time() - t1
     load(f'delete_edge', args.data_dir/'deletes', DEL_EDGES, batch_dir, args)
-    print("## Maintain materialized views ...")
+    print("\n## Rebuild")
+    t0 = time.time()
+    requests.get(f'{args.endpoint}/rebuildnow', headers={'GSQL-TIMEOUT': '36000000'})
+    print(f'Rebuild: {time.time()-t0} s')
+    print("\n## Maintain materialized views ...")
     parameters = {"startDate": batch_date, "endDate": batch_date + timedelta(days=1)}
     queries = [f'cleanup_bi{q}' for q in [19,20]] + [f'precompute_bi{q}' for q in [4,6,19,20]] + ['delta_root_post', 'delta_root_forum']
     for q in queries:
-        print(f'run precompute query {q}')
+        print(f'{q}:\t', end='')
+        t0 = time.time()
         requests.get(f'{args.endpoint}/query/ldbc_snb/{q}', params=parameters, headers={'GSQL-TIMEOUT': '36000000'})
+        print(f'{time.time()-t0} s')
     return time.time() - t0
 
 # main functions

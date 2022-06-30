@@ -15,7 +15,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi3(STRING tagClass, STRING country) SYNTAX 
     WHERE t.name == tagClass;
   tmp =
     SELECT f
-    FROM messages:m -(ROOT_POST>*0..1.<CONTAINER_OF)- Forum:f
+    FROM messages:m -(ROOT_FORUM>)- Forum:f
     WHERE f.@selected
     PER(m,f) // Since each message finally replies to one Post, this PER does not change results but improve performance.
     ACCUM f.@messageCount += 1

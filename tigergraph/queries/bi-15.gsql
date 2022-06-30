@@ -9,9 +9,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi15(VERTEX<Person> person1Id, VERTEX<Person
   INT endEpoch = datetime_to_epoch(endDate) * 1000;
 
   F = SELECT f FROM Forum:f WHERE f.creationDate BETWEEN startEpoch AND endEpoch;
-  P = SELECT p FROM F -(CONTAINER_OF>)- Post:p;
-  M = SELECT m FROM P-(<ROOT_POST)- Comment:m ACCUM m.@visited += true;
-  M = M UNION P;
+  M = SELECT m FROM F -(<ROOT_FORUM)- :m ACCUM m.@visited += true;
   tmp = SELECT p FROM M:m -(HAS_CREATOR>)- Person:p ACCUM m.@creator += p;
   M1 = SELECT m1 FROM M:m1 -(<REPLY_OF)- Comment:m2
     WHERE m2.@visited

@@ -14,9 +14,9 @@ echo "QUERY_PATH: ${DML_PATH}"
 echo "==============================================================================="
 t0=$SECONDS
 #gsql drop all
-gsql $DDL_PATH/schema.gsql
 gsql PUT TokenBank FROM \"$DDL_PATH/TokenBank.cpp\"
 gsql PUT ExprFunctions FROM \"$DDL_PATH/ExprFunctions.hpp\"
+gsql $DDL_PATH/schema.gsql
 gsql --graph ldbc_snb $DDL_PATH/load_static.gsql
 gsql --graph ldbc_snb $DDL_PATH/load_dynamic.gsql
 gsql --graph ldbc_snb $DML_PATH/ins_Vertex.gsql
