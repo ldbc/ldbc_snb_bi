@@ -1,4 +1,4 @@
-CREATE OR REPLACE QUERY del_Post(STRING file, BOOL header) syntax v2 {
+CREATE OR REPLACE QUERY del_Post(STRING file, BOOL header=TRUE) syntax v2 {
   SetAccum<VERTEX<Post>> @@posts;
   @@posts = { LoadAccum(file, $1, "|", header)};
   posts = {@@posts};

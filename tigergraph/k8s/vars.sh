@@ -7,7 +7,6 @@ cd ..
 export NUM_NODES=2 # number of pods or nodes
 export SF=100 # data source 100, 1000, 3000, 10000 ...
 export DOWNLOAD_THREAD=5 # number of download threads
-export TG_HEADER=true # whether data has header, provided data has header
 export NRUNS=10 # number of query runs
 
 export TG_DATA_DIR=$HOME/tigergraph/data/sf${SF}

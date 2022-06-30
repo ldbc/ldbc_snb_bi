@@ -44,7 +44,6 @@ tools/run.py \
 
     * `TG_DATA_DIR` - a folder containing `initial_snapshot`, `inserts` and `deletes`.
     * `TG_LICENSE` - optional, trial license is used if not specified, sufficient for SF-30 and smaller.
-    * If CSV files have headers, set `export TG_HEADER=true`, otherwise set to `false`.
     * Run:
 
         ```bash

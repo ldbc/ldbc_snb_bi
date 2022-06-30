@@ -17,7 +17,11 @@ t0=$SECONDS
 gsql $DDL_PATH/schema.gsql
 gsql PUT TokenBank FROM \"$DDL_PATH/TokenBank.cpp\"
 gsql PUT ExprFunctions FROM \"$DDL_PATH/ExprFunctions.hpp\"
-gsql --graph ldbc_snb $DDL_PATH/load.gsql
+gsql --graph ldbc_snb $DDL_PATH/load_static.gsql
+gsql --graph ldbc_snb $DDL_PATH/load_dynamic.gsql
+gsql --graph ldbc_snb $DML_PATH/ins_Vertex.gsql
+gsql --graph ldbc_snb $DML_PATH/ins_Edge.gsql
+gsql --graph ldbc_snb $DML_PATH/del_Edge.gsql
 
 echo "==============================================================================="
 echo "Load Data"
@@ -75,6 +79,7 @@ gsql --graph ldbc_snb $DML_PATH/precompute-bi6.gsql
 gsql --graph ldbc_snb $DML_PATH/precompute-bi19.gsql
 gsql --graph ldbc_snb $DML_PATH/precompute-bi20.gsql
 gsql --graph ldbc_snb $DML_PATH/precompute-root-post.gsql
+gsql --graph ldbc_snb $DML_PATH/precompute-root-forum.gsql
 
 gsql --graph ldbc_snb $DML_PATH/del_Comment.gsql
 gsql --graph ldbc_snb $DML_PATH/del_Forum.gsql
@@ -88,43 +93,35 @@ t3=$SECONDS
 echo "==============================================================================="
 echo "Precompute"
 echo "-------------------------------------------------------------------------------"
-echo 'update delta ...'
-curl -s -H "GSQL-TIMEOUT:3600000" "http://127.0.0.1:9000/rebuildnow"
-tt0=$SECONDS
-echo "update delta: $((tt0-t3)) s"
-
-curl -H "GSQL-TIMEOUT:3600000" -X GET 'http://127.0.0.1:9000/query/ldbc_snb/precompute_root_post'
-tt1=$SECONDS
-echo "precompute_root_post: $((tt1-tt0)) s"
-
-curl -H "GSQL-TIMEOUT:3600000" -X GET 'http://127.0.0.1:9000/query/ldbc_snb/precompute_bi4'
-tt2=$SECONDS
-echo "precompute_bi4: $((tt2-tt1)) s"
-
-curl -H "GSQL-TIMEOUT:3600000" -X GET 'http://127.0.0.1:9000/query/ldbc_snb/precompute_bi6'
-tt3=$SECONDS
-echo "precompute_bi6: $((tt3-tt2)) s"
-
-curl -H "GSQL-TIMEOUT:3600000" -X GET 'http://127.0.0.1:9000/query/ldbc_snb/precompute_bi19'
-tt4=$SECONDS
-echo "precompute_bi19: $((tt4-tt3)) s"
-
-curl -H "GSQL-TIMEOUT:3600000" -X GET 'http://127.0.0.1:9000/query/ldbc_snb/precompute_bi20'
+TIMEFORMAT=%R
+echo -n "update delta:         "
+time (curl -s -H "GSQL-TIMEOUT:3600000" "http://127.0.0.1:9000/rebuildnow" >/dev/null)
+echo -n "precompute_root_post: "
+time (curl -s -H "GSQL-TIMEOUT:3600000" -X GET 'http://127.0.0.1:9000/query/ldbc_snb/precompute_root_post' >/dev/null)
+echo -n "precompute_bi4:       "
+time (curl -s -H "GSQL-TIMEOUT:3600000" -X GET 'http://127.0.0.1:9000/query/ldbc_snb/precompute_bi4' >/dev/null)
+echo -n "precompute_bi6:       "
+time (curl -s -H "GSQL-TIMEOUT:3600000" -X GET 'http://127.0.0.1:9000/query/ldbc_snb/precompute_bi6' >/dev/null)
+echo -n "precompute_bi19:      "
+time (curl -s -H "GSQL-TIMEOUT:3600000" -X GET 'http://127.0.0.1:9000/query/ldbc_snb/precompute_bi19' >/dev/null)
+echo -n "precompute_bi20:      "
+time (curl -s -H "GSQL-TIMEOUT:3600000" -X GET 'http://127.0.0.1:9000/query/ldbc_snb/precompute_bi20' >/dev/null)
+echo -n "precompute_root_forum:"
+time (curl -s -H "GSQL-TIMEOUT:3600000" -X GET 'http://127.0.0.1:9000/query/ldbc_snb/precompute_root_forum' >/dev/null)
 t4=$SECONDS
-echo "precompute_bi20: $((t4-tt4)) s"
 
 echo "==============================================================================="
 echo "Data Statisitcs Check (Optional)"
 echo "this step wait for the database to rebuild delta, subsequent queries sometimes run out of memory without this step"
 echo "-------------------------------------------------------------------------------"
 echo 'update delta ...'
-curl -s -H "GSQL-TIMEOUT:3600000" "http://127.0.0.1:9000/rebuildnow"
+curl -s -H "GSQL-TIMEOUT:3600000" "http://127.0.0.1:9000/rebuildnow" >/dev/null
 echo "Vertex statistics:"
-curl -X POST "http://127.0.0.1:9000/builtins/ldbc_snb" -d  '{"function":"stat_vertex_number","type":"*"}'
+curl -s -X POST "http://127.0.0.1:9000/builtins/ldbc_snb" -d  '{"function":"stat_vertex_number","type":"*"}'
 echo
 echo
 echo "Edge statistics:"
-curl -X POST "http://127.0.0.1:9000/builtins/ldbc_snb" -d  '{"function":"stat_edge_number","type":"*"}'
+curl -s -X POST "http://127.0.0.1:9000/builtins/ldbc_snb" -d  '{"function":"stat_edge_number","type":"*"}'
 echo
 t5=$SECONDS
 

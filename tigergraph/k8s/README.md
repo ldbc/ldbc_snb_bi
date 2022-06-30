@@ -56,7 +56,6 @@ tigergraph-1      1/1     Running   0          3m11s
     * `NUM_NODES` - number of nodes.
     * `SF` - data source, choices are 100, 300, 1000, 3000, 10000.
     * `DOWNLOAD_THREAD` - number of download threads
-    * `TG_HEADER` - whether the data has header, should be true
 
 1. Run:
 
