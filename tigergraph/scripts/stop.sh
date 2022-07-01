@@ -8,6 +8,10 @@ cd ..
 
 . scripts/vars.sh
 
-echo "stop TG container ${TG_CONTAINER_NAME}"
-docker stop ${TG_CONTAINER_NAME} || echo "No container ${TG_CONTAINER_NAME} found"
-docker rm -f ${TG_CONTAINER_NAME}
+echo "Stopping TG container ${TG_CONTAINER_NAME} ..."
+(docker ps -a --format {{.Names}} | grep --quiet --word-regexp ${TG_CONTAINER_NAME}) && docker stop ${TG_CONTAINER_NAME} >/dev/null
+echo " Stopped."
+
+echo -n "Removing TG container ${TG_CONTAINER_NAME} ..."
+(docker ps -a --format {{.Names}} | grep --quiet --word-regexp ${TG_CONTAINER_NAME}) && docker rm ${TG_CONTAINER_NAME} >/dev/null
+echo " Removed."

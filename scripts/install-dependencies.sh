@@ -9,6 +9,7 @@ cd ..
 paramgen/scripts/install-dependencies.sh
 cypher/scripts/install-dependencies.sh
 umbra/scripts/install-dependencies.sh
+tigergraph/scripts/install-dependencies.sh
 
 # install numdiff
 

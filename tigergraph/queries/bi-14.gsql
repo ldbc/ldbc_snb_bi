@@ -29,45 +29,31 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi14(STRING country1, STRING country2) SYNTA
       p1.@min_pid2 += p2.id;
 
   P1 = SELECT p FROM Person:p WHERE p.@valid;
-  M1 = SELECT m FROM P1:p1 -(<HAS_CREATOR)- (Comment|Post):m
-    ACCUM m.@valid += true;
-  # Case 1, 2 and 4
-  # propagate person2 vertex id to P1
-  M2 = SELECT m2 FROM P2:p -(<HAS_CREATOR)- (Comment|Post):m2
-    ACCUM m2.@person2 += p;
-  tmp = SELECT m1 FROM M2:m2 -(<REPLY_OF)- Comment:m1
-    WHERE m1.@valid
-    ACCUM m1.@person2 += m2.@person2; // we use m1.@person2 here because each Comment reply to one message
-  tmp = SELECT m1 FROM M2:m2 -(REPLY_OF>)- _:m1
-    WHERE m1.@valid
-    ACCUM m1.@p2s2 += m2.@person2;
-  tmp = SELECT m1 FROM P2:p2 -(LIKES>)- _:m1
-    WHERE m1.@valid
-    ACCUM m1.@p2s4 += p2;
-
-  tmp = SELECT p1 FROM P1:p1 -(<HAS_CREATOR)- (Comment|Post):m1
-    ACCUM IF m1.type == "Comment" THEN p1.@p2s1 += m1.@person2 END,
-      p1.@p2s2 += m1.@p2s2,
-      p1.@p2s4 += m1.@p2s4
-    POST-ACCUM 
-      p1.@p2s1 = (p1.@p2s1 INTERSECT p1.@knows),
-      p1.@p2s2 = (p1.@p2s2 INTERSECT p1.@knows),
-      p1.@p2s4 = (p1.@p2s4 INTERSECT p1.@knows);
-
+  # Case 1
+  tmp = SELECT p1 FROM P1:p1 -(REPLY_COUNT>:e)- Person:p2
+    WHERE p2.@selected AND e.cnt > 0
+    ACCUM p1.@score += (p2 -> 4);
+  # Case 2
+  tmp = SELECT p1 FROM P1:p1 -(<REPLY_COUNT:e)- Person:p2
+    WHERE p2.@selected AND e.cnt > 0
+    ACCUM p1.@score += (p2 -> 1);
   # Case 3
+  M2 = SELECT m2 FROM P2:p -(<HAS_CREATOR)- _:m2
+    ACCUM m2.@p2s3 += p;
   tmp = SELECT p1 FROM M2:m2 -(<LIKES)- Person:p1
     WHERE p1.@valid
-    ACCUM p1.@p2s3 += m2.@person2
+    ACCUM p1.@p2s3 += m2.@p2s3
     POST-ACCUM p1.@p2s3 = (p1.@p2s3 INTERSECT p1.@knows);
-
+  # Case 4
+  M2 = SELECT m2 FROM P2:p2 -(LIKES>)- _:m2
+    ACCUM m2.@p2s4 += p2;
+  tmp = SELECT p1 FROM M2:m2 -(HAS_CREATOR>)- Person:p1
+    WHERE p1.@valid
+    ACCUM p1.@p2s4 += m2.@p2s4
+    POST-ACCUM p1.@p2s4 = (p1.@p2s4 INTERSECT p1.@knows);
+  
   P1 = SELECT p1 FROM P1:p1
     ACCUM
-      FOREACH p2 IN p1.@p2s1 DO
-        p1.@score += (p2 -> 4)
-      END,
-      FOREACH p2 IN p1.@p2s2 DO
-        p1.@score += (p2 -> 1)
-      END,
       FOREACH p2 IN p1.@p2s3 DO
         p1.@score += (p2 -> 10)
       END,
