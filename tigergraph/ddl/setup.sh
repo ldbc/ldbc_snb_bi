@@ -79,7 +79,6 @@ gsql --graph ldbc_snb $DML_PATH/precompute-bi6.gsql
 gsql --graph ldbc_snb $DML_PATH/precompute-bi19.gsql
 gsql --graph ldbc_snb $DML_PATH/precompute-bi20.gsql
 gsql --graph ldbc_snb $DML_PATH/precompute-root-post.gsql
-gsql --graph ldbc_snb $DML_PATH/precompute-root-forum.gsql
 
 gsql --graph ldbc_snb $DML_PATH/del_Comment.gsql
 gsql --graph ldbc_snb $DML_PATH/del_Forum.gsql
@@ -108,8 +107,6 @@ echo -n "precompute_bi19:      "
 time (curl -s -H "GSQL-TIMEOUT:3600000" -X GET 'http://127.0.0.1:9000/query/ldbc_snb/precompute_bi19' >/dev/null)
 echo -n "precompute_bi20:      "
 time (curl -s -H "GSQL-TIMEOUT:3600000" -X GET 'http://127.0.0.1:9000/query/ldbc_snb/precompute_bi20' >/dev/null)
-echo -n "precompute_root_forum:"
-time (curl -s -H "GSQL-TIMEOUT:3600000" -X GET 'http://127.0.0.1:9000/query/ldbc_snb/precompute_root_forum' >/dev/null)
 t4=$SECONDS
 
 echo "==============================================================================="

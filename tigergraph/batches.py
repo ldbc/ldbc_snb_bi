@@ -94,16 +94,20 @@ def run_batch_update(batch_date, args):
     print("\n## Rebuild")
     t0 = time.time()
     requests.get(f'{args.endpoint}/rebuildnow', headers=headers)
-    print(f'Rebuild: {time.time()-t0} s')
+    print(f'Rebuild: {time.time()-t0:.4f} s')
     print("\n## Maintain materialized views ...")
     parameters = {"startDate": batch_date, "endDate": batch_date + timedelta(days=1)}
-    queries = [f'cleanup_bi{q}' for q in [19,20]] + ['delta_root_post', 'delta_root_forum'] + [f'precompute_bi{q}' for q in [4,6,19,20]]
+    queries = [f'cleanup_bi{q}' for q in [19,20]] + [f'precompute_bi{q}' for q in [4,6,19,20]] + ['delta_root_post']
     for q in queries:
+        if q == 'precompute_bi19': # wait for memory release
+            print(f'Rebuild:\t', end='')
+            t0 = time.time()
+            requests.get(f'{args.endpoint}/rebuildnow', headers=headers)
+            print(f'{time.time()-t0:.4f} s')
         print(f'{q}:\t', end='')
         t0 = time.time()
         requests.get(f'{args.endpoint}/query/ldbc_snb/{q}', params=parameters, headers=headers)
-        requests.get(f'{args.endpoint}/rebuildnow', headers=headers) # wait for memory release
-        print(f'{time.time()-t0:1.4f} s')
+        print(f'{time.time()-t0:.4f} s')
     return time.time() - t0
 
 # main functions

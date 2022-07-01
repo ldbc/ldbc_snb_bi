@@ -21,8 +21,7 @@ CREATE LOADING JOB insert_edge FOR GRAPH ldbc_snb {
 
   // load edge
   LOAD file_Forum_containerOf_Post
-    TO EDGE CONTAINER_OF VALUES ($1, $2),
-    TO EDGE ROOT_FORUM VALUES ($2 Post, $1) USING header="true", separator="|", VERTEX_MUST_EXIST="true";
+    TO EDGE CONTAINER_OF VALUES ($1, $2) USING header="true", separator="|", VERTEX_MUST_EXIST="true";
   LOAD file_Comment_hasCreator_Person
     TO EDGE HAS_CREATOR VALUES ($1 Comment, $2) USING header="true", separator="|", VERTEX_MUST_EXIST="true";
   LOAD file_Post_hasCreator_Person

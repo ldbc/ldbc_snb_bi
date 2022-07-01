@@ -13,11 +13,20 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi3(STRING tagClass, STRING country) SYNTAX 
     SELECT m
     FROM TagClass:t -(<HAS_TYPE.<HAS_TAG)- (Comment|Post):m
     WHERE t.name == tagClass;
+  posts1 = 
+    SELECT p
+    FROM messages:m -(ROOT_POST>)- Post:p
+    ACCUM p.@messageCount += 1;
+  posts2 =
+    SELECT p FROM messages:p
+    WHERE p.type == "Post"
+    ACCUM p.@messageCount += 1;
+  posts = posts1 UNION posts2; 
   tmp =
     SELECT f
-    FROM messages:m -(ROOT_FORUM>)- Forum:f
+    FROM posts:p -(<CONTAINER_OF)- Forum:f
     WHERE f.@selected
-    ACCUM f.@messageCount += 1
+    ACCUM f.@messageCount += p.@messageCount
     POST-ACCUM @@result += RESULT(f.id, f.title, ms_to_string(f.creationDate), f.@personId, f.@messageCount);
 
   PRINT @@result as result;
