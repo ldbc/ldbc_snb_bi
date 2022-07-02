@@ -12,11 +12,5 @@ CREATE OR REPLACE DISTRIBUTED QUERY precompute_bi20() syntax v2 {
         UINT w = abs(p2.@univYear.get(u)-p1.@univYear.get(u)) + 1,
         IF w < weight THEN weight = w END
       END,
-      IF weight < 10000 THEN e.weight20 = weight END;
-}
-
-CREATE OR REPLACE DISTRIBUTED QUERY cleanup_bi20() syntax v2 {
-  tmp = SELECT p2
-    FROM Person:p1 -(KNOWS:e)- Person:p2
-    ACCUM e.weight20 = 10000;
+      e.weight20 = weight;
 }

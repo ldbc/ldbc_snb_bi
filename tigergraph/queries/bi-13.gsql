@@ -13,8 +13,8 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi13(STRING country, DATETIME endDate) SYNTA
     FROM Country:cn -(<IS_PART_OF.<IS_LOCATED_IN)- Person:p
     WHERE cn.name == country AND p.creationDate < endEpoch;
 
-  zombieMessages =
-    SELECT m
+  tmp =
+    SELECT p
     FROM zombieCandidates:p -(<HAS_CREATOR)- (Comment|Post):m
     WHERE m.creationDate < endEpoch
     ACCUM p.@messageCount += 1;
@@ -27,7 +27,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi13(STRING country, DATETIME endDate) SYNTA
     ACCUM p.@selected += true;
 
   M = SELECT m FROM zombies:z -(<HAS_CREATOR)- (Comment|Post):m;
-  M = SELECT m FROM M:m -(<LIKES)- Person:p
+  tmp = SELECT p FROM M:m -(<LIKES)- Person:p
     WHERE p.creationDate < endEpoch
     ACCUM
       m.@totalLikeCount += 1,

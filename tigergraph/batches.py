@@ -64,6 +64,12 @@ def load_by_gsql(job, data_dir, names, batch_dir):
     gsql += ', '.join([f'file_{name}=\\"ANY:{data_dir}/dynamic/{name}/{batch_dir}\\"' for name in names])
     subprocess.run(f'gsql -g ldbc_snb {gsql}', shell=True)
 
+def rebuild(endpoint, headers):
+    print(f'Rebuild:\t', end='')
+    t0 = time.time()
+    requests.get(f'{endpoint}/rebuildnow', headers=headers)
+    print(f'{time.time()-t0:.4f} s')
+        
 def run_batch_update(batch_date, args):
     headers = {'GSQL-TIMEOUT': '36000000'}
     docker_data = Path('/data') if not args.cluster else args.data_dir
@@ -91,23 +97,17 @@ def run_batch_update(batch_date, args):
                 print(f'> {result} changes')
     #tot_del_time = time.time() - t1
     load(f'delete_edge', args.data_dir/'deletes', DEL_EDGES, batch_dir, args)
-    print("\n## Rebuild")
-    t0 = time.time()
-    requests.get(f'{args.endpoint}/rebuildnow', headers=headers)
-    print(f'Rebuild: {time.time()-t0:.4f} s')
+    print(f'batch:\t{time.time()-t0:.4f} s')
+    #print("\n## Rebuild")
+    #rebuild(args.endpoint, headers)
     print("\n## Maintain materialized views ...")
     parameters = {"startDate": batch_date, "endDate": batch_date + timedelta(days=1)}
-    queries = [f'cleanup_bi{q}' for q in [19,20]] + [f'precompute_bi{q}' for q in [4,6,19,20]] + ['delta_root_post']
+    queries = [f'precompute_bi{q}' for q in [19,4,6,20]] + ['delta_root_post']
     for q in queries:
-        if q == 'precompute_bi19': # wait for memory release
-            print(f'Rebuild:\t', end='')
-            t0 = time.time()
-            requests.get(f'{args.endpoint}/rebuildnow', headers=headers)
-            print(f'{time.time()-t0:.4f} s')
         print(f'{q}:\t', end='')
-        t0 = time.time()
+        t1 = time.time()
         requests.get(f'{args.endpoint}/query/ldbc_snb/{q}', params=parameters, headers=headers)
-        print(f'{time.time()-t0:.4f} s')
+        print(f'{time.time()-t1:.4f} s')
     return time.time() - t0
 
 # main functions
