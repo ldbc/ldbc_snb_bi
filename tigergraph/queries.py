@@ -125,7 +125,7 @@ def run_precompute(args):
     for q in [19,4,6,20]:
         t1 = time.time()
         requests.get(f'{args.endpoint}/query/ldbc_snb/precompute_bi{q}', headers=HEADERS)
-        print(f'precompute_bi{q}:\t{time.time()-t1:.4f} s')
+        print(f'precompute_bi{q}:\t\t{time.time()-t1:.4f} s')
     return time.time() - t0
 
 # main functions

@@ -74,9 +74,16 @@ def run_batch_update(batch_date, args):
     t0 = time.time()
     load(f'insert_vertex', args.data_dir/'inserts', VERTICES, batch_dir, args)
     load(f'insert_edge', args.data_dir/'inserts', EDGES, batch_dir, args)
-    #tot_ins_time = time.time() - t0
+    print(f'Batch insert:\t{time.time()-t0:.4f} s')
+
+    print("\n## Maintain ROOT_POST ...")
+    parameters = {"startDate": batch_date, "endDate": batch_date + timedelta(days=1)}
+    t1 = time.time()
+    requests.get(f'{args.endpoint}/query/ldbc_snb/delta_root_post', params=parameters, headers=headers)
+    print(f'Precompute_root_post:\t{time.time()-t1:.4f} s')
+
     print("## Deletes")
-    #t1 = time.time()
+    t1 = time.time()
     for vertex in VERTICES:
         print(f"{vertex}:")
         path = args.data_dir/'deletes'/'dynamic'/vertex/batch_dir
@@ -91,19 +98,13 @@ def run_batch_update(batch_date, args):
                 print(f'> {result} changes')
     #tot_del_time = time.time() - t1
     load(f'delete_edge', args.data_dir/'deletes', DEL_EDGES, batch_dir, args)
-    print(f'Batch insert/delete:\t{time.time()-t0:.4f} s')
-    
-    print("\n## Maintain ROOT_POST ...")
-    parameters = {"startDate": batch_date, "endDate": batch_date + timedelta(days=1)}
-    t1 = time.time()
-    requests.get(f'{args.endpoint}/query/ldbc_snb/delta_root_post', params=parameters, headers=headers)
-    print(f'Precompute_root_post:\t{time.time()-t1:.4f} s')
-    
+    print(f'Batch delete:\t{time.time()-t1:.4f} s')
+    """ Needed for SF-10k benchmark to release memory
     print("\n## Rebuild")
     t1 = time.time()
     requests.get(f'{args.endpoint}/rebuildnow', headers=headers)
     print(f'Rebuild:\t{time.time()-t1:.4f} s')
-
+    """
     return time.time() - t0
 
 # main functions
