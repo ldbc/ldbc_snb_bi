@@ -119,10 +119,20 @@ def run_queries(query_variants, results_file, timings_file, batch_date, args):
                 break
     return time.time() - start
 
+def run_precompute(args):
+    t0 = time.time()
+    for q in [19,4,6,20]:
+        print(f"========================= Precompute for BI-{q} =========================")
+        t1 = time.time()
+        requests.get(f'{args.endpoint}/query/ldbc_snb/precompute_bi{q}', headers=HEADERS)
+        print(f'{time.time()-t1:.4f} s')
+    return time.time() - t0
+
 # main functions
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='BI query driver')
     parser.add_argument('--para', type=Path, default=Path('../parameters'), help='parameter folder')
+    parser.add_argument('--skip', action='store_true', help='skip precomputation')
     parser.add_argument('--test', action='store_true', help='test mode only run one time')
     parser.add_argument('--nruns', '-n', type=int, default=10, help='number of runs')
     parser.add_argument('--endpoint', type=str, default='http://127.0.0.1:9000',help='tigergraph endpoints')
@@ -134,6 +144,7 @@ if __name__ == '__main__':
     timings_file = open(output/'timings.csv', 'w')
     timings_file.write(f"tool|sf|day|q|parameters|time\n")
     query_variants = ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "15a", "15b", "16a", "16b", "17", "18", "19a", "19b", "20"]
+    if not args.skip: run_precompute(args)
     run_queries(query_variants, results_file, timings_file, 'None', args)
     results_file.close()
     timings_file.close()

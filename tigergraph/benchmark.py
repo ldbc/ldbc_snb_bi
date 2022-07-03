@@ -2,7 +2,7 @@
 import argparse
 from pathlib import Path
 from datetime import date, timedelta
-from queries import run_queries
+from queries import run_queries, run_precompute
 from batches import run_batch_update
 import os
 import time
@@ -26,14 +26,15 @@ if __name__ == '__main__':
     query_variants = ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "15a", "15b", "16a", "16b", "17", "18", "19a", "19b", "20"]
     query_nums = [int(re.sub("[^0-9]", "", query_variant)) for query_variant in query_variants]
     start_date = date(2012, 11, 29)
-    end_date = date(2013, 1, 1)
-    test_end_date = date(2012, 12, 2)
+    end_date = date(2012, 11, 30)
+    test_end_date = date(2012, 12, 3)
     batch_size = timedelta(days=1)
     needClean = False
     batch_date = start_date
     while batch_date < end_date and (not args.test or batch_date < test_end_date):
         writes_time = run_batch_update(batch_date, args)
-        timings_file.write(f"TigerGraph|{sf}|{batch_date}|writes||{writes_time:.6f}\n")
+        precompute_time = run_precompute(args)
+        timings_file.write(f"TigerGraph|{sf}|{batch_date}|writes||{writes_time + precompute_time:.6f}\n")
         reads_time = run_queries(query_variants, results_file, timings_file, batch_date, args)
         timings_file.write(f"TigerGraph|{sf}|{batch_date}|reads||{reads_time:.6f}\n")
         batch_date = batch_date + batch_size
