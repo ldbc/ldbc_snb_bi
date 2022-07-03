@@ -121,11 +121,11 @@ def run_queries(query_variants, results_file, timings_file, batch_date, args):
 
 def run_precompute(args):
     t0 = time.time()
+    print(f"==================== Precompute for BI 19,4,6,20 ======================")
     for q in [19,4,6,20]:
-        print(f"========================= Precompute for BI-{q} =========================")
         t1 = time.time()
         requests.get(f'{args.endpoint}/query/ldbc_snb/precompute_bi{q}', headers=HEADERS)
-        print(f'{time.time()-t1:.4f} s')
+        print(f'precompute_bi{q}:\t{time.time()-t1:.4f} s')
     return time.time() - t0
 
 # main functions

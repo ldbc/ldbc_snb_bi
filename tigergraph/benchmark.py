@@ -26,7 +26,7 @@ if __name__ == '__main__':
     query_variants = ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "15a", "15b", "16a", "16b", "17", "18", "19a", "19b", "20"]
     query_nums = [int(re.sub("[^0-9]", "", query_variant)) for query_variant in query_variants]
     start_date = date(2012, 11, 29)
-    end_date = date(2012, 11, 30)
+    end_date = date(2013, 1, 1)
     test_end_date = date(2012, 12, 3)
     batch_size = timedelta(days=1)
     needClean = False

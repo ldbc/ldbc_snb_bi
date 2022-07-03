@@ -101,7 +101,7 @@ def run_batch_update(batch_date, args):
     
     print("\n## Rebuild")
     t1 = time.time()
-    requests.get(f'{endpoint}/rebuildnow', headers=headers)
+    requests.get(f'{args.endpoint}/rebuildnow', headers=headers)
     print(f'Rebuild:\t{time.time()-t1:.4f} s')
 
     return time.time() - t0
