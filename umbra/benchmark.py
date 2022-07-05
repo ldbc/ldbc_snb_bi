@@ -182,9 +182,9 @@ def run_batch_updates(pg_con, data_dir, batch_start_date, timings_file):
         for csv_file in [f for f in os.listdir(batch_path) if f.endswith(".csv")]:
             csv_path = f"{batch_path}/{csv_file}"
             print(f"- {csv_path}")
-            cur.execute(f"COPY {entity} FROM '/data/inserts/dynamic/{entity}/{batch_dir}/{csv_file}' (DELIMITER '|', HEADER, NULL '', FORMAT text)")
+            cur.execute(f"COPY {entity} FROM '{data_dir}/inserts/dynamic/{entity}/{batch_dir}/{csv_file}' (DELIMITER '|', HEADER, NULL '', FORMAT text)")
             if entity == "Person_knows_Person":
-                cur.execute(f"COPY {entity} (creationDate, Person2id, Person1id) FROM '/data/inserts/dynamic/{entity}/{batch_dir}/{csv_file}' (DELIMITER '|', HEADER, NULL '', FORMAT text)")
+                cur.execute(f"COPY {entity} (creationDate, Person2id, Person1id) FROM '{data_dir}/inserts/dynamic/{entity}/{batch_dir}/{csv_file}' (DELIMITER '|', HEADER, NULL '', FORMAT text)")
             pg_con.commit()
 
     print("## Deletes")
@@ -201,17 +201,11 @@ def run_batch_updates(pg_con, data_dir, batch_start_date, timings_file):
         for csv_file in [f for f in os.listdir(batch_path) if f.endswith(".csv")]:
             csv_path = f"{batch_path}/{csv_file}"
             print(f"- {csv_path}")
-            cur.execute(f"COPY {entity}_Delete_candidates FROM '/data/deletes/dynamic/{entity}/{batch_dir}/{csv_file}' (DELIMITER '|', HEADER, NULL '', FORMAT text)")
+            cur.execute(f"COPY {entity}_Delete_candidates FROM '{data_dir}/deletes/dynamic/{entity}/{batch_dir}/{csv_file}' (DELIMITER '|', HEADER, NULL '', FORMAT text)")
             pg_con.commit()
 
-    print("Maintain materialized views . . .")
+    print("Maintain materialized views and apply deletes . . .")
     run_script(pg_con, cur, "dml/maintain-views.sql")
-    print("Done.")
-    print()
-
-    print("Apply deletes . . .")
-    # Invoke delete script which makes use of the {entity}_Delete_candidates tables
-    run_script(pg_con, cur, "dml/snb-deletes.sql")
     print("Done.")
     print()
 
@@ -255,6 +249,7 @@ timings_file = open(f"output/timings.csv", "a")
 timings_file.write(f"tool|sf|day|q|parameters|time\n")
 
 pg_con = psycopg2.connect(host="localhost", user="postgres", password="mysecretpassword", port=8000)
+#pg_con.autocommit = True
 cur = pg_con.cursor()
 
 run_script(pg_con, cur, f"ddl/schema-delete-candidates.sql");
