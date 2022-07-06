@@ -13,6 +13,7 @@ data_dir = sys.argv[1]
 local = len(sys.argv) == 3 and sys.argv[2] == "--local"
 
 pg_con = psycopg2.connect(host="localhost", user="postgres", password="mysecretpassword", port=8000)
+pg_con.autocommit = True
 cur = pg_con.cursor()
 
 def run_script(pg_con, cur, filename):
