@@ -13,6 +13,7 @@ data_dir = sys.argv[1]
 local = len(sys.argv) == 3 and sys.argv[2] == "--local"
 
 pg_con = psycopg2.connect(host="localhost", user="postgres", password="mysecretpassword", port=8000)
+pg_con.autocommit = True
 cur = pg_con.cursor()
 
 def run_script(pg_con, cur, filename):
@@ -25,7 +26,7 @@ def run_script(pg_con, cur, filename):
             if query.isspace():
                 continue
 
-            sql_statement = re.findall(r"^((CREATE|INSERT|DROP|DELETE|SELECT|COPY) [A-Za-z0-9_ ]*)", query, re.MULTILINE)
+            sql_statement = re.findall(r"^((CREATE|INSERT|DROP|DELETE|SELECT|COPY|UPDATE|ALTER) [A-Za-z0-9_ ]*)", query, re.MULTILINE)
             print(f"{sql_statement[0][0].strip()} ...")
             start = time.time()
             cur.execute(query)
@@ -81,6 +82,10 @@ print("Done.")
 
 print("Create static materialized views . . . ")
 run_script(pg_con, cur, "dml/create-static-materialized-views.sql")
+print("Done.")
+
+print("Apply precomputation . . . ")
+run_script(pg_con, cur, "dml/apply-precomp.sql")
 print("Done.")
 
 print("Loaded initial snapshot to Umbra.")
