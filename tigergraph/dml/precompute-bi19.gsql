@@ -1,4 +1,6 @@
 CREATE OR REPLACE DISTRIBUTED QUERY precompute_bi19() syntax v2 {
+  FILE file1 ("/home/tigergraph/reply_count.csv");
+  FILE file2 ("/home/tigergraph/knows19.csv");
   SetAccum<VERTEX<Person>> @creator;
   MapAccum<VERTEX<Person>, SumAccum<UINT>> @replyCount;  
   M = SELECT m FROM Person:s -(<HAS_CREATOR)- (Comment|Post):m
@@ -13,11 +15,12 @@ CREATE OR REPLACE DISTRIBUTED QUERY precompute_bi19() syntax v2 {
       END;
 
   tmp = SELECT p2
-    FROM Person:p1 -(REPLY_COUNT>:e)- Person:p2
-    ACCUM e.cnt = p2.@replyCount.get(p1);
-
-  tmp = SELECT p2
     FROM Person:p1 -(KNOWS:e)- Person:p2
     WHERE p1.id<p2.id
-    ACCUM e.weight19 = (p1.@replyCount.get(p2) + p2.@replyCount.get(p1));
+    ACCUM
+      UINT v1 = p2.@replyCount.get(p1),
+      UINT v2 = p1.@replyCount.get(p2),
+      file1.println(p1.id, p2.id, v1),
+      file1.println(p2.id, p1.id, v2),
+      file2.println(p1.id, p2.id, (p1.@replyCount.get(p2) + p2.@replyCount.get(p1)));
 }

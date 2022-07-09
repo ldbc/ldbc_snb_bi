@@ -22,6 +22,7 @@ gsql --graph ldbc_snb $DDL_PATH/load_dynamic.gsql
 gsql --graph ldbc_snb $DML_PATH/ins_Vertex.gsql
 gsql --graph ldbc_snb $DML_PATH/ins_Edge.gsql
 gsql --graph ldbc_snb $DML_PATH/del_Edge.gsql
+gsql --graph ldbc_snb $DML_PATH/load_precompute.gsql
 
 echo "==============================================================================="
 echo "Load Data"
@@ -93,6 +94,7 @@ echo "==========================================================================
 echo "Precompute ROOT_POST"
 echo "-------------------------------------------------------------------------------"
 curl -s -H "GSQL-TIMEOUT:3600000" -X GET 'http://127.0.0.1:9000/query/ldbc_snb/precompute_root_post' >/dev/null
+gsql --graph ldbc_snb RUN LOADING JOB load_root_post
 t4=$SECONDS
 
 echo "==============================================================================="

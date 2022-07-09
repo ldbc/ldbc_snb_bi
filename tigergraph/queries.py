@@ -6,7 +6,7 @@ import csv
 import requests
 import re
 import os
-
+import subprocess
 # query timeout value in miliseconds
 HEADERS = {'GSQL-TIMEOUT': '36000000'}
 
@@ -122,15 +122,29 @@ def run_queries(query_variants, results_file, timings_file, batch_date, args):
 def run_precompute(args):
     t0 = time.time()
     print(f"==================== Precompute for BI 19,4,6,20 ======================")
+    # compute values and print to files
     for q in [19,4,6,20]:
         t1 = time.time()
         requests.get(f'{args.endpoint}/query/ldbc_snb/precompute_bi{q}', headers=HEADERS)
         print(f'precompute_bi{q}:\t\t{time.time()-t1:.4f} s')
+    # load the files (this is faster in large SF)
+    if not args.cluster:
+        for f in ["reply_count", "knows19", "knows20"]:
+            t1 = time.time()
+            url = f"{args.endpoint}/ddl/ldbc_snb?tag=load_precompute&filename=file_{f}"
+            curl = f"curl -X POST -H 'GSQL-TIMEOUT:3600000' --data-binary  @/home/tigergraph/{f}.csv '{url}'"
+            subprocess.run(curl, shell=True, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+            print(f'load_{f}:\t\t{time.time()-t1:.4f} s')
+    else:
+        t1 = time.time()
+        subprocess.run(f'gsql -g ldbc_snb RUN LOADING JOB load_precompute', shell=True)
+        print(f'load_precompute:\t\t{time.time()-t1:.4f} s')
     return time.time() - t0
 
 # main functions
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='BI query driver')
+    parser.add_argument('--cluster', action='store_true', help='load concurrently on cluster')
     parser.add_argument('--para', type=Path, default=Path('../parameters'), help='parameter folder')
     parser.add_argument('--skip', action='store_true', help='skip precomputation')
     parser.add_argument('--test', action='store_true', help='test mode only run one time')

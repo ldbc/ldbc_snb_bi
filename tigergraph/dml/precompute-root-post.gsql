@@ -1,11 +1,11 @@
 CREATE OR REPLACE DISTRIBUTED QUERY precompute_root_post() SYNTAX v2 {
   MinAccum<UINT> @postId;
+  FILE file1 ("/home/tigergraph/root_post.csv"); // a temporaty file to store the root post ids
   M = SELECT t FROM Post:s -(<REPLY_OF)- Comment:t ACCUM t.@postId += s.id;
   WHILE M.size() > 0 DO
     M = SELECT t FROM M:s -(<REPLY_OF)- Comment:t
-    ACCUM t.@postId += s.@postId
-    POST-ACCUM
-      INSERT INTO ROOT_POST (FROM, TO) VALUES (t.id, t.@postId);
+    ACCUM t.@postId += s.@postId,
+      file1.println(t.id, s.@postId);
   END;
 }
 
@@ -13,6 +13,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY precompute_root_post() SYNTAX v2 {
 CREATE OR REPLACE DISTRIBUTED QUERY delta_root_post(DATETIME startDate, DATETIME endDate) syntax v2 {
   SetAccum<VERTEX<Comment>> @sources;
   MaxAccum<UINT> @postId;
+  FILE file1 ("/home/tigergraph/root_post.csv"); // a temporaty file to store the root post ids
   INT startEpoch = datetime_to_epoch(startDate) * 1000;
   INT endEpoch = datetime_to_epoch(endDate) * 1000;
   S0 = SELECT m FROM Comment:m 
@@ -29,5 +30,5 @@ CREATE OR REPLACE DISTRIBUTED QUERY delta_root_post(DATETIME startDate, DATETIME
         END
       HAVING t.type == "Comment";
   END;
-  M = SELECT s FROM S0:s ACCUM INSERT INTO ROOT_POST (FROM, TO) VALUES (s.id, s.@postId);
+  M = SELECT s FROM S0:s ACCUM file1.println(s.id, s.@postId);
 }

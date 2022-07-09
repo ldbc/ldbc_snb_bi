@@ -48,8 +48,8 @@ def load_by_restpp(job, data_dir, names, batch_dir, endpoint):
             continue
         for f in folder.iterdir():
             print(f'- {f}')
-            url = f'{endpoint}/ddl/ldbc_snb?tag={job}&filename=file_{name}&sep=%7C&ack=all'
-            curl = f'curl -X POST -H "GSQL-TIMEOUT:3600000" --data-binary  @{f} "{url}"'
+            url = f"{endpoint}/ddl/ldbc_snb?tag={job}&filename=file_{name}&sep=%7C&ack=all"
+            curl = f"curl -X POST -H 'GSQL-TIMEOUT:3600000' --data-binary  @{f} '{url}'"
             res = subprocess.run(curl, shell=True, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
             res = json.loads(res.stdout.decode("utf-8"))
             nlines = res["results"][0]["statistics"]["validLine"]
@@ -63,7 +63,7 @@ def load_by_gsql(job, data_dir, names, batch_dir):
     gsql = f'RUN LOADING JOB {job} USING '
     gsql += ', '.join([f'file_{name}=\\"ANY:{data_dir}/dynamic/{name}/{batch_dir}\\"' for name in names])
     subprocess.run(f'gsql -g ldbc_snb {gsql}', shell=True)
-        
+
 def run_batch_update(batch_date, args):
     headers = {'GSQL-TIMEOUT': '36000000'}
     docker_data = Path('/data') if not args.cluster else args.data_dir
@@ -81,7 +81,14 @@ def run_batch_update(batch_date, args):
     t1 = time.time()
     requests.get(f'{args.endpoint}/query/ldbc_snb/delta_root_post', params=parameters, headers=headers)
     print(f'Precompute_root_post:\t{time.time()-t1:.4f} s')
-
+    if not args.cluster:
+        f = "root_post"
+        url = f"{args.endpoint}/ddl/ldbc_snb?tag=load_root_post&filename=file_{f}"
+        curl = f"curl -X POST -H 'GSQL-TIMEOUT:3600000' --data-binary  @/home/tigergraph/{f}.csv '{url}'"
+        res = subprocess.run(curl, shell=True, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+    else:
+        subprocess.run(f'gsql -g ldbc_snb RUN LOADING JOB load_root_post', shell=True)
+    
     print("## Deletes")
     t1 = time.time()
     for vertex in VERTICES:
@@ -99,7 +106,7 @@ def run_batch_update(batch_date, args):
     #tot_del_time = time.time() - t1
     load(f'delete_edge', args.data_dir/'deletes', DEL_EDGES, batch_dir, args)
     print(f'Batch delete:\t{time.time()-t1:.4f} s')
-    """ Needed for SF-10k benchmark to release memory
+    """# Needed for SF-10k benchmark to release memory
     print("\n## Rebuild")
     t1 = time.time()
     requests.get(f'{args.endpoint}/rebuildnow', headers=headers)
