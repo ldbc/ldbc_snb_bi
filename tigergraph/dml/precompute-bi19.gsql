@@ -2,7 +2,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY precompute_bi19() syntax v2 {
   FILE file1 ("/home/tigergraph/reply_count.csv");
   FILE file2 ("/home/tigergraph/knows19.csv");
   SetAccum<VERTEX<Person>> @creator;
-  MapAccum<VERTEX<Person>, SumAccum<UINT>> @replyCount;  
+  MapAccum<VERTEX<Person>, SumAccum<UINT>> @replyCount;
   M = SELECT m FROM Person:s -(<HAS_CREATOR)- (Comment|Post):m
     ACCUM m.@creator += s;
   

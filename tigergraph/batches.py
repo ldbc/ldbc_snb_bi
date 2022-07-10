@@ -82,12 +82,10 @@ def run_batch_update(batch_date, args):
     requests.get(f'{args.endpoint}/query/ldbc_snb/delta_root_post', params=parameters, headers=headers)
     print(f'Precompute_root_post:\t{time.time()-t1:.4f} s')
     if not args.cluster:
-        f = "root_post"
-        url = f"{args.endpoint}/ddl/ldbc_snb?tag=load_root_post&filename=file_{f}"
-        curl = f"curl -X POST -H 'GSQL-TIMEOUT:3600000' --data-binary  @/home/tigergraph/{f}.csv '{url}'"
-        res = subprocess.run(curl, shell=True, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+        subprocess.run(f"docker exec --user tigergraph snb-bi-tg bash -c '/home/tigergraph/tigergraph/app/cmd/gsql -g ldbc_snb RUN LOADING JOB load_root_post'", shell=True)
     else:
         subprocess.run(f'gsql -g ldbc_snb RUN LOADING JOB load_root_post', shell=True)
+    print(f'Precompute_root_post:\t{time.time()-t1:.4f} s')
     
     print("## Deletes")
     t1 = time.time()
@@ -106,19 +104,17 @@ def run_batch_update(batch_date, args):
     #tot_del_time = time.time() - t1
     load(f'delete_edge', args.data_dir/'deletes', DEL_EDGES, batch_dir, args)
     print(f'Batch delete:\t{time.time()-t1:.4f} s')
-    """# Needed for SF-10k benchmark to release memory
     print("\n## Rebuild")
     t1 = time.time()
     requests.get(f'{args.endpoint}/rebuildnow', headers=headers)
     print(f'Rebuild:\t{time.time()-t1:.4f} s')
-    """
     return time.time() - t0
 
 # main functions
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Batch updates for TigerGraph BI workloads')
     parser.add_argument('data_dir', type=Path, help='The directory to load data from')
-    #parser.add_argument('--skip', action='store_true', help='skip precompute')
+    parser.add_argument('--temp', type=Path, default=Path('/tmp'), help='folder for temparoty files')
     parser.add_argument('--cluster', action='store_true', help='load concurrently on cluster')
     parser.add_argument('--endpoint', type=str, default = 'http://127.0.0.1:9000', help='tigergraph rest port')
     args = parser.parse_args()

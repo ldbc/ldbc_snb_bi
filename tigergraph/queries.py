@@ -128,17 +128,12 @@ def run_precompute(args):
         requests.get(f'{args.endpoint}/query/ldbc_snb/precompute_bi{q}', headers=HEADERS)
         print(f'precompute_bi{q}:\t\t{time.time()-t1:.4f} s')
     # load the files (this is faster in large SF)
+    t1 = time.time()
     if not args.cluster:
-        for f in ["reply_count", "knows19", "knows20"]:
-            t1 = time.time()
-            url = f"{args.endpoint}/ddl/ldbc_snb?tag=load_precompute&filename=file_{f}"
-            curl = f"curl -X POST -H 'GSQL-TIMEOUT:3600000' --data-binary  @/home/tigergraph/{f}.csv '{url}'"
-            subprocess.run(curl, shell=True, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
-            print(f'load_{f}:\t\t{time.time()-t1:.4f} s')
+        subprocess.run(f"docker exec --user tigergraph snb-bi-tg bash -c '/home/tigergraph/tigergraph/app/cmd/gsql -g ldbc_snb RUN LOADING JOB load_precompute'", shell=True)
     else:
-        t1 = time.time()
         subprocess.run(f'gsql -g ldbc_snb RUN LOADING JOB load_precompute', shell=True)
-        print(f'load_precompute:\t\t{time.time()-t1:.4f} s')
+    print(f'load_precompute:\t\t{time.time()-t1:.4f} s')
     return time.time() - t0
 
 # main functions
@@ -148,6 +143,7 @@ if __name__ == '__main__':
     parser.add_argument('--para', type=Path, default=Path('../parameters'), help='parameter folder')
     parser.add_argument('--skip', action='store_true', help='skip precomputation')
     parser.add_argument('--test', action='store_true', help='test mode only run one time')
+    parser.add_argument('--temp', type=Path, default=Path('/tmp'), help='folder for temparoty files')
     parser.add_argument('--nruns', '-n', type=int, default=10, help='number of runs')
     parser.add_argument('--endpoint', type=str, default='http://127.0.0.1:9000',help='tigergraph endpoints')
     args = parser.parse_args()
