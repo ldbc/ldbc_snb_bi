@@ -91,27 +91,18 @@ t3=$SECONDS
 
 
 echo "==============================================================================="
-echo "Rebuild"
+echo "Precompute ROOT_POST"
 echo "-------------------------------------------------------------------------------"
-echo 'Update delta ...'
-curl -s -H "GSQL-TIMEOUT:3600000" "http://127.0.0.1:9000/rebuildnow" >/dev/null
+curl -s -H "GSQL-TIMEOUT:3600000" -X GET 'http://127.0.0.1:9000/query/ldbc_snb/precompute_root_post' >/dev/null
+gsql --graph ldbc_snb RUN LOADING JOB load_root_post
 t4=$SECONDS
 
 echo "==============================================================================="
-echo "Precompute ROOT_POST"
-echo "-------------------------------------------------------------------------------"
-TIMEFORMAT="-- %E s"
-echo 'Precompute ROOT_POST edge: ...'
-time (curl -s -H "GSQL-TIMEOUT:3600000" -X GET 'http://127.0.0.1:9000/query/ldbc_snb/precompute_root_post' >/dev/null)
-echo 'Load ROOT_POST edge: ...'
-gsql --graph ldbc_snb RUN LOADING JOB load_root_post
-echo 'Update delta ...'
-time (curl -s -H "GSQL-TIMEOUT:3600000" "http://127.0.0.1:9000/rebuildnow" >/dev/null)
-t5=$SECONDS
-
-echo "==============================================================================="
 echo "Data Statisitcs Check (Optional)"
+echo "this step wait for the database to rebuild delta, subsequent queries sometimes run out of memory without this step"
 echo "-------------------------------------------------------------------------------"
+echo 'update delta ...'
+curl -s -H "GSQL-TIMEOUT:3600000" "http://127.0.0.1:9000/rebuildnow" >/dev/null
 echo "Vertex statistics:"
 curl -s -X POST "http://127.0.0.1:9000/builtins/ldbc_snb" -d  '{"function":"stat_vertex_number","type":"*"}'
 echo
@@ -119,6 +110,7 @@ echo
 echo "Edge statistics:"
 curl -s -X POST "http://127.0.0.1:9000/builtins/ldbc_snb" -d  '{"function":"stat_edge_number","type":"*"}'
 echo
+t5=$SECONDS
 
 echo
 echo "====================================================================================="
@@ -126,6 +118,6 @@ echo "TigerGraph database is ready for benchmark"
 echo "Schema setup:        $((t1-t0)) s"
 echo "Load Data:           $((t2-t1)) s"
 echo "Query install:       $((t3-t2)) s"
-echo "Rebuild(optional):   $((t4-t3)) s"
-echo "Precompute ROOT_POST:$((t5-t4)) s"
+echo "Precompute ROOT_POST:$((t4-t3)) s"
+echo "Rebuild(optional):   $((t5-t4)) s"
 echo "====================================================================================="
