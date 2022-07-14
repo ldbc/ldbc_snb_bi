@@ -3,7 +3,7 @@ CREATE OR REPLACE QUERY del_Post(STRING file, BOOL header=TRUE) syntax v2 {
   @@posts = { LoadAccum(file, $1, "|", header)};
   posts = {@@posts};
   # del 6 7
-  replies = SELECT c FROM posts -(<ROOT_POST)- (Post|Comment):c;
+  replies = SELECT c FROM posts -(<ROOT_POST)- Comment:c;
   allv = posts UNION replies;
   DELETE v FROM allv:v;
   print allv.size() as result;
