@@ -48,8 +48,8 @@ def load_by_restpp(job, data_dir, names, batch_dir, endpoint):
             continue
         for f in folder.iterdir():
             print(f'- {f}')
-            url = f'{endpoint}/ddl/ldbc_snb?tag={job}&filename=file_{name}&sep=%7C&ack=all'
-            curl = f'curl -X POST -H "GSQL-TIMEOUT:3600000" --data-binary  @{f} "{url}"'
+            url = f"{endpoint}/ddl/ldbc_snb?tag={job}&filename=file_{name}&sep=%7C&ack=all"
+            curl = f"curl -X POST -H 'GSQL-TIMEOUT:3600000' --data-binary  @{f} '{url}'"
             res = subprocess.run(curl, shell=True, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
             res = json.loads(res.stdout.decode("utf-8"))
             nlines = res["results"][0]["statistics"]["validLine"]
@@ -74,9 +74,21 @@ def run_batch_update(batch_date, args):
     t0 = time.time()
     load(f'insert_vertex', args.data_dir/'inserts', VERTICES, batch_dir, args)
     load(f'insert_edge', args.data_dir/'inserts', EDGES, batch_dir, args)
-    #tot_ins_time = time.time() - t0
+    print(f'Batch insert:\t{time.time()-t0:.4f} s')
+
+    print("\n## Maintain ROOT_POST ...")
+    parameters = {"startDate": batch_date, "endDate": batch_date + timedelta(days=1)}
+    t1 = time.time()
+    requests.get(f'{args.endpoint}/query/ldbc_snb/delta_root_post', params=parameters, headers=headers)
+    print(f'Precompute_root_post:\t{time.time()-t1:.4f} s')
+    if not args.cluster:
+        subprocess.run(f"docker exec --user tigergraph snb-bi-tg bash -c '/home/tigergraph/tigergraph/app/cmd/gsql -g ldbc_snb RUN LOADING JOB load_root_post'", shell=True)
+    else:
+        subprocess.run(f'gsql -g ldbc_snb RUN LOADING JOB load_root_post', shell=True)
+    print(f'Precompute_root_post:\t{time.time()-t1:.4f} s')
+    
     print("## Deletes")
-    #t1 = time.time()
+    t1 = time.time()
     for vertex in VERTICES:
         print(f"{vertex}:")
         path = args.data_dir/'deletes'/'dynamic'/vertex/batch_dir
@@ -91,26 +103,18 @@ def run_batch_update(batch_date, args):
                 print(f'> {result} changes')
     #tot_del_time = time.time() - t1
     load(f'delete_edge', args.data_dir/'deletes', DEL_EDGES, batch_dir, args)
+    print(f'Batch delete:\t{time.time()-t1:.4f} s')
     print("\n## Rebuild")
-    t0 = time.time()
+    t1 = time.time()
     requests.get(f'{args.endpoint}/rebuildnow', headers=headers)
-    print(f'Rebuild: {time.time()-t0} s')
-    print("\n## Maintain materialized views ...")
-    parameters = {"startDate": batch_date, "endDate": batch_date + timedelta(days=1)}
-    queries = [f'cleanup_bi{q}' for q in [19,20]] + ['delta_root_post', 'delta_root_forum'] + [f'precompute_bi{q}' for q in [4,6,19,20]]
-    for q in queries:
-        print(f'{q}:\t', end='')
-        t0 = time.time()
-        requests.get(f'{args.endpoint}/query/ldbc_snb/{q}', params=parameters, headers=headers)
-        requests.get(f'{args.endpoint}/rebuildnow', headers=headers) # wait for memory release
-        print(f'{time.time()-t0:1.4f} s')
+    print(f'Rebuild:\t{time.time()-t1:.4f} s')
     return time.time() - t0
 
 # main functions
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Batch updates for TigerGraph BI workloads')
     parser.add_argument('data_dir', type=Path, help='The directory to load data from')
-    #parser.add_argument('--skip', action='store_true', help='skip precompute')
+    parser.add_argument('--temp', type=Path, default=Path('/tmp'), help='folder for temparoty files')
     parser.add_argument('--cluster', action='store_true', help='load concurrently on cluster')
     parser.add_argument('--endpoint', type=str, default = 'http://127.0.0.1:9000', help='tigergraph rest port')
     args = parser.parse_args()

@@ -2,7 +2,7 @@
 import argparse
 from pathlib import Path
 from datetime import date, timedelta
-from queries import run_queries
+from queries import run_queries, run_precompute
 from batches import run_batch_update
 import os
 import time
@@ -33,7 +33,8 @@ if __name__ == '__main__':
     batch_date = start_date
     while batch_date < end_date and (not args.test or batch_date < test_end_date):
         writes_time = run_batch_update(batch_date, args)
-        timings_file.write(f"TigerGraph|{sf}|{batch_date}|writes||{writes_time:.6f}\n")
+        precompute_time = run_precompute(args)
+        timings_file.write(f"TigerGraph|{sf}|{batch_date}|writes||{writes_time + precompute_time:.6f}\n")
         reads_time = run_queries(query_variants, results_file, timings_file, batch_date, args)
         timings_file.write(f"TigerGraph|{sf}|{batch_date}|reads||{reads_time:.6f}\n")
         batch_date = batch_date + batch_size

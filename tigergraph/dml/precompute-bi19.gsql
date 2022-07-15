@@ -1,33 +1,31 @@
+// this solution uses less memory but is slower
 CREATE OR REPLACE DISTRIBUTED QUERY precompute_bi19() syntax v2 {
-  SetAccum<VERTEX<Person>> @creator;
-  MapAccum<VERTEX<Person>, SumAccum<UINT>> @replyCount;  
-  M = SELECT m FROM Person:s -(<HAS_CREATOR)- (Comment|Post):m
+  FILE file1 ("/home/tigergraph/reply_count.csv");
+  FILE file2 ("/home/tigergraph/knows19.csv");
+  MinAccum<VERTEX<Person>> @creator, @replyto;
+  SetAccum<VERTEX<Person>> @neighbor;
+  MapAccum<VERTEX<Person>, SumAccum<UINT>> @replyToCount;  
+  vMessages = SELECT m FROM Person:s -(<HAS_CREATOR)- (Comment|Post):m
     ACCUM m.@creator += s;
   
-  M1 = SELECT m1 FROM M:m1 -(<REPLY_OF)- Comment:m2
+  vMessages = SELECT m1 FROM Comment:m1 -(REPLY_OF>)- _:m2
+    ACCUM m1.@replyto += m2.@creator;
+
+  tmp = SELECT p2 FROM Person:p1 -(KNOWS)- Person:p2
+    ACCUM p1.@neighbor += p2;
+  
+  PersonReplied = SELECT p FROM Person:p -(<HAS_CREATOR)- Comment:m  
+    WHERE m.@replyto IN p.@neighbor
+    ACCUM p.@replyToCount += (m.@replyto -> 1)
+    POST-ACCUM p.@neighbor.clear();
+  tmp =
+    SELECT p2
+    FROM Person:p1 -(KNOWS)- Person:p2
+    WHERE p1.id<p2.id
     ACCUM
-      FOREACH p1 IN m1.@creator DO
-        FOREACH p2 IN m2.@creator DO
-          p1.@replyCount += (p2 -> 1)
-        END
-      END;
-
-  tmp = SELECT p2
-    FROM Person:p1 -(REPLY_COUNT>:e)- Person:p2
-    WHERE p2.@replyCount.get(p1) > 0
-    ACCUM e.cnt = p2.@replyCount.get(p1);
-
-  tmp = SELECT p2
-    FROM Person:p1 -(KNOWS:e)- Person:p2
-    WHERE p1.id<p2.id AND (p1.@replyCount.get(p2) > 0 OR p2.@replyCount.get(p1) > 0)
-    ACCUM e.weight19 = (p1.@replyCount.get(p2) + p2.@replyCount.get(p1));
-}
-
-CREATE OR REPLACE DISTRIBUTED QUERY cleanup_bi19() syntax v2 {
-  tmp = SELECT p2
-    FROM Person:p1 -(REPLY_COUNT>:e)- Person:p2
-    ACCUM e.cnt = 0;
-  tmp = SELECT p2
-    FROM Person:p1 -(KNOWS:e)- Person:p2
-    ACCUM e.weight19 = 0;
+      UINT v1 = p1.@replyToCount.get(p2),
+      UINT v2 = p2.@replyToCount.get(p1),
+      file1.println(p1.id, p2.id, v1),
+      file1.println(p2.id, p1.id, v2),
+      file2.println(p1.id, p2.id, (v1 + v2));
 }

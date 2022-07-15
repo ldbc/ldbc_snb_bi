@@ -11,9 +11,9 @@ CREATE OR REPLACE QUERY del_Person(STRING file, BOOL header=TRUE) syntax v2 {
     WHERE f.title LIKE "Album %" OR f.title LIKE "Wall %";
   replies2 = SELECT p FROM F -(CONTAINER_OF>)- Post:p;
   
-  replies = replies1 UNION replies2; 
-  replies = SELECT c FROM replies -(<REPLY_OF*)- (Post|Comment):c;
-  allv = replies UNION F UNION person;
+  replies = replies1 UNION replies2;
+  comments = SELECT c FROM replies -(<ROOT_POST)- Comment:c;
+  allv = replies UNION comments UNION F UNION person;
   DELETE v FROM allv:v;
   PRINT allv.size() as result;
 }

@@ -21,8 +21,7 @@ CREATE LOADING JOB insert_edge FOR GRAPH ldbc_snb {
 
   // load edge
   LOAD file_Forum_containerOf_Post
-    TO EDGE CONTAINER_OF VALUES ($1, $2),
-    TO EDGE ROOT_FORUM VALUES ($2 Post, $1) USING header="true", separator="|", VERTEX_MUST_EXIST="true";
+    TO EDGE CONTAINER_OF VALUES ($1, $2) USING header="true", separator="|", VERTEX_MUST_EXIST="true";
   LOAD file_Comment_hasCreator_Person
     TO EDGE HAS_CREATOR VALUES ($1 Comment, $2) USING header="true", separator="|", VERTEX_MUST_EXIST="true";
   LOAD file_Post_hasCreator_Person
@@ -46,8 +45,6 @@ CREATE LOADING JOB insert_edge FOR GRAPH ldbc_snb {
   LOAD file_Person_isLocatedIn_City
     TO EDGE IS_LOCATED_IN VALUES ($1 Person, $2 City) USING header="true", separator="|", VERTEX_MUST_EXIST="true";
   LOAD file_Person_knows_Person
-    TO EDGE REPLY_COUNT VALUES ($2, $1, _),
-    TO EDGE REPLY_COUNT VALUES ($1, $2, _),
     TO EDGE KNOWS VALUES ($1, $2, ToMiliSeconds($0), _, _) USING header="true", separator="|", VERTEX_MUST_EXIST="true";
   LOAD file_Person_likes_Comment
     TO EDGE LIKES VALUES ($1, $2 Comment, ToMiliSeconds($0)) USING header="true", separator="|", VERTEX_MUST_EXIST="true";

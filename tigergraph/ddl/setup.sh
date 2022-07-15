@@ -22,6 +22,7 @@ gsql --graph ldbc_snb $DDL_PATH/load_dynamic.gsql
 gsql --graph ldbc_snb $DML_PATH/ins_Vertex.gsql
 gsql --graph ldbc_snb $DML_PATH/ins_Edge.gsql
 gsql --graph ldbc_snb $DML_PATH/del_Edge.gsql
+gsql --graph ldbc_snb $DML_PATH/load_precompute.gsql
 
 echo "==============================================================================="
 echo "Load Data"
@@ -79,7 +80,6 @@ gsql --graph ldbc_snb $DML_PATH/precompute-bi6.gsql
 gsql --graph ldbc_snb $DML_PATH/precompute-bi19.gsql
 gsql --graph ldbc_snb $DML_PATH/precompute-bi20.gsql
 gsql --graph ldbc_snb $DML_PATH/precompute-root-post.gsql
-gsql --graph ldbc_snb $DML_PATH/precompute-root-forum.gsql
 
 gsql --graph ldbc_snb $DML_PATH/del_Comment.gsql
 gsql --graph ldbc_snb $DML_PATH/del_Forum.gsql
@@ -91,25 +91,10 @@ t3=$SECONDS
 
 
 echo "==============================================================================="
-echo "Precompute"
+echo "Precompute ROOT_POST"
 echo "-------------------------------------------------------------------------------"
-TIMEFORMAT=%R
-echo -n "rebuild:              " # wait for memory release
-time (curl -s -H "GSQL-TIMEOUT:3600000" "http://127.0.0.1:9000/rebuildnow" >/dev/null)
-echo -n "precompute_root_post: "
-time (curl -s -H "GSQL-TIMEOUT:3600000" -X GET 'http://127.0.0.1:9000/query/ldbc_snb/precompute_root_post' >/dev/null)
-echo -n "precompute_bi4:       "
-time (curl -s -H "GSQL-TIMEOUT:3600000" -X GET 'http://127.0.0.1:9000/query/ldbc_snb/precompute_bi4' >/dev/null)
-echo -n "precompute_bi6:       "
-time (curl -s -H "GSQL-TIMEOUT:3600000" -X GET 'http://127.0.0.1:9000/query/ldbc_snb/precompute_bi6' >/dev/null)
-echo -n "rebuild:              " # wait for memory release
-time (curl -s -H "GSQL-TIMEOUT:3600000" "http://127.0.0.1:9000/rebuildnow" >/dev/null)
-echo -n "precompute_bi19:      "
-time (curl -s -H "GSQL-TIMEOUT:3600000" -X GET 'http://127.0.0.1:9000/query/ldbc_snb/precompute_bi19' >/dev/null)
-echo -n "precompute_bi20:      "
-time (curl -s -H "GSQL-TIMEOUT:3600000" -X GET 'http://127.0.0.1:9000/query/ldbc_snb/precompute_bi20' >/dev/null)
-echo -n "precompute_root_forum:"
-time (curl -s -H "GSQL-TIMEOUT:3600000" -X GET 'http://127.0.0.1:9000/query/ldbc_snb/precompute_root_forum' >/dev/null)
+curl -s -H "GSQL-TIMEOUT:3600000" -X GET 'http://127.0.0.1:9000/query/ldbc_snb/precompute_root_post' >/dev/null
+gsql --graph ldbc_snb RUN LOADING JOB load_root_post
 t4=$SECONDS
 
 echo "==============================================================================="
@@ -130,9 +115,9 @@ t5=$SECONDS
 echo
 echo "====================================================================================="
 echo "TigerGraph database is ready for benchmark"
-echo "Schema setup:       $((t1-t0)) s"
-echo "Load Data:          $((t2-t1)) s"
-echo "Query install:      $((t3-t2)) s"
-echo "Precompute:         $((t4-t3)) s"
-echo "Rebuild(optional):  $((t5-t4)) s"
+echo "Schema setup:        $((t1-t0)) s"
+echo "Load Data:           $((t2-t1)) s"
+echo "Query install:       $((t3-t2)) s"
+echo "Precompute ROOT_POST:$((t4-t3)) s"
+echo "Rebuild(optional):   $((t5-t4)) s"
 echo "====================================================================================="

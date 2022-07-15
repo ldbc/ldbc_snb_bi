@@ -102,6 +102,7 @@ jobs:
             . scripts/use-sample-data-set.sh
             scripts/load-in-one-step.sh
             scripts/benchmark.sh --test
+            scripts/stop.sh
             cd ..
             scripts/cross-validate.sh tigergraph umbra
       - slack/status
