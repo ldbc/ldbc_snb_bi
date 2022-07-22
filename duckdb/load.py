@@ -282,6 +282,7 @@ def run_duckdb(file_location, lanes, only_load, query, sf, threads, workload, fi
         load_entities_parquet(con, data_dir, query)
         stop = timeit.default_timer()
         print(stop - start)
+
     if not only_load:
         subquery = query
         if query == '19a' or query == '19b':
@@ -290,6 +291,9 @@ def run_duckdb(file_location, lanes, only_load, query, sf, threads, workload, fi
         result, timing_dict, graph_stats = run_script(con, file_location, params, sf, lanes, threads)
         sort_results(result, timing_dict, params, query, sf, subquery, workload)
         return timing_dict, subquery, graph_stats
+    else:
+        print("Loaded database")
+        sys.exit(0)
 
 
 def validate_input(query, workload):
@@ -358,8 +362,8 @@ def load_entities_csv(con, data_dir: str, query: str):
             if entity == "Person_knows_Person":
                 con.execute(
                     f"COPY {entity} (creationDate, Person2id, Person1id) FROM '{csv_path}' (DELIMITER '|', HEADER, FORMAT csv)")
-                con.execute(f"ALTER table person_knows_person ADD COLUMN weight integer")
-                con.execute(f"UPDATE person_knows_person SET weight=rowid % 10 + 1 where weight is NULL")
+    con.execute(f"ALTER table person_knows_person ADD COLUMN weight integer")
+    con.execute(f"UPDATE person_knows_person SET weight=rowid % 10 + 1 where weight is NULL")
     logging.info("Loaded dynamic entities.")
     logging.info("Load initial snapshot")
 
