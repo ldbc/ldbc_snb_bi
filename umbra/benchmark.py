@@ -118,15 +118,21 @@ def execute(cur, query):
 def run_script(pg_con, cur, filename):
     with open(filename, "r") as f:
         queries_file = f.read()
+        # strip comments
         queries_file = re.sub(r"\n--.*", "", queries_file)
         queries = queries_file.split(";")
         for query in queries:
             if query.isspace():
                 continue
 
-            #print(f"{query}")
-            execute(cur, query)
+            sql_statement = re.findall(r"^((CREATE|INSERT|DROP|DELETE|SELECT|COPY|UPDATE|ALTER) [A-Za-z0-9_ ]*)", query, re.MULTILINE)
+            print(f"{sql_statement[0][0].strip()} ...")
+            start = time.time()
+            cur.execute(query)
             pg_con.commit()
+            end = time.time()
+            duration = end - start
+            print(f"-> {duration:.4f} seconds")
 
 
 def run_queries(query_variants, pg_con, sf, test, pgtuning, batch_id, timings_file):
