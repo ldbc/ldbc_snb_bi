@@ -260,7 +260,8 @@ def load_entities_parquet(con, data_dir, query):
         if "person_knows_person" in query:
             file_location = query.split("'")[1]
             con.execute(f"COPY person_knows_person (creationDate, Person2id, Person1id) FROM '{file_location}' (FORMAT 'parquet')")
-
+            con.execute(f"ALTER table person_knows_person ADD COLUMN weight integer")
+            con.execute(f"UPDATE person_knows_person SET weight=rowid % 10 + 1 where weight is NULL")
 
 def run_duckdb(file_location, lanes, only_load, query, sf, threads, workload, file_format):
     con = duckdb.connect("snb_benchmark.duckdb", read_only=False)
@@ -308,7 +309,7 @@ def validate_input(query, workload):
     if query == '19a' or query == '19b':
         file_location = f"queries/{workload}/q19.sql"
     else:
-        file_location = f"queries/{workload}/q{query}.sql"
+        file_location = f"queries/{workload}/q{query}-modified.sql" # TODO REMOVE MODIFIED AFTER TESTING CHEAPEST
     try:
         open(file_location)
     except FileNotFoundError:
