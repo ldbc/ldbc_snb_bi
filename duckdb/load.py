@@ -358,6 +358,8 @@ def load_entities_csv(con, data_dir: str, query: str):
             if entity == "Person_knows_Person":
                 con.execute(
                     f"COPY {entity} (creationDate, Person2id, Person1id) FROM '{csv_path}' (DELIMITER '|', HEADER, FORMAT csv)")
+                con.execute(f"ALTER table person_knows_person ADD COLUMN weight integer")
+                con.execute(f"UPDATE person_knows_person SET weight=rowid % 10 + 1 where weight is NULL")
     logging.info("Loaded dynamic entities.")
     logging.info("Load initial snapshot")
 
