@@ -8,7 +8,6 @@ cd ..
 
 . scripts/vars.sh
 
-
 echo "==============================================================================="
 echo "Loading the Umbra database"
 echo "-------------------------------------------------------------------------------"
@@ -22,7 +21,7 @@ echo "UMBRA_CSV_DIR: ${UMBRA_CSV_DIR}"
 echo "==============================================================================="
 
 if [ ! -d "${UMBRA_CSV_DIR}" ]; then
-    echo "Directory ${UMBRA_CSV_DIR} does not exist."
+    echo "Umbra directory does not exist. \${UMBRA_CSV_DIR} is set to: ${UMBRA_CSV_DIR}"
     exit 1
 fi
 
