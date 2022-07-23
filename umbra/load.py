@@ -6,7 +6,7 @@ import time
 
 if len(sys.argv) < 2:
     print("Umbra loader script")
-    print("Usage: load.py <UMBRA_DATA_DIR> [--compressed]")
+    print("Usage: load.py <UMBRA_CSV_DIR>")
     exit(1)
 
 data_dir = sys.argv[1]
