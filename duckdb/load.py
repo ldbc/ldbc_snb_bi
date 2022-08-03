@@ -249,8 +249,8 @@ def run_per_lane(file_location, lane, only_load, query, sf, threads, workload, f
 
 
 def load_entities_parquet(con, data_dir, query):
-    run_script(con, "ddl/drop-tables-parquet.sql")
-    file_location = f"{data_dir}/parquet"
+    # run_script(con, "ddl/drop-tables-parquet.sql")
+    file_location = f"{data_dir}/"
     schema = open(f"{file_location}/schema.sql").read().split(';')
     for query in schema:
         con.execute(query)
@@ -260,14 +260,14 @@ def load_entities_parquet(con, data_dir, query):
         if "person_knows_person" in query:
             file_location = query.split("'")[1]
             con.execute(f"COPY person_knows_person (creationDate, Person2id, Person1id) FROM '{file_location}' (FORMAT 'parquet')")
-            con.execute(f"ALTER table person_knows_person ADD COLUMN weight integer")
-            con.execute(f"UPDATE person_knows_person SET weight=rowid % 10 + 1 where weight is NULL")
+            # con.execute(f"ALTER table person_knows_person ADD COLUMN weight integer")
+            # con.execute(f"UPDATE person_knows_person SET weight=rowid % 10 + 1 where weight is NULL")
 
 def run_duckdb(file_location, lanes, only_load, query, sf, threads, workload, file_format):
     con = duckdb.connect("snb_benchmark.duckdb", read_only=False)
     run_script(con, "ddl/drop-tables.sql")
     run_script(con, "ddl/schema-composite-merged-fk.sql")
-    data_dir = f'../../ldbc_snb_datagen_spark/out-sf{sf}'
+    data_dir = f'../../ldbc_snb_datagen_spark/out-sf{sf}/graphs/csv/bi/composite-merged-fk'
     params = open(f'../parameters/parameters-sf{sf}/{workload}-{query}.csv').readlines()  # parameters-sf{sf}/
     if file_format == 'csv':
         start = timeit.default_timer()
@@ -313,7 +313,7 @@ def validate_input(query, workload):
     if query == '19a' or query == '19b':
         file_location = f"queries/{workload}/q19.sql"
     else:
-        file_location = f"queries/{workload}/q{query}-modified.sql" # TODO REMOVE MODIFIED AFTER TESTING CHEAPEST
+        file_location = f"queries/{workload}/q{query}.sql" # TODO REMOVE MODIFIED AFTER TESTING CHEAPEST
     try:
         open(file_location)
     except FileNotFoundError:
@@ -323,8 +323,8 @@ def validate_input(query, workload):
 
 
 def load_entities_csv(con, data_dir: str, query: str):
-    static_path = f"{data_dir}/graphs/csv/bi/composite-merged-fk/initial_snapshot/static"
-    dynamic_path = f"{data_dir}/graphs/csv/bi/composite-merged-fk/initial_snapshot/dynamic"
+    static_path = f"{data_dir}/initial_snapshot/static"
+    dynamic_path = f"{data_dir}/initial_snapshot/dynamic"
     static_entities = ["Organisation", "Place", "Tag", "TagClass"]
     dynamic_entities = ["Comment", "Comment_hasTag_Tag", "Forum", "Forum_hasMember_Person", "Forum_hasTag_Tag",
                         "Person", "Person_hasInterest_Tag", "Person_knows_Person", "Person_likes_Comment",
@@ -342,6 +342,13 @@ def load_entities_csv(con, data_dir: str, query: str):
         # Query 13 Interactive
         static_entities = []
         dynamic_entities = ["Person", "Person_knows_Person"]
+
+
+
+    for entity in dynamic_entities: 
+        con.execute(f"COPY {entity} FROM {dynamic_path}/{entity}/*.parquet")
+        print(f"Loaded {entity}")
+    return 
     logging.info("## Static entities")
     for entity in static_entities:
         for csv_file in [f for f in os.listdir(f"{static_path}/{entity}") if

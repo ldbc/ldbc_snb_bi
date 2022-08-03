@@ -3,7 +3,7 @@ DROP TABLE IF EXISTS interactions;
 DROP TABLE IF EXISTS weights;
 DROP TABLE IF EXISTS PersonInteractions;
 
-pragma verify_parallelism;
+
 
 CREATE TEMP TABLE Message as (SELECT p.id as messageid, NULL as ParentMessageId, p.CreatorPersonId
      FROM Post p
@@ -79,9 +79,6 @@ INSERT INTO all_options (SELECT s.id AS person1id, s.rowid as person1rowid, s.Lo
                 (SELECT pi.id, pi.rowid, pi.locationcityid FROM personinteractions pi WHERE pi.locationcityid = :city1id) s,
                 (SELECT pi.id, pi.rowid, pi.locationcityid FROM personinteractions pi WHERE pi.locationcityid = :city2id) s2
 );
-
--- DEBUG
-select count(*) as parameter_timing from all_options;
 
 
 -- PATH
