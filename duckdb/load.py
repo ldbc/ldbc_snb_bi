@@ -260,8 +260,6 @@ def load_entities_parquet(con, data_dir, query):
         if "person_knows_person" in query:
             file_location = query.split("'")[1]
             con.execute(f"COPY person_knows_person (creationDate, Person2id, Person1id) FROM '{file_location}' (FORMAT 'parquet')")
-            # con.execute(f"ALTER table person_knows_person ADD COLUMN weight integer")
-            # con.execute(f"UPDATE person_knows_person SET weight=rowid % 10 + 1 where weight is NULL")
 
 def run_duckdb(file_location, lanes, only_load, query, sf, threads, workload, file_format):
     con = duckdb.connect("snb_benchmark.duckdb", read_only=False)
@@ -344,11 +342,11 @@ def load_entities_csv(con, data_dir: str, query: str):
         dynamic_entities = ["Person", "Person_knows_Person"]
 
 
-
-    for entity in dynamic_entities: 
-        con.execute(f"COPY {entity} FROM {dynamic_path}/{entity}/*.parquet")
-        print(f"Loaded {entity}")
-    return 
+    #
+    # for entity in dynamic_entities:
+    #     con.execute(f"COPY {entity} FROM {dynamic_path}/{entity}/*.parquet")
+    #     print(f"Loaded {entity}")
+    # return
     logging.info("## Static entities")
     for entity in static_entities:
         for csv_file in [f for f in os.listdir(f"{static_path}/{entity}") if
