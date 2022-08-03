@@ -39,21 +39,34 @@ CREATE TEMP TABLE PersonInteractions AS (SELECT DISTINCT r.Person1id as id, p.lo
                                     ORDER BY id);
 
 -- CSR CREATION
-SELECT DISTINCT CREATE_CSR(
-               0,
-               v.vcount,
-               r.ecount,
-               r.src,
-               r.dst,
-               r.weight
-           )
-FROM (SELECT count(p.id) as vcount FROM PersonInteractions p) v,
-     (SELECT src.rowid as src, dst.rowid as dst, t.weight as weight, count(src.rowid) OVER (ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) as ecount
-      FROM weights t
-           JOIN PersonInteractions src ON t.Person1id = src.id
-           JOIN PersonInteractions dst ON t.Person2id = dst.id
-      order by src.rowid, dst.rowid) r;
+SELECT CREATE_CSR_VERTEX(
+0,
+v.vcount,
+sub.dense_id,
+sub.cnt
+) AS numEdges
+FROM (
+    SELECT c.rowid as dense_id, count(t.person1id) as cnt
+    FROM PersonInteractions c
+    LEFT JOIN  weights t ON t.person1id = c.id
+    GROUP BY c.rowid
+) sub, (SELECT count(c.id) as vcount FROM PersonInteractions c) v;
 
+-- CSR CREATION
+SELECT min(CREATE_CSR_EDGE(0, (SELECT count(c.id) as vcount FROM PersonInteractions c),
+CAST ((SELECT sum(CREATE_CSR_VERTEX(0, (SELECT count(c.id) as vcount FROM PersonInteractions c),
+sub.dense_id, sub.cnt)) AS numEdges
+FROM (
+    SELECT c.rowid as dense_id, count(t.person1id) as cnt
+    FROM PersonInteractions c
+    LEFT JOIN  weights t ON t.person1id = c.id
+    GROUP BY c.rowid
+) sub) AS BIGINT),
+src.rowid, dst.rowid, t.weight))
+FROM
+  weights t
+  JOIN PersonInteractions src ON t.person1id = src.id
+  JOIN PersonInteractions dst ON t.person2id = dst.id;
 
 create temp table results
 (
@@ -79,6 +92,13 @@ INSERT INTO all_options (SELECT s.id AS person1id, s.rowid as person1rowid, s.Lo
                 (SELECT pi.id, pi.rowid, pi.locationcityid FROM personinteractions pi WHERE pi.locationcityid = :city1id) s,
                 (SELECT pi.id, pi.rowid, pi.locationcityid FROM personinteractions pi WHERE pi.locationcityid = :city2id) s2
 );
+
+-- NUMPATHS
+select count(*) from all_options;
+
+-- NUMVERTICESEDGES
+select num_vertices, num_edges from (select count(*) as num_vertices from personinteractions),
+                                    (select count(*) as num_edges from Person_knows_Person);
 
 
 -- PATH
