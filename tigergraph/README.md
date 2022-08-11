@@ -20,7 +20,7 @@ rm -rf out-sf${SF}/
 tools/run.py \
     --cores $(nproc) \
     --memory ${LDBC_SNB_DATAGEN_MAX_MEM} \
-    ./target/ldbc_snb_datagen_${PLATFORM_VERSION}-${DATAGEN_VERSION}.jar \
+    --jar ./target/ldbc_snb_datagen_${PLATFORM_VERSION}-${DATAGEN_VERSION}-jar-with-dependencies.jar \
     -- \
     --format csv \
     --scale-factor ${SF} \
