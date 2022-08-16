@@ -5,7 +5,7 @@ import argparse
 from multiprocessing import Pool, cpu_count
 import os
 parser = argparse.ArgumentParser(description='Download one partition of data from GCS bucket.')
-parser.add_argument('data',  type=int, choices=[100, 300, 1000, 3000, 10000], help='data scale factor.')
+parser.add_argument('data',  type=int, choices=[100, 300, 1000, 3000, 10000, 30000], help='data scale factor.')
 parser.add_argument('index', type=int, help='index of the node')
 parser.add_argument('nodes', type=int, help='the total number of nodes')
 parser.add_argument('--thread','-t', type=int, default=4, help='number of threads')

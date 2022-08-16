@@ -9,7 +9,7 @@ import os
 
 
 parser = argparse.ArgumentParser(description='Download and uncompress the data on all the nodes.')
-parser.add_argument('data',  type=int, choices=[100, 300, 1000, 3000, 10000], help='data scale factor.')
+parser.add_argument('data',  type=int, choices=[100, 300, 1000, 3000, 10000, 30000], help='data scale factor.')
 parser.add_argument('ip', type=str, help='starting ip address')
 parser.add_argument('nodes', type=int, help='the number of nodes')
 parser.add_argument('--key','-k', type=str, default=None, help='location of the service key json file')
