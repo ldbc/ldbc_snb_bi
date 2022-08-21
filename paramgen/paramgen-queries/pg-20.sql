@@ -10,13 +10,13 @@ FROM
           SELECT
               Person_workAt_Company_window.personId AS person1Id,
               Person_workAt_Company_window.companyId AS companyId,
-              companyName,
+              name AS companyName,
               frequency AS freq,
               abs(frequency - (SELECT percentile_disc(0.47) WITHIN GROUP (ORDER BY frequency) FROM companyNumEmployees)) AS diff,
               row_number() OVER (PARTITION BY Person_workAt_Company_window.companyId ORDER BY md5(Person_workAt_Company_window.personId)) AS rnum
           FROM companyNumEmployees
           JOIN Person_workAt_Company_window
-          ON Person_workAt_Company_window.companyId = companyNumEmployees.companyId
+          ON Person_workAt_Company_window.companyId = companyNumEmployees.id
           ORDER BY diff, md5(Person_workAt_Company_window.personId), md5(Person_workAt_Company_window.companyId)
       )
       WHERE rnum < 5

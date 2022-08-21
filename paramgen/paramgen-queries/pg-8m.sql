@@ -3,7 +3,7 @@ CREATE TABLE tagAndWindowNumMessages AS
     SELECT
         d.anchorDate + INTERVAL (-10 + s.salt) DAY AS startDate,
         d.anchorDate + INTERVAL (-10 + s.salt + 10 + s.salt * 37 % 5) DAY AS endDate,
-        tagName,
+        name AS tagName,
         sum(frequency) AS frequency
     FROM
         creationDayAndTagNumMessages,

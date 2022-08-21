@@ -1,9 +1,9 @@
 import os
 import duckdb
 
-csv_path = "factors/"
-con = duckdb.connect(database='factors.duckdb')
-
+con = duckdb.connect(database='scratch/factors.duckdb')
+ 
+factor_parquet_path = "factors/"
 temporal_parquet_path = "temporal/"
 
 print("============ Initializing database ============")
@@ -14,12 +14,13 @@ print()
 print("============ Loading the factor tables ============")
 for entity in ["cityNumPersons", "cityPairsNumFriends", "companyNumEmployees", "countryNumMessages", "countryNumPersons", "countryPairsNumFriends", "creationDayAndLengthCategoryNumMessages", "creationDayAndTagNumMessages", "creationDayAndTagClassNumMessages", "creationDayNumMessages", "languageNumPosts", "lengthNumMessages", "people2Hops", "people4Hops", "personDisjointEmployerPairs", "personNumFriends", "tagClassNumMessages", "tagClassNumTags", "tagNumMessages", "tagNumPersons"]:
     print(f"{entity}")
-    parquet_files = [f for f in os.listdir(f"{csv_path}{entity}/") if f.endswith(".parquet")]
+    parquet_files = [f for f in os.listdir(f"{factor_parquet_path}{entity}/") if f.endswith(".parquet")]
     if not parquet_files:
         raise ValueError(f"No Parquet factor table files found for entity {entity}")
     for parquet_file in parquet_files:
         print(f"- {parquet_file}")
-        con.execute(f"COPY {entity} FROM '{csv_path}{entity}/{parquet_file}' (FORMAT PARQUET)")
+        con.execute(f"DROP TABLE IF EXISTS {entity}")
+        con.execute(f"CREATE TABLE {entity} AS SELECT * FROM read_parquet('{factor_parquet_path}{entity}/{parquet_file}')")
 
 print()
 print("============ Loading the temporal tables ============")
