@@ -1,4 +1,4 @@
-SELECT creationDay AS 'date:DATE'
+SELECT date_trunc('day', creationDay) AS 'date:DATE'
 FROM (
     SELECT creationDay
     FROM creationDayNumMessages

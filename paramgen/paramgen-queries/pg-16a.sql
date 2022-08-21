@@ -1,9 +1,9 @@
 SELECT
     tagA AS 'tagA:STRING',
-    dateA AS 'dateA:DATE',
+    date_trunc('day', dateA) AS 'dateA:DATE',
     tagB AS 'tagB:STRING',
-    dateB AS 'dateB:DATE',
-    3 + (extract('dayofyear' FROM dateA)+extract('dayofyear' FROM dateB)) % 4 AS 'maxKnowsLimit:INT'
+    date_trunc('day', dateB) AS 'dateB:DATE',
+    3 + (extract('dayofyear' FROM dateA) + extract('dayofyear' FROM dateB)) % 4 AS 'maxKnowsLimit:INT'
 FROM (
     SELECT
         tagDatesA.tagName AS tagA,

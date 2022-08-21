@@ -61,6 +61,7 @@ jobs:
             cd paramgen
             scripts/paramgen.sh
             cd ..
+            head -n 5 parameters/*.csv
       - run:
           name: Test Umbra toolchain with uncompressed CSVs
           command: |
