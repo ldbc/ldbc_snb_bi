@@ -17,7 +17,6 @@ FROM
         FROM companyNumEmployees
         ORDER BY diff
         )
-        WHERE companyId = 544
     ) s1,
     (SELECT
         personNumFriends.id AS personId,
