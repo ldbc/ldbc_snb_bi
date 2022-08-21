@@ -22,7 +22,7 @@ user = "tigergraph"
 pin = "tigergraph" # please change the pin here
 workdir = '/home/tigergraph'
 bucket_name = 'ldbc_bi'
-root = f'sf{args.data}-bi/'
+root = f'sf{args.data}/'
 
 def createSSHClient(server, port, user, password):
     client = paramiko.SSHClient()
