@@ -14,14 +14,20 @@ print()
 print("============ Loading the factor tables ============")
 for entity in ["cityNumPersons", "cityPairsNumFriends", "companyNumEmployees", "countryNumMessages", "countryNumPersons", "countryPairsNumFriends", "creationDayAndLengthCategoryNumMessages", "creationDayAndTagNumMessages", "creationDayAndTagClassNumMessages", "creationDayNumMessages", "languageNumPosts", "lengthNumMessages", "people2Hops", "people4Hops", "personDisjointEmployerPairs", "personNumFriends", "tagClassNumMessages", "tagClassNumTags", "tagNumMessages", "tagNumPersons"]:
     print(f"{entity}")
-    for csv_file in [f for f in os.listdir(f"{csv_path}{entity}/") if f.endswith(".csv")]:
-        print(f"- {csv_file}")
-        con.execute(f"COPY {entity} FROM '{csv_path}{entity}/{csv_file}' (FORMAT CSV, DELIMITER ',')")
+    parquet_files = [f for f in os.listdir(f"{csv_path}{entity}/") if f.endswith(".parquet")]
+    if not parquet_files:
+        raise ValueError(f"No Parquet factor table files found for entity {entity}")
+    for parquet_file in parquet_files:
+        print(f"- {parquet_file}")
+        con.execute(f"COPY {entity} FROM '{csv_path}{entity}/{parquet_file}' (FORMAT PARQUET)")
 
 print()
 print("============ Loading the temporal tables ============")
 print("Person_studyAt_University")
-for parquet_file in [f for f in os.listdir(f"{temporal_parquet_path}Person_studyAt_University/") if f.endswith(".snappy.parquet")]:
+parquet_files = [f for f in os.listdir(f"{temporal_parquet_path}Person_studyAt_University/") if f.endswith(".parquet")]
+if not parquet_files:
+    raise ValueError(f"No Parquet temporal table files found for entity Person_studyAt_University")
+for parquet_file in parquet_files:
     print(f"- {parquet_file}")
     con.execute(f"""
         INSERT INTO Person_studyAt_University_window (
@@ -33,7 +39,10 @@ for parquet_file in [f for f in os.listdir(f"{temporal_parquet_path}Person_study
         """)
 
 print("Person_workAt_Company")
-for parquet_file in [f for f in os.listdir(f"{temporal_parquet_path}Person_workAt_Company/") if f.endswith(".snappy.parquet")]:
+parquet_files = [f for f in os.listdir(f"{temporal_parquet_path}Person_workAt_Company/") if f.endswith(".parquet")]
+if not parquet_files:
+    raise ValueError(f"No Parquet temporal table files found for entity Person_workAt_Company")
+for parquet_file in parquet_files:
     print(f"- {parquet_file}")
     con.execute(f"""
         INSERT INTO Person_workAt_Company_window (
@@ -45,7 +54,10 @@ for parquet_file in [f for f in os.listdir(f"{temporal_parquet_path}Person_workA
         """)
 
 print("Person")
-for parquet_file in [f for f in os.listdir(f"{temporal_parquet_path}Person/") if f.endswith(".snappy.parquet")]:
+parquet_files = [f for f in os.listdir(f"{temporal_parquet_path}Person/") if f.endswith(".parquet")]
+if not parquet_files:
+    raise ValueError(f"No Parquet temporal table files found for entity Person")
+for parquet_file in parquet_files:
     print(f"- {parquet_file}")
     con.execute(f"""
         INSERT INTO person_window (
@@ -57,7 +69,10 @@ for parquet_file in [f for f in os.listdir(f"{temporal_parquet_path}Person/") if
         """)
 
 print("Person_knows_Person")
-for parquet_file in [f for f in os.listdir(f"{temporal_parquet_path}Person_knows_Person/") if f.endswith(".snappy.parquet")]:
+parquet_files = [f for f in os.listdir(f"{temporal_parquet_path}Person_knows_Person/") if f.endswith(".parquet")]
+if not parquet_files:
+    raise ValueError(f"No Parquet temporal table files found for entity Person_knows_Person")
+for parquet_file in parquet_files:
     print(f"- {parquet_file}")
     con.execute(f"""
         INSERT INTO knows_window (
