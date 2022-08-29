@@ -2,7 +2,7 @@
 CREATE TABLE tagClassAndWindowNumMessages AS
     SELECT
         d.anchorDate + INTERVAL (-10 + s.salt) DAY AS date,
-        tagClassName,
+        name AS tagClassName,
         sum(frequency) AS frequency
     FROM
         creationDayAndTagClassNumMessages,

@@ -1,9 +1,9 @@
 SELECT
     tagA AS 'tagA:STRING',
-    dateA AS 'dateA:DATE',
+    date_trunc('day', dateA) AS 'dateA:DATE',
     tagB AS 'tagB:STRING',
-    dateB AS 'dateB:DATE',
-    3 + (extract('dayofyear' FROM dateA)+extract('dayofyear' FROM dateB)) % 4 AS 'maxKnowsLimit:INT'
+    date_trunc('day', dateB) AS 'dateB:DATE',
+    3 + (extract('dayofyear' FROM dateA) + extract('dayofyear' FROM dateB)) % 4 AS 'maxKnowsLimit:INT'
 FROM (
     SELECT
         tagDatesA.tagName AS tagA,
@@ -13,7 +13,7 @@ FROM (
     FROM
         (SELECT
             max(creationDay) AS creationDay,
-            tagName,
+            name AS tagName,
             frequency AS freq,
             abs(frequency - (SELECT percentile_disc(1.00) WITHIN GROUP (ORDER BY frequency) FROM creationDayAndTagNumMessages)) diff
          FROM creationDayAndTagNumMessages
@@ -23,7 +23,7 @@ FROM (
         ) tagDatesA,
         (SELECT
             min(creationDay) AS creationDay,
-            tagName,
+            name AS tagName,
             frequency AS freq,
             abs(frequency - (SELECT percentile_disc(0.995) WITHIN GROUP (ORDER BY frequency) FROM creationDayAndTagNumMessages)) diff
          FROM creationDayAndTagNumMessages
