@@ -7,7 +7,7 @@ Pre-requisites are
 * `kubectl`
 * command line tool for GCP or AWS: `gcloud` or `aws-cli`. The default project and region/zone need to be configured. For GCP, is `gcloud init`.
 
-> Benchmark can also be performed on local clusters without k8s. But the setup is susceptible to errors and safety issues. Brief instructions are in [Section: Benchmark without k8s](##Benchmark_without_k8s).
+> Benchmark can also be performed on local clusters without k8s. But the setup is susceptible to errors and safety issues. Brief instructions are in [Section: Benchmark without k8s](../benchmark_on_cluster).
 
 ## Create the cluster
 
