@@ -36,3 +36,5 @@ WHERE NOT EXISTS (
           AND Person_workAt_Company_window.companyId = s1.companyId
           AND c1.Component = c2.Component
     )
+ORDER BY md5(s2.personId), md5(s1.companyId)
+LIMIT 400
