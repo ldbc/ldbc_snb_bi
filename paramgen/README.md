@@ -24,9 +24,9 @@ The paramgen implements [parameter curation](https://research.vu.nl/en/publicati
         --memory ${LDBC_SNB_DATAGEN_MAX_MEM} \
         ./target/ldbc_snb_datagen_${PLATFORM_VERSION}-${DATAGEN_VERSION}.jar \
         -- \
-        --format csv \
+        --format parquet \
         --scale-factor ${SF} \
-        --mode bi \
+        --mode raw \
         --output-dir out-sf${SF} \
         --generate-factors
     ```
