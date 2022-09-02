@@ -6,12 +6,10 @@ CREATE LOADING JOB load_root_post FOR GRAPH ldbc_snb {
 
 CREATE LOADING JOB load_precompute FOR GRAPH ldbc_snb {
   DEFINE FILENAME file_reply_count = "ANY:/home/tigergraph/reply_count.csv";
-  DEFINE FILENAME file_knows19 = "ANY:/home/tigergraph/knows19.csv";
   DEFINE FILENAME file_knows20 = "ANY:/home/tigergraph/knows20.csv";
   LOAD file_reply_count
-    TO EDGE REPLY_COUNT VALUES ($0, $1, $2) USING header="false";
-  LOAD file_knows19
-    TO EDGE KNOWS VALUES ($0, $1, _, $2, _) USING header="false";
+    TO EDGE REPLY_COUNT VALUES ($0, $1, REDUCE(add(1))),
+    TO EDGE KNOWS VALUES ($0, $1, _, REDUCE(add(1)), _) USING header="false";
   LOAD file_knows20
     TO EDGE KNOWS VALUES ($0, $1, _, _, $2) USING header="false";
 }

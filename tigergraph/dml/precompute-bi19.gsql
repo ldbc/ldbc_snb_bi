@@ -1,10 +1,8 @@
 // this solution uses less memory but is slower
 CREATE OR REPLACE DISTRIBUTED QUERY precompute_bi19() syntax v2 {
   FILE file1 ("/home/tigergraph/reply_count.csv");
-  FILE file2 ("/home/tigergraph/knows19.csv");
   MinAccum<VERTEX<Person>> @creator, @replyto;
   SetAccum<VERTEX<Person>> @neighbor;
-  MapAccum<VERTEX<Person>, SumAccum<UINT>> @replyToCount;  
   vMessages = SELECT m FROM Person:s -(<HAS_CREATOR)- (Comment|Post):m
     ACCUM m.@creator += s;
   
@@ -14,18 +12,16 @@ CREATE OR REPLACE DISTRIBUTED QUERY precompute_bi19() syntax v2 {
   tmp = SELECT p2 FROM Person:p1 -(KNOWS)- Person:p2
     ACCUM p1.@neighbor += p2;
   
-  PersonReplied = SELECT p FROM Person:p -(<HAS_CREATOR)- Comment:m  
+  PersonReplied = SELECT p FROM Person:p -(<HAS_CREATOR)- Comment:m
     WHERE m.@replyto IN p.@neighbor
-    ACCUM p.@replyToCount += (m.@replyto -> 1)
-    POST-ACCUM p.@neighbor.clear();
-  tmp =
-    SELECT p2
-    FROM Person:p1 -(KNOWS)- Person:p2
-    WHERE p1.id<p2.id
-    ACCUM
-      UINT v1 = p1.@replyToCount.get(p2),
-      UINT v2 = p2.@replyToCount.get(p1),
-      file1.println(p1.id, p2.id, v1),
-      file1.println(p2.id, p1.id, v2),
-      file2.println(p1.id, p2.id, (v1 + v2));
+    ACCUM file1.println(p.id, m.@replyto);
+}
+
+CREATE OR REPLACE DISTRIBUTED QUERY cleanup_bi19() syntax v2 {
+  tmp = SELECT p1 FROM Person:p1 -((KNOWS|REPLY_COUNT>):e)- Person:p2
+    ACCUM 
+      CASE e.type
+      WHEN "KNOWS" THEN e.weight19 = 0
+      WHEN "REPLY_COUNT" THEN e.cnt = 0
+    END;
 }

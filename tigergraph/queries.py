@@ -122,6 +122,8 @@ def run_queries(query_variants, results_file, timings_file, batch_date, args):
 def run_precompute(args):
     t0 = time.time()
     print(f"==================== Precompute for BI 19,4,6,20 ======================")
+    requests.get(f'{args.endpoint}/query/ldbc_snb/cleanup_bi19', headers=HEADERS)
+    print(f'cleanup_bi19:\t\t{time.time()-t0:.4f} s')
     # compute values and print to files
     for q in [19,4,6,20]:
         t1 = time.time()
