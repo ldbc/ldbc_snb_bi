@@ -7,6 +7,7 @@ import requests
 import re
 import os
 import subprocess
+from datetime import date,timedelta
 # query timeout value in miliseconds
 HEADERS = {'GSQL-TIMEOUT': '36000000'}
 
@@ -125,7 +126,21 @@ def run_precompute(args):
     requests.get(f'{args.endpoint}/query/ldbc_snb/cleanup_bi19', headers=HEADERS)
     print(f'cleanup_bi19:\t\t{time.time()-t0:.4f} s')
     # compute values and print to files
-    for q in [19,4,6,20]:
+    # precompute q19
+    start = date(2010,1,1)
+    nbatch = 12
+    for i in range(nbatch):
+      t1 = time.time()
+      end = start + timedelta(days=365*3//nbatch)
+      output = Path('/home/tigergraph/reply_count')
+      output.mkdir(exist_ok=True)
+      out_file = output / f'part_{i:04d}.csv'
+      params = {'startDate':start, 'endDate': end, 'file': str(out_file)}
+      requests.get(f'{args.endpoint}/query/ldbc_snb/precompute_bi19', params = params, headers=HEADERS)
+      print(f'precompute_bi19({start},{end}):{time.time()-t1:.4f} s')
+      start = end
+
+    for q in [4,6,20]:
         t1 = time.time()
         requests.get(f'{args.endpoint}/query/ldbc_snb/precompute_bi{q}', headers=HEADERS)
         print(f'precompute_bi{q}:\t\t{time.time()-t1:.4f} s')
