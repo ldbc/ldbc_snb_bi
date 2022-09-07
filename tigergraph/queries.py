@@ -133,7 +133,6 @@ def run_precompute(args):
       t1 = time.time()
       end = start + timedelta(days=365*3//nbatch + 1)
       output = Path('/home/tigergraph/reply_count')
-      output.mkdir(exist_ok=True)
       out_file = output / f'part_{i:04d}.csv'
       params = {'startDate':start, 'endDate': end, 'file': str(out_file)}
       requests.get(f'{args.endpoint}/query/ldbc_snb/precompute_bi19', params = params, headers=HEADERS)

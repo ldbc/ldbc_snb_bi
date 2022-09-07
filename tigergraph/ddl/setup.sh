@@ -23,6 +23,7 @@ gsql --graph ldbc_snb $DML_PATH/ins_Vertex.gsql
 gsql --graph ldbc_snb $DML_PATH/ins_Edge.gsql
 gsql --graph ldbc_snb $DML_PATH/del_Edge.gsql
 gsql --graph ldbc_snb $DML_PATH/load_precompute.gsql
+mkdir $HOME/reply_count
 
 echo "==============================================================================="
 echo "Load Data"
