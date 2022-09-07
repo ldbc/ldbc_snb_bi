@@ -78,7 +78,7 @@ download_all.py [scale factor] [m1 ip address] [number of nodes] -t [download th
 ```
 
 ## Load data
-Update `TG_DATA_DIR` and `TG_PARAMETER` in `../k8s/vars.sh` and the load the data
+Update `TG_DATA_DIR` and `TG_PARAMETER` in `../k8s/vars.sh` and then load the data
 ```sh
 nohup ./k8s/setup.sh > log.setup 2>&1 < /dev/null &
 ```
