@@ -128,10 +128,10 @@ def run_precompute(args):
     # compute values and print to files
     # precompute q19
     start = date(2010,1,1)
-    nbatch = 12
+    nbatch = 12 # can be smaller is memory is sufficient
     for i in range(nbatch):
       t1 = time.time()
-      end = start + timedelta(days=365*3//nbatch)
+      end = start + timedelta(days=365*3//nbatch + 1)
       output = Path('/home/tigergraph/reply_count')
       output.mkdir(exist_ok=True)
       out_file = output / f'part_{i:04d}.csv'

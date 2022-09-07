@@ -9,6 +9,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY precompute_bi19(DATETIME startDate, DATETIME
   P = SELECT p FROM Person:p
     WHERE p.creationDate BETWEEN startEpoch AND endEpoch;
   tmp = SELECT p FROM Person:p -(KNOWS)- Person:p2
+    WHERE p2.creationDate BETWEEN startEpoch AND endEpoch
     ACCUM p.@neighbor += p2.id;
   M1 = SELECT m1 FROM P:p -(<HAS_CREATOR)- _:m1
     ACCUM m1.@creator += p.id;
