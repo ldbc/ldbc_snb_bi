@@ -128,7 +128,7 @@ def run_precompute(args):
     # compute values and print to files
     # precompute q19
     start = date(2010,1,1)
-    nbatch = 12 # can be smaller is memory is sufficient
+    nbatch = 6 # can be smaller is memory is sufficient
     for i in range(nbatch):
       t1 = time.time()
       end = start + timedelta(days=365*3//nbatch + 1)
