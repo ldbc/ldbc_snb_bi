@@ -21,10 +21,8 @@ CREATE OR REPLACE DISTRIBUTED QUERY precompute_bi19(DATETIME startDate, DATETIME
 }
 
 CREATE OR REPLACE DISTRIBUTED QUERY cleanup_bi19() syntax v2 {
-  tmp = SELECT p1 FROM Person:p1 -((KNOWS|REPLY_COUNT>):e)- Person:p2
-    ACCUM 
-      CASE e.type
-      WHEN "KNOWS" THEN e.weight19 = 0
-      WHEN "REPLY_COUNT" THEN e.cnt = 0
-    END;
+  tmp = SELECT p1 FROM Person:p1 -(KNOWS:e)- Person:p2
+      ACCUM e.weight19 = 0;
+  tmp = SELECT p1 FROM Person:p1 -(REPLY_COUNT>:e)- Person:p2
+      ACCUM e.cnt = 0;
 }

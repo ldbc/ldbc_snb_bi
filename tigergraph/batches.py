@@ -104,10 +104,6 @@ def run_batch_update(batch_date, args):
     #tot_del_time = time.time() - t1
     load(f'delete_edge', args.data_dir/'deletes', DEL_EDGES, batch_dir, args)
     print(f'Batch delete:\t{time.time()-t1:.4f} s')
-    print("\n## Rebuild")
-    t1 = time.time()
-    requests.get(f'{args.endpoint}/rebuildnow', headers=headers)
-    print(f'Rebuild:\t{time.time()-t1:.4f} s')
     return time.time() - t0
 
 # main functions
