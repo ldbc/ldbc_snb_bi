@@ -4,8 +4,12 @@ CALL gds.graph.create.cypher(
     'MATCH
       (personA:Person)-[:KNOWS]-(personB:Person),
       (personA)<-[:HAS_CREATOR]-(:Message)-[replyOf:REPLY_OF]-(:Message)-[:HAS_CREATOR]->(personB)
-    RETURN
+    WITH
       id(personA) AS source,
       id(personB) AS target,
-      1.0/count(replyOf) AS weight'
+      count(replyOf) AS numInteractions
+    RETURN
+      source,
+      target,
+      CASE WHEN floor(40-sqrt(numInteractions)) > 1 THEN floor(40-sqrt(numInteractions)) ELSE 1 END AS weight'
 )
