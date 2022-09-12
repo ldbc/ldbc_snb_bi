@@ -15,6 +15,7 @@ The paramgen implements [parameter curation](https://research.vu.nl/en/publicati
     ```bash
     export SF=desired_scale_factor
     export LDBC_SNB_DATAGEN_MAX_MEM=available_memory
+    export LDBC_SNB_DATAGEN_JAR=$(sbt -batch -error 'print assembly / assemblyOutputPath')
     ```
 
     ```bash
@@ -22,7 +23,6 @@ The paramgen implements [parameter curation](https://research.vu.nl/en/publicati
     tools/run.py \
         --cores $(nproc) \
         --memory ${LDBC_SNB_DATAGEN_MAX_MEM} \
-        ./target/ldbc_snb_datagen_${PLATFORM_VERSION}-${DATAGEN_VERSION}.jar \
         -- \
         --format parquet \
         --scale-factor ${SF} \

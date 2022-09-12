@@ -13,6 +13,7 @@ We provide two methods for cluster setup.
 ```bash
 export SF=desired_scale_factor # for example SF=1
 export LDBC_SNB_DATAGEN_MAX_MEM=available_memory # for example LDBC_SNB_DATAGEN_MAX_MEM=8G
+export LDBC_SNB_DATAGEN_JAR=$(sbt -batch -error 'print assembly / assemblyOutputPath')
 ```
 
 ```bash
@@ -20,7 +21,6 @@ rm -rf out-sf${SF}/
 tools/run.py \
     --cores $(nproc) \
     --memory ${LDBC_SNB_DATAGEN_MAX_MEM} \
-    --jar ./target/ldbc_snb_datagen_${PLATFORM_VERSION}-${DATAGEN_VERSION}-jar-with-dependencies.jar \
     -- \
     --format csv \
     --scale-factor ${SF} \
