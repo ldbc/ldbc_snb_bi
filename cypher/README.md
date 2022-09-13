@@ -41,29 +41,21 @@ tools/run.py \
     * To use a locally generated data set, set the `${LDBC_SNB_DATAGEN_DIR}` and `${SF}` environment variables and run:
 
         ```bash
-        export NEO4J_CSV_DIR=${LDBC_SNB_DATAGEN_DIR}/out-sf${SF}/graphs/csv/bi/composite-projected-fk/
-        ```
-
-        Or, simply run:
-
-        ```bash
         . scripts/use-datagen-data-set.sh
         ```
 
     * To download and use the sample data set, run:
 
         ```bash
-        wget -q https://ldbcouncil.org/ldbc_snb_datagen_spark/social-network-sf0.003-bi-composite-projected-fk-neo4j-compressed.zip
-        unzip -q social-network-sf0.003-bi-composite-projected-fk-neo4j-compressed.zip
-        export NEO4J_CSV_DIR=`pwd`/social-network-sf0.003-bi-composite-projected-fk-neo4j-compressed/graphs/csv/bi/composite-projected-fk/
-        ```
-
-        Or, simply run:
-
-        ```bash
         scripts/get-sample-data-set.sh
         . scripts/use-sample-data-set.sh
         ```
+
+1. Configure Neo4j to use the available memory, e.g.:
+
+    ```bash
+    export NEO4J_ENV_VARS="${NEO4J_ENV_VARS-} --env NEO4J_dbms_memory_pagecache_size=20G --env NEO4J_dbms_memory_heap_max__size=20G"
+    ```
 
 1. Load the data:
 
