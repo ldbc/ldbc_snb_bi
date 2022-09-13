@@ -2,6 +2,8 @@
 
 [Umbra](https://umbra-db.com/) implementation of the [LDBC Social Network Benchmark's BI workload](https://github.com/ldbc/ldbc_snb_docs).
 
+:warning: Note that while this implementation uses containerized execution for Umbra, it does not work on MacOS (neither on x86, nor on Apple Silicon).
+
 ## Getting the container
 
 The Umbra container is currently available upon request.
