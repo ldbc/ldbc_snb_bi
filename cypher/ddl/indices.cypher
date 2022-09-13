@@ -18,3 +18,4 @@ CREATE INDEX ON :TagClass(name);
 // creationDate
 CREATE INDEX ON :Message(creationDate);
 CREATE INDEX ON :Post(creationDate);
+CREATE INDEX ON :Forum(creationDate);
