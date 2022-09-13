@@ -13,21 +13,17 @@ CALL gds.shortestPath.dijkstra.stream({
   nodeQuery: 'MATCH (p:Person) RETURN id(p) AS id',
   relationshipQuery: '
     MATCH (pA:Person)-[knows:KNOWS]-(pB:Person)
-
     OPTIONAL MATCH (pA)<-[:HAS_CREATOR]-(m1:Message)-[r:REPLY_OF]-(m2:Message)-[:HAS_CREATOR]->(pB)
-    OPTIONAL MATCH (m1)-[:REPLY_OF*0..]->(p1:Post)<-[:CONTAINER_OF]-(forum1:Forum)
-             WHERE forum1.creationDate >= datetime({epochmillis: ' + $startDate.epochMillis + '})
-               AND forum1.creationDate <= datetime({epochmillis: ' + $endDate.epochMillis   + '})
-    OPTIONAL MATCH (m2)-[:REPLY_OF*0..]->(p2:Post)<-[:CONTAINER_OF]-(forum2:Forum)
-             WHERE forum2.creationDate >= datetime({epochmillis: ' + $startDate.epochMillis + '})
-               AND forum2.creationDate <= datetime({epochmillis: ' + $endDate.epochMillis   + '})
-    WITH pA, pB, 0.0
-      + sum(CASE forum1 IS NOT NULL WHEN true THEN 0.5 ELSE 0.0 END)
-      + sum(CASE forum2 IS NOT NULL WHEN true THEN 0.5 ELSE 0.0 END)
-      + sum(CASE m1 = p1            WHEN true THEN 0.5 ELSE 0.0 END)
-      + sum(CASE m2 = p2            WHEN true THEN 0.5 ELSE 0.0 END)
-      AS w
-
+    OPTIONAL MATCH (m1)-[:REPLY_OF*0..]->(:Post)<-[:CONTAINER_OF]-(forum:Forum)
+            WHERE forum.creationDate >= datetime({epochmillis: ' + $startDate.epochMillis + '})
+              AND forum.creationDate <= datetime({epochmillis: ' + $endDate.epochMillis   + '})
+    WITH pA, pB,
+        sum(CASE forum IS NOT NULL 
+            WHEN true THEN
+                CASE (m1:Post OR m2:Post) WHEN true THEN 1.0
+                ELSE 0.5 END
+            ELSE 0.0 END
+        ) AS w
     RETURN
        id(pA) AS source,
        id(pB) AS target,
