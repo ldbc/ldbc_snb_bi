@@ -42,7 +42,7 @@ jobs:
             cd ..
             # Umbra
             cd umbra
-            ## uncompressed CSVs for Umbra
+            ## CSVs for Umbra
             scripts/get-sample-data-set.sh
             cd ..
             # TigerGraph
@@ -63,7 +63,7 @@ jobs:
             cd ..
             head -n 5 parameters/*.csv
       - run:
-          name: Test Umbra toolchain with uncompressed CSVs
+          name: Test Umbra toolchain
           command: |
             cd umbra
             . scripts/use-sample-data-set.sh
