@@ -53,6 +53,10 @@ def convert_value_to_string(value, result_type, input):
         raise ValueError(f"Result type {result_type} not found")
 
 
+def escape_apostrophes(s):
+    return s.replace("'", "''")
+
+
 def cast_parameter_to_driver_input(value, parameter_type):
     if parameter_type == "INT" or parameter_type == "INT32":
         return value
@@ -61,7 +65,7 @@ def cast_parameter_to_driver_input(value, parameter_type):
     elif parameter_type == "STRING[]":
         return "(" + ', '.join([f"'{e}'" for e in value.split(';') ]) + ")"
     elif parameter_type == "STRING":
-        return f"'{value}'"
+        return f"'{escape_apostrophes(value)}'"
     elif parameter_type == "DATETIME":
         return convert_to_datetime(value)
     elif parameter_type == "DATE":
