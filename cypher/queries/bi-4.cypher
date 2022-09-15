@@ -11,19 +11,27 @@ LIMIT 100
 
 WITH collect(topForum) AS topForums
 
-UNWIND topForums AS topForum1
-
-MATCH (person:Person)<-[:HAS_MEMBER]-(topForum2:Forum)
-OPTIONAL MATCH (topForum1)-[:CONTAINER_OF]->(post:Post)<-[:REPLY_OF*0..]-(message:Message)-[:HAS_CREATOR]->(person)
-WITH person, message, topForum2
-WHERE topForum2 IN topForums
-
+CALL {
+  WITH topForums
+  UNWIND topForums AS topForum1
+  MATCH (topForum1)-[:CONTAINER_OF]->(post:Post)<-[:REPLY_OF*0..]-(message:Message)-[:HAS_CREATOR]->(person:Person)<-[:HAS_MEMBER]-(topForum2:Forum)
+  WITH person, message, topForum2
+  WHERE topForum2 IN topForums
+  RETURN person, count(DISTINCT message) AS messageCount
+UNION ALL
+  // Ensure that people who are members of top forums but have 0 messages are also returned.
+  // To this end, we return each person with a 0 messageCount
+  WITH topForums
+  UNWIND topForums AS topForum1
+  MATCH (person:Person)<-[:HAS_MEMBER]-(topForum1:Forum)
+  RETURN person, 0 AS messageCount
+}
 RETURN
   person.id AS personId,
   person.firstName AS personFirstName,
   person.lastName AS personLastName,
   person.creationDate AS personCreationDate,
-  count(DISTINCT message) AS messageCount
+  sum(messageCount) AS messageCount
 ORDER BY
   messageCount DESC,
   person.id ASC
