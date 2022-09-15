@@ -52,17 +52,18 @@ CREATE TABLE PathQ19 (
 ) with (storage = paged);
 INSERT INTO PathQ19(src, dst, w)
 WITH
-weights(src, dst, c) as (
-    select least(m1.creatorpersonid, m2.creatorpersonid) as src,
-           greatest(m1.creatorpersonid, m2.creatorpersonid) as dst,
-           count(*) as c
+weights(src, dst, w) as (
+    SELECT
+        least(m1.creatorpersonid, m2.creatorpersonid) AS src,
+        greatest(m1.creatorpersonid, m2.creatorpersonid) AS dst,
+        greatest(floor(40 - sqrt(count(*)))::bigint, 1) AS w
     from Person_knows_person pp, Message m1, Message m2
     where pp.person1id = m1.creatorpersonid and pp.person2id = m2.creatorpersonid and m1.parentmessageid = m2.messageid and m1.creatorpersonid <> m2.creatorpersonid
     group by src, dst
 )
-select src, dst, 1.0::double precision / c from weights
+select src, dst, w from weights
 union all
-select dst, src, 1.0::double precision / c from weights;
+select dst, src, w from weights;
 ALTER TABLE PathQ19 ADD PRIMARY KEY (src, dst);
 
 
