@@ -5,43 +5,44 @@ import csv
 import os
 import re
 import sys
+import json
 
 # Usage: queries.py [--test]
 
 result_mapping = {
-     1: ["INT32", "BOOL", "INT32", "INT32", "FLOAT32", "INT32", "FLOAT32"],
-     2: ["STRING", "INT32", "INT32", "INT32"],
-     3: ["ID", "STRING", "DATETIME", "ID", "INT32"],
-     4: ["ID", "STRING", "STRING", "DATETIME", "INT32"],
-     5: ["ID", "INT32", "INT32", "INT32", "INT32"],
-     6: ["ID", "INT32"],
-     7: ["STRING", "INT32"],
-     8: ["ID", "INT32", "INT32"],
-     9: ["ID", "STRING", "STRING", "INT32", "INT32"],
-    10: ["ID", "STRING", "INT32"],
-    11: ["INT64"],
-    12: ["INT32", "INT32"],
-    13: ["ID", "INT32", "INT32", "FLOAT32"],
-    14: ["ID", "ID", "STRING", "INT32"],
-    15: ["FLOAT32"],
-    16: ["ID", "INT32", "INT32"],
-    17: ["ID", "INT32"],
-    18: ["ID", "ID", "INT32"],
-    19: ["ID", "ID", "FLOAT32"],
-    20: ["ID", "INT64"],
+     1: [{"name": "year", "type": "INT32"}, {"name": "isComment", "type": "BOOL"}, {"name": "lengthCategory", "type": "INT32"}, {"name": "messageCount", "type": "INT32"}, {"name": "averageMessageLength", "type": "FLOAT32"}, {"name": "sumMessageLength", "type": "INT32"}, {"name": "percentageOfMessages", "type": "FLOAT32"}],
+     2: [{"name": "tag.name", "type": "STRING"}, {"name": "countWindow1", "type": "INT32"}, {"name": "countWindow2", "type": "INT32"}, {"name": "diff", "type": "INT32"}],
+     3: [{"name": "forum.id", "type": "ID"}, {"name": "forum.title", "type": "STRING"}, {"name": "forum.creationDate", "type": "DATETIME"}, {"name": "person.id", "type": "ID"}, {"name": "messageCount", "type": "INT32"}],
+     4: [{"name": "person.id", "type": "ID"}, {"name": "person.firstName", "type": "STRING"}, {"name": "person.lastName", "type": "STRING"}, {"name": "person.creationDate", "type": "DATETIME"}, {"name": "messageCount", "type": "INT32"}],
+     5: [{"name": "person.id", "type": "ID"}, {"name": "replyCount", "type": "INT32"}, {"name": "likeCount", "type": "INT32"}, {"name": "messageCount", "type": "INT32"}, {"name": "score", "type": "INT32"}],
+     6: [{"name": "person1.id", "type": "ID"}, {"name": "authorityScore", "type": "INT32"}],
+     7: [{"name": "relatedTag.name", "type": "STRING"}, {"name": "count", "type": "INT32"}],
+     8: [{"name": "person.id", "type": "ID"}, {"name": "score", "type": "INT32"}, {"name": "friendsScore", "type": "INT32"}],
+     9: [{"name": "person.id", "type": "ID"}, {"name": "person.firstName", "type": "STRING"}, {"name": "person.lastName", "type": "STRING"}, {"name": "threadCount", "type": "INT32"}, {"name": "messageCount", "type": "INT32"}],
+    10: [{"name": "expertCandidatePerson.id", "type": "ID"}, {"name": "tag.name", "type": "STRING"}, {"name": "messageCount", "type": "INT32"}],
+    11: [{"name": "count", "type": "INT64"}],
+    12: [{"name": "messageCount", "type": "INT32"}, {"name": "personCount", "type": "INT32"}],
+    13: [{"name": "zombie.id", "type": "ID"}, {"name": "zombieLikeCount", "type": "INT32"}, {"name": "totalLikeCount", "type": "INT32"}, {"name": "zombieScore", "type": "FLOAT32"}],
+    14: [{"name": "person1.id", "type": "ID"}, {"name": "person2.id", "type": "ID"}, {"name": "city1.name", "type": "STRING"}, {"name": "score", "type": "INT32"}],
+    15: [{"name": "weight", "type": "FLOAT32"}],
+    16: [{"name": "person.id", "type": "ID"}, {"name": "messageCountA", "type": "INT32"}, {"name": "messageCountB", "type": "INT32"}],
+    17: [{"name": "person1.id", "type": "ID"}, {"name": "messageCount", "type": "INT32"}],
+    18: [{"name": "person1.id", "type": "ID"}, {"name": "person2.id", "type": "ID"}, {"name": "mutualFriendCount", "type": "INT32"}],
+    19: [{"name": "person1.id", "type": "ID"}, {"name": "person2.id", "type": "ID"}, {"name": "totalWeight", "type": "FLOAT32"}],
+    20: [{"name": "person1.id", "type": "ID"}, {"name": "totalWeight", "type": "INT64"}],
 }
 
 def convert_value_to_string(value, result_type, input):
     if result_type == "ID[]" or result_type == "INT[]" or result_type == "INT32[]" or result_type == "INT64[]":
-        return "[" + ",".join([str(int(x)) for x in value]) + "]"
+        return [int(x) for x in value]
     elif result_type == "ID" or result_type == "INT" or result_type == "INT32" or result_type == "INT64":
-        return str(int(value))
+        return int(value)
     elif result_type == "FLOAT" or result_type == "FLOAT32" or result_type == "FLOAT64":
-        return str(float(value))
+        return float(value)
     elif result_type == "STRING[]":
-        return "[" + ",".join([f'"{v}"' for v in value]) + "]"
+        return value
     elif result_type == "STRING":
-        return f'"{value}"'
+        return value
     elif result_type == "DATETIME":
         if input:
             return f"{datetime.datetime.strftime(value, '%Y-%m-%dT%H:%M:%S.%f')[:-3]}+00:00"
@@ -53,7 +54,7 @@ def convert_value_to_string(value, result_type, input):
         else:
             return datetime.datetime.strftime(value.to_native(), '%Y-%m-%d')
     elif result_type == "BOOL":
-        return str(bool(value))
+        return bool(value)
     else:
         raise ValueError(f"Result type {result_type} not found")
 
@@ -78,11 +79,15 @@ def cast_parameter_to_driver_input(value, parameter_type):
 def read_query_fun(tx, query_num, query_spec, query_parameters):
     results = tx.run(query_spec, query_parameters)
     mapping = result_mapping[query_num]
-    result_tuples = "[" + ";".join([
-            f'<{",".join([convert_value_to_string(result[i], value_type, False) for i, value_type in enumerate(mapping)])}>'
+    result_tuples = [
+            {
+                result_descriptor["name"]: convert_value_to_string(result[i], result_descriptor["type"], False)
+                for i, result_descriptor in enumerate(mapping)
+            }
             for result in results
-        ]) + "]"
-    return result_tuples
+        ]
+
+    return json.dumps(result_tuples)
 
 def write_query_fun(tx, query_spec):
     tx.run(query_spec, {})
@@ -148,7 +153,8 @@ for query_variant in query_variants:
         query_parameters_converted = {k.split(":")[0]: cast_parameter_to_driver_input(v, k.split(":")[1]) for k, v in query_parameters.items()}
 
         query_parameters_split = {k.split(":")[0]: v for k, v in query_parameters.items()}
-        query_parameters_in_order = f'<{";".join([query_parameters_split[parameter["name"]] for parameter in parameters])}>'
+        data = [query_parameters_split[parameter["name"]] for parameter in parameters]
+        query_parameters_in_order = json.dumps(query_parameters_split)
 
         (results, duration) = run_query(session, query_num, query_variant, query_spec, query_parameters_converted, test)
 
