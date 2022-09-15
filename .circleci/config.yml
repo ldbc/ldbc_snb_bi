@@ -101,7 +101,7 @@ jobs:
           command: |
             # the sample data set contains compressed CSVs
             cd tigergraph
-            . scripts/use-sample-data-set.sh
+            . scripts/configure-data-set.sh
             scripts/load-in-one-step.sh
             scripts/benchmark.sh --test
             scripts/stop.sh

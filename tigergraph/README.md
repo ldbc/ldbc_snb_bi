@@ -35,20 +35,20 @@ tools/run.py \
 1. To download and use the sample data set, run:
 
     ```bash
-    wget -q https://ldbcouncil.org/ldbc_snb_datagen_spark/social-network-sf0.003-bi-composite-projected-fk.zip
-    unzip -q social-network-sf0.003-bi-composite-projected-fk.zip
-    . scripts/use-sample-data-set.sh 
+    scripts/get-sample-data-set.sh
     ```
 
-    To use other data sets, adjust the variables in [scripts/use-sample-data-set.sh](scripts/use-sample-data-set.sh):
+1. To use other data sets, adjust the variables in [`scripts/configure-data-set.sh`](scripts/configure-data-set.sh):
 
-    * `TG_DATA_DIR` - a folder containing `initial_snapshot`, `inserts` and `deletes`.
-    * `TG_LICENSE` - optional, trial license is used if not specified, sufficient for SF-30 and smaller.
-    * Run:
+    * `TG_DATA_DIR` - a folder containing the `initial_snapshot`, `inserts` and `deletes` directories.
+    * `TG_LICENSE` - optional, trial license is used if not specified, sufficient for SF30 and smaller.
+    * `SF` - scale factor
 
-        ```bash
-        . scripts/use-sample-data-set.sh
-        ```
+1. Run:
+
+    ```bash
+    . scripts/configure-data-set.sh
+    ```
 
 1. Load the data:
 
