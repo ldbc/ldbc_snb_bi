@@ -11,5 +11,5 @@ cd ..
 
 . scripts/vars.sh
 
-sed -i '1 i\CYPHER runtime=parallel' queries/bi-{1,3,4,5,6,7,8,9,11,12,13,14,18}.cypher
-sed -i '1 i\CYPHER runtime=pipelined' queries/bi-{2,10,15,16,17,19,20}.cypher
+sed -i '1 i\CYPHER runtime=parallel' queries/bi-{1,3,5,6,7,8,9,11,12,13,14,18}.cypher
+sed -i '1 i\CYPHER runtime=pipelined' queries/bi-{2,4,10,15,16,17,19,20}.cypher
