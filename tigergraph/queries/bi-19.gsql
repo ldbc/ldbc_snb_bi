@@ -23,7 +23,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi19(VERTEX<City> city1Id, VERTEX<City> city
       ACCUM
         FOREACH (p,dis) IN s.@dist1 DO
           INT weight = floor(40-sqrt(e.weight19)),
-          IF weight <= 1 THEN weight = 1 END,
+          IF weight < 1 THEN weight = 1 END,
           INT t_dis = dis + weight,
           IF t_dis <= @@threshold AND t_dis <= t.@dist1.get(p) THEN
             t.@dist1 += (p -> t_dis),
