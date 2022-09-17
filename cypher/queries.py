@@ -89,8 +89,10 @@ def read_query_fun(tx, query_num, query_spec, query_parameters):
 
     return json.dumps(result_tuples)
 
+
 def write_query_fun(tx, query_spec):
     tx.run(query_spec, {})
+
 
 def run_query(session, query_num, query_variant, query_spec, query_parameters, test):
     if test:
@@ -106,70 +108,78 @@ def run_query(session, query_num, query_variant, query_spec, query_parameters, t
     return (results, duration)
 
 
-sf = os.environ.get("SF")
-test = False
-if len(sys.argv) > 1:
-    if sys.argv[1] == "--test":
-        test = True
+def run_queries(query_variants, session, sf, test, pgtuning, timings_file, results_file):
+    for query_variant in query_variants:
+        query_num = int(re.sub("[^0-9]", "", query_variant))
+        query_subvariant = re.sub("[^ab]", "", query_variant)
 
-query_variants = ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "15a", "15b", "16a", "16b", "17", "18", "19a", "19b", "20a", "20b"]
+        print(f"========================= Q {query_num:02d}{query_subvariant.rjust(1)} =========================")
+        query_file = open(f'queries/bi-{query_num}.cypher', 'r')
+        query_spec = query_file.read()
+        query_file.close()
 
-driver = neo4j.GraphDatabase.driver("bolt://localhost:7687")
-session = driver.session()
+        parameters_csv = csv.DictReader(open(f'../parameters/bi-{query_variant}.csv'), delimiter='|')
+        parameters = [{"name": t[0], "type": t[1]} for t in [f.split(":") for f in parameters_csv.fieldnames]]
 
-if "19a" in query_variants or "19b" in query_variants:
-    print("Creating graph (precomputing weights) for Q19")
-    session.write_transaction(write_query_fun, open(f'queries/bi-19-drop-graph.cypher', 'r').read())
-    session.write_transaction(write_query_fun, open(f'queries/bi-19-create-graph.cypher', 'r').read())
+        i = 0
+        for query_parameters in parameters_csv:
+            i = i + 1
 
-if "20a" in query_variants or "20b" in query_variants:
-    print("Creating graph (precomputing weights) for Q20")
-    session.write_transaction(write_query_fun, open(f'queries/bi-20-drop-graph.cypher', 'r').read())
-    session.write_transaction(write_query_fun, open(f'queries/bi-20-create-graph.cypher', 'r').read())
+            query_parameters_converted = {k.split(":")[0]: cast_parameter_to_driver_input(v, k.split(":")[1]) for k, v in query_parameters.items()}
 
-open(f"output/results.csv", "w").close()
-open(f"output/timings.csv", "w").close()
+            query_parameters_split = {k.split(":")[0]: v for k, v in query_parameters.items()}
+            query_parameters_in_order = f'<{";".join([query_parameters_split[parameter["name"]] for parameter in parameters])}>'
 
-results_file = open(f"output/results.csv", "a")
-timings_file = open(f"output/timings.csv", "a")
-timings_file.write(f"tool|sf|q|parameters|time\n")
+            (results, duration) = run_query(session, query_num, query_variant, query_spec, query_parameters_converted, test)
 
-for query_variant in query_variants:
-    query_num = int(re.sub("[^0-9]", "", query_variant))
-    query_subvariant = re.sub("[^ab]", "", query_variant)
+            timings_file.write(f"Neo4j|{sf}|{query_variant}|{query_parameters_in_order}|{duration}\n")
+            timings_file.flush()
+            results_file.write(f"{query_num}|{query_variant}|{query_parameters_in_order}|{results}\n")
+            results_file.flush()
 
-    print(f"========================= Q {query_num:02d}{query_subvariant.rjust(1)} =========================")
+            # - test run: 1 query
+            # - regular run: 10 queries
+            # - paramgen tuning: 50 queries
+            if (test) or (not pgtuning and i == 10) or (pgtuning and i == 100):
+                break
 
-    query_file = open(f'queries/bi-{query_num}.cypher', 'r')
-    query_spec = query_file.read()
 
-    parameters_csv = csv.DictReader(open(f'../parameters/bi-{query_variant}.csv'), delimiter='|')
-    parameters = [{"name": t[0], "type": t[1]} for t in [f.split(":") for f in parameters_csv.fieldnames]]
+if __name__ == '__main__':
+    sf = os.environ.get("SF")
+    test = False
+    pgtuning = False
+    if len(sys.argv) > 1:
+        if sys.argv[1] == "--test":
+            test = True
+        if sys.argv[1] == "--pgtuning":
+            pgtuning = True
 
-    i = 0
-    for query_parameters in parameters_csv:
-        i = i + 1
+    query_variants = ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "15a", "15b", "16a", "16b", "17", "18", "19a", "19b", "20a", "20b"]
 
-        query_parameters_converted = {k.split(":")[0]: cast_parameter_to_driver_input(v, k.split(":")[1]) for k, v in query_parameters.items()}
+    driver = neo4j.GraphDatabase.driver("bolt://localhost:7687")
+    session = driver.session()
 
-        query_parameters_split = {k.split(":")[0]: v for k, v in query_parameters.items()}
-        query_parameters_in_order = json.dumps(query_parameters_split)
+    if "19a" in query_variants or "19b" in query_variants:
+        print("Creating graph (precomputing weights) for Q19")
+        session.write_transaction(write_query_fun, open(f'queries/bi-19-drop-graph.cypher', 'r').read())
+        session.write_transaction(write_query_fun, open(f'queries/bi-19-create-graph.cypher', 'r').read())
 
-        (results, duration) = run_query(session, query_num, query_variant, query_spec, query_parameters_converted, test)
+    if "20a" in query_variants or "20b" in query_variants:
+        print("Creating graph (precomputing weights) for Q20")
+        session.write_transaction(write_query_fun, open(f'queries/bi-20-drop-graph.cypher', 'r').read())
+        session.write_transaction(write_query_fun, open(f'queries/bi-20-create-graph.cypher', 'r').read())
 
-        timings_file.write(f"Neo4j|{sf}|{query_variant}|{query_parameters_in_order}|{duration}\n")
-        timings_file.flush()
-        results_file.write(f"{query_num}|{query_variant}|{query_parameters_in_order}|{results}\n")
-        results_file.flush()
+    open(f"output/results.csv", "w").close()
+    open(f"output/timings.csv", "w").close()
 
-        # test run: 1 query, regular run: 10 queries
-        if test or i == 10:
-            break
+    results_file = open(f"output/results.csv", "a")
+    timings_file = open(f"output/timings.csv", "a")
+    timings_file.write(f"tool|sf|q|parameters|time\n")
 
-    query_file.close()
+    run_queries(query_variants, session, sf, test, pgtuning, timings_file, results_file)
 
-results_file.close()
-timings_file.close()
+    results_file.close()
+    timings_file.close()
 
-session.close()
-driver.close()
+    session.close()
+    driver.close()
