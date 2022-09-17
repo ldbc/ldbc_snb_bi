@@ -12,7 +12,7 @@ if [ "${#}" -ne 2 ]; then
 fi
 
 numdiff \
-    --separators='\|\n;,<>' \
+    --separators='\|\n;: ,{}[]' \
     --absolute-tolerance 0.001 \
     ${1}/output/results.csv \
     ${2}/output/results.csv
