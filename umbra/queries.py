@@ -41,7 +41,7 @@ def convert_value_to_string(value, result_type):
     elif result_type == "FLOAT" or result_type == "FLOAT32" or result_type == "FLOAT64":
         return float(value)
     elif result_type == "STRING[]":
-        return value
+        return [x.replace('"') for x in value.replace("{", "").replace("}", "").split(";")]
     elif result_type == "STRING":
         return value
     elif result_type == "DATETIME":
