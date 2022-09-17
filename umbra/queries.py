@@ -152,7 +152,6 @@ for query_variant in query_variants:
         query_parameters_converted = {k.split(":")[0]: cast_parameter_to_driver_input(v, k.split(":")[1]) for k, v in query_parameters.items()}
 
         query_parameters_split = {k.split(":")[0]: v for k, v in query_parameters.items()}
-        data = [query_parameters_split[parameter["name"]] for parameter in parameters]
         query_parameters_in_order = json.dumps(query_parameters_split)
 
         (results, duration) = run_query(pg_con, query_num, query_variant, query_spec, query_parameters_converted)
