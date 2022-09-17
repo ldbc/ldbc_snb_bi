@@ -7,51 +7,55 @@ import requests
 import re
 import os
 import subprocess
-from datetime import date,timedelta
+import datetime
+import json
 # query timeout value in miliseconds
 HEADERS = {'GSQL-TIMEOUT': '36000000'}
 
 # ================ BEGIN: Variables and Functions from Cypher ========================
+
 result_mapping = {
-     1: ["INT32", "BOOL", "INT32", "INT32", "FLOAT32", "INT32", "FLOAT32"],
-     2: ["STRING", "INT32", "INT32", "INT32"],
-     3: ["ID", "STRING", "DATETIME", "ID", "INT32"],
-     4: ["ID", "STRING", "STRING", "DATETIME", "INT32"],
-     5: ["ID", "INT32", "INT32", "INT32", "INT32"],
-     6: ["ID", "INT32"],
-     7: ["STRING", "INT32"],
-     8: ["ID", "INT32", "INT32"],
-     9: ["ID", "STRING", "STRING", "INT32", "INT32"],
-    10: ["ID", "STRING", "INT32"],
-    11: ["INT64"],
-    12: ["INT32", "INT32"],
-    13: ["ID", "INT32", "INT32", "FLOAT32"],
-    14: ["ID", "ID", "STRING", "INT32"],
-    15: ["FLOAT32"],
-    16: ["ID", "INT32", "INT32"],
-    17: ["ID", "INT32"],
-    18: ["ID", "ID", "INT32"],
-    19: ["ID", "ID", "FLOAT32"],
-    20: ["ID", "INT64"],
+     1: [{"name": "year", "type": "INT32"}, {"name": "isComment", "type": "BOOL"}, {"name": "lengthCategory", "type": "INT32"}, {"name": "messageCount", "type": "INT32"}, {"name": "averageMessageLength", "type": "FLOAT32"}, {"name": "sumMessageLength", "type": "INT32"}, {"name": "percentageOfMessages", "type": "FLOAT32"}],
+     2: [{"name": "tag.name", "type": "STRING"}, {"name": "countWindow1", "type": "INT32"}, {"name": "countWindow2", "type": "INT32"}, {"name": "diff", "type": "INT32"}],
+     3: [{"name": "forum.id", "type": "ID"}, {"name": "forum.title", "type": "STRING"}, {"name": "forum.creationDate", "type": "DATETIME"}, {"name": "person.id", "type": "ID"}, {"name": "messageCount", "type": "INT32"}],
+     4: [{"name": "person.id", "type": "ID"}, {"name": "person.firstName", "type": "STRING"}, {"name": "person.lastName", "type": "STRING"}, {"name": "person.creationDate", "type": "DATETIME"}, {"name": "messageCount", "type": "INT32"}],
+     5: [{"name": "person.id", "type": "ID"}, {"name": "replyCount", "type": "INT32"}, {"name": "likeCount", "type": "INT32"}, {"name": "messageCount", "type": "INT32"}, {"name": "score", "type": "INT32"}],
+     6: [{"name": "person1.id", "type": "ID"}, {"name": "authorityScore", "type": "INT32"}],
+     7: [{"name": "relatedTag.name", "type": "STRING"}, {"name": "count", "type": "INT32"}],
+     8: [{"name": "person.id", "type": "ID"}, {"name": "score", "type": "INT32"}, {"name": "friendsScore", "type": "INT32"}],
+     9: [{"name": "person.id", "type": "ID"}, {"name": "person.firstName", "type": "STRING"}, {"name": "person.lastName", "type": "STRING"}, {"name": "threadCount", "type": "INT32"}, {"name": "messageCount", "type": "INT32"}],
+    10: [{"name": "expertCandidatePerson.id", "type": "ID"}, {"name": "tag.name", "type": "STRING"}, {"name": "messageCount", "type": "INT32"}],
+    11: [{"name": "count", "type": "INT64"}],
+    12: [{"name": "messageCount", "type": "INT32"}, {"name": "personCount", "type": "INT32"}],
+    13: [{"name": "zombie.id", "type": "ID"}, {"name": "zombieLikeCount", "type": "INT32"}, {"name": "totalLikeCount", "type": "INT32"}, {"name": "zombieScore", "type": "FLOAT32"}],
+    14: [{"name": "person1.id", "type": "ID"}, {"name": "person2.id", "type": "ID"}, {"name": "city1.name", "type": "STRING"}, {"name": "score", "type": "INT32"}],
+    15: [{"name": "weight", "type": "FLOAT32"}],
+    16: [{"name": "person.id", "type": "ID"}, {"name": "messageCountA", "type": "INT32"}, {"name": "messageCountB", "type": "INT32"}],
+    17: [{"name": "person1.id", "type": "ID"}, {"name": "messageCount", "type": "INT32"}],
+    18: [{"name": "person1.id", "type": "ID"}, {"name": "person2.id", "type": "ID"}, {"name": "mutualFriendCount", "type": "INT32"}],
+    19: [{"name": "person1.id", "type": "ID"}, {"name": "person2.id", "type": "ID"}, {"name": "totalWeight", "type": "FLOAT32"}],
+    20: [{"name": "person1.id", "type": "ID"}, {"name": "totalWeight", "type": "INT64"}],
 }
 
-def convert_value_to_string(value, type):
-    if type == "ID[]" or type == "INT[]" or type == "INT32[]" or type == "INT64[]":
-        return "[" + ",".join([str(int(x)) for x in value]) + "]"
-    elif type == "ID" or type == "INT" or type == "INT32" or type == "INT64":
-        return str(int(value))
-    elif type == "FLOAT" or type == "FLOAT32" or type == "FLOAT64":
-        return str(float(value))
-    elif type == "STRING[]":
-        return "[" + ";".join([f'"{v}"' for v in value]) + "]"
-    elif type in ["STRING"]:
-        return f'"{value}"'
-    elif type in [ "DATETIME", "DATE"]:
+
+def convert_value_to_string(value, result_type):
+    if result_type == "ID[]" or result_type == "INT[]" or result_type == "INT32[]" or result_type == "INT64[]":
+        return [int(x) for x in value]
+    elif result_type == "ID" or result_type == "INT" or result_type == "INT32" or result_type == "INT64":
+        return int(value)
+    elif result_type == "FLOAT" or result_type == "FLOAT32" or result_type == "FLOAT64":
+        return float(value)
+    elif result_type == "STRING[]":
+        return value
+    elif result_type == "STRING":
+        return value
+    elif result_type in ["DATETIME", "DATE"]:
         return value.replace(" ", "T")
-    elif type == "BOOL":
-        return str(bool(value))
+    elif result_type == "BOOL":
+        return bool(value)
     else:
-        raise ValueError(f"Result type {type} not found")
+        raise ValueError(f"Result type {result_type} not found")
+
 
 def cast_parameter_to_driver_input(value, type):
     if type == "ID[]" or type == "INT[]" or type == "INT32[]" or type == "INT64[]":
@@ -70,23 +74,35 @@ def run_query(endpoint, query_num, parameters):
     start = time.time()
     response = requests.get(f'{endpoint}/query/ldbc_snb/bi{query_num}', headers=HEADERS, params=parameters).json()
     end = time.time()
+    duration = end - start
     if response['error']:
-        print(response['message'])
-        return '<>', 0
-    results, duration = response['results'][0]['result'], end - start
+        if query_num == 11:
+            return f"""[{{"count": 0}}]""", duration
+        elif query_num == 15:
+            return f"""[{{"weight": -1.0}}]""", duration
+        else:
+            print(response['message'])
+            return '[]', 0
+    results = response['results'][0]['result']
     # for BI-11 and BI-15, result is a single value
-    if isinstance(results, int) or isinstance(results, float):
-        return f"[<{results}>]", duration
+    if query_num == 11:
+        return f"""[{{"count": {results}}}]""", duration
+    elif query_num == 15:
+        return f"""[{{"weight": {results}}}]""", duration
     
     #convert results from [dict()] to [[]] 
     results = [[v for k,v in res.items()] for res in results]
     #convert results to string
     mapping = result_mapping[query_num]
-    results = "[" + ";".join([
-        f'<{",".join([convert_value_to_string(result[i], type) for i, type in enumerate(mapping)])}>'
-        for result in results
-    ]) + "]"
-    return results, duration
+    result_tuples = [
+            {
+                result_descriptor["name"]: convert_value_to_string(result[i], result_descriptor["type"])
+                for i, result_descriptor in enumerate(mapping)
+            }
+            for result in results
+        ]
+
+    return json.dumps(result_tuples), duration
 
 
 def run_queries(query_variants, results_file, timings_file, batch_date, args):
@@ -100,7 +116,8 @@ def run_queries(query_variants, results_file, timings_file, batch_date, args):
 
         for i,query_parameters in enumerate(parameters_csv):
             query_parameters_split = {k.split(":")[0]: v for k, v in query_parameters.items()}
-            query_parameters_in_order = f'<{";".join([query_parameters_split[parameter["name"]] for parameter in parameters])}>'
+            query_parameters_in_order = json.dumps(query_parameters_split)
+
             query_parameters = {k.split(":")[0]: cast_parameter_to_driver_input(v, k.split(":")[1]) for k, v in query_parameters.items()}
             if args.test:
                 print(f'Q{query_variant}: {query_parameters}')
@@ -133,11 +150,11 @@ def run_precompute(args):
     t1 = time.time()
     requests.get(f'{args.endpoint}/query/ldbc_snb/cleanup_bi19', headers=HEADERS)
     print(f'cleanup_bi19:\t\t{time.time()-t1:.4f} s')
-    start = date(2010,1,1)
+    start = datetime.date(2010,1,1)
     nbatch = 12 # can be smaller if memory is sufficient
     for i in range(nbatch):
       t1 = time.time()
-      end = start + timedelta(days=365*3//nbatch + 1)
+      end = start + datetime.timedelta(days=365*3//nbatch + 1)
       output = Path('/home/tigergraph/reply_count')
       out_file = output / f'part_{i:04d}.csv'
       params = {'startDate':start, 'endDate': end, 'file': str(out_file)}

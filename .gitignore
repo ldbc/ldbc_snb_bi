@@ -30,3 +30,5 @@ tuning/scripts/get-plots.sh
 
 parameters-sf*/
 parameters-sf*.*
+
+__pycache__/
