@@ -23,17 +23,17 @@ FROM
         frequency AS freq,
         abs(frequency - (SELECT percentile_disc(0.55) WITHIN GROUP (ORDER BY frequency) FROM personNumFriends)) AS diff
     FROM personNumFriends
-    JOIN Person_window
-      ON Person_window.personId = personNumFriends.id
+    JOIN personDays_window
+      ON personDays_window.id = personNumFriends.id
     ORDER BY diff, md5(personNumFriends.id)
     LIMIT 50
     ) s2
 WHERE NOT EXISTS (
         SELECT 1
-        FROM sameUniversityConnected c1, sameUniversityConnected c2, Person_workAt_Company_window
+        FROM sameUniversityConnected c1, sameUniversityConnected c2, personWorkAtCompanyDays_window
         WHERE c1.PersonId = s2.personId
-          AND Person_workAt_Company_window.PersonId = c2.personId
-          AND Person_workAt_Company_window.companyId = s1.companyId
+          AND personWorkAtCompanyDays_window.PersonId = c2.personId
+          AND personWorkAtCompanyDays_window.companyId = s1.companyId
           AND c1.Component = c2.Component
     )
 ORDER BY md5(s2.personId), md5(s1.companyId)
