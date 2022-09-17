@@ -58,6 +58,16 @@ def escape_apostrophes(s):
     return s.replace("'", "''")
 
 
+def convert_to_datetime(timestamp):
+    dt = datetime.datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%f+00:00")
+    return f"'{dt}'::timestamp"
+
+
+def convert_to_date(timestamp):
+    dt = datetime.datetime.strptime(timestamp, '%Y-%m-%d')
+    return f"'{dt}'::date"
+
+
 def cast_parameter_to_driver_input(value, parameter_type):
     if parameter_type == "INT" or parameter_type == "INT32":
         return value
@@ -75,7 +85,7 @@ def cast_parameter_to_driver_input(value, parameter_type):
         raise ValueError(f"Parameter type {parameter_type} not found")
 
 
-def run_query(pg_con, query_num, query_variant, query_spec, query_parameters):
+def run_query(pg_con, query_num, query_variant, query_spec, query_parameters, test):
     if test:
         print(f'Q{query_variant}: {query_parameters}')
 
@@ -104,70 +114,64 @@ def run_query(pg_con, query_num, query_variant, query_spec, query_parameters):
     return (json.dumps(result_tuples), duration)
 
 
-def convert_to_datetime(timestamp):
-    dt = datetime.datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%f+00:00")
-    return f"'{dt}'::timestamp"
+def run_queries(query_variants, pg_con, sf, test, pgtuning, batch_id, timings_file, results_file):
+    start = time.time()
+    for query_variant in query_variants:
+        query_num = int(re.sub("[^0-9]", "", query_variant))
+        query_subvariant = re.sub("[^ab]", "", query_variant)
+
+        print(f"========================= Q {query_num:02d}{query_subvariant.rjust(1)} =========================")
+        query_file = open(f'queries/bi-{query_num}.sql', 'r')
+        query_spec = query_file.read()
+
+        parameters_csv = csv.DictReader(open(f'../parameters/bi-{query_variant}.csv'), delimiter='|')
+        parameters = [{"name": t[0], "type": t[1]} for t in [f.split(":") for f in parameters_csv.fieldnames]]
+
+        i = 0
+        for query_parameters in parameters_csv:
+            i = i + 1
+
+            query_parameters_converted = {k.split(":")[0]: cast_parameter_to_driver_input(v, k.split(":")[1]) for k, v in query_parameters.items()}
+
+            query_parameters_split = {k.split(":")[0]: v for k, v in query_parameters.items()}
+            query_parameters_in_order = json.dumps(query_parameters_split)
+
+            (results, duration) = run_query(pg_con, query_num, query_variant, query_spec, query_parameters_converted, test)
+
+            timings_file.write(f"Umbra|{sf}|{query_variant}|{query_parameters_in_order}|{duration}\n")
+            timings_file.flush()
+            results_file.write(f"{query_num}|{query_variant}|{query_parameters_in_order}|{results}\n")
+            results_file.flush()
+
+            # - test run: 1 query
+            # - regular run: 10 queries
+            # - paramgen tuning: 50 queries
+            if (test) or (not pgtuning and i == 10) or (pgtuning and i == 100):
+                break
 
 
-def convert_to_date(timestamp):
-    dt = datetime.datetime.strptime(timestamp, '%Y-%m-%d')
-    return f"'{dt}'::date"
+if __name__ == '__main__':
+    sf = os.environ.get("SF")
+    test = False
+    pgtuning = False
+    if len(sys.argv) > 1:
+        if sys.argv[1] == "--test":
+            test = True
+        if sys.argv[1] == "--pgtuning":
+            pgtuning = True
 
+    query_variants = ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "15a", "15b", "16a", "16b", "17", "18", "19a", "19b", "20a", "20b"]
 
-sf = os.environ.get("SF")
-test = False
-pgtuning = False
-if len(sys.argv) > 1:
-    if sys.argv[1] == "--test":
-        test = True
-    if sys.argv[1] == "--pgtuning":
-        pgtuning = True
+    open(f"output/results.csv", "w").close()
+    open(f"output/timings.csv", "w").close()
 
-query_variants = ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "15a", "15b", "16a", "16b", "17", "18", "19a", "19b", "20a", "20b"]
+    timings_file = open(f"output/timings.csv", "a")
+    timings_file.write(f"tool|sf|q|parameters|time\n")
+    results_file = open(f"output/results.csv", "a")
 
-open(f"output/results.csv", "w").close()
-open(f"output/timings.csv", "w").close()
-
-results_file = open(f"output/results.csv", "a")
-timings_file = open(f"output/timings.csv", "a")
-timings_file.write(f"tool|sf|q|parameters|time\n")
-
-pg_con = psycopg2.connect(host="localhost", user="postgres", password="mysecretpassword", port=8000)
-
-for query_variant in query_variants:
-    query_num = int(re.sub("[^0-9]", "", query_variant))
-    query_subvariant = re.sub("[^ab]", "", query_variant)
-
-    print(f"========================= Q {query_num:02d}{query_subvariant.rjust(1)} =========================")
-    query_file = open(f'queries/bi-{query_num}.sql', 'r')
-    query_spec = query_file.read()
-
-    parameters_csv = csv.DictReader(open(f'../parameters/bi-{query_variant}.csv'), delimiter='|')
-    parameters = [{"name": t[0], "type": t[1]} for t in [f.split(":") for f in parameters_csv.fieldnames]]
-
-    i = 0
-    for query_parameters in parameters_csv:
-        i = i + 1
-
-        query_parameters_converted = {k.split(":")[0]: cast_parameter_to_driver_input(v, k.split(":")[1]) for k, v in query_parameters.items()}
-
-        query_parameters_split = {k.split(":")[0]: v for k, v in query_parameters.items()}
-        query_parameters_in_order = json.dumps(query_parameters_split)
-
-        (results, duration) = run_query(pg_con, query_num, query_variant, query_spec, query_parameters_converted)
-
-        timings_file.write(f"Umbra|{sf}|{query_variant}|{query_parameters_in_order}|{duration}\n")
-        timings_file.flush()
-        results_file.write(f"{query_num}|{query_variant}|{query_parameters_in_order}|{results}\n")
-        results_file.flush()
-
-        # - test run: 1 query
-        # - regular run: 10 queries
-        # - paramgen tuning: 50 queries
-        if (test) or (not pgtuning and i == 10) or (pgtuning and i == 100):
-            break
-
-results_file.close()
-timings_file.close()
-
-pg_con.close()
+    pg_con = psycopg2.connect(host="localhost", user="postgres", password="mysecretpassword", port=8000)
+    pg_con.autocommit = True
+    
+    run_queries(query_variants, pg_con, sf, test, pgtuning, None, timings_file, results_file)
+    
+    pg_con.close()
