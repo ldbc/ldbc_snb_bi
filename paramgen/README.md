@@ -10,7 +10,7 @@ The paramgen implements [parameter curation](https://research.vu.nl/en/publicati
     scripts/install-dependencies.sh
     ```
 
-1. **Generating the factors entities with the Datagen:** In Datagen's directory (`ldbc_snb_datagen_spark`), issue the following commands. We assume that the Datagen project is built and the `${PLATFORM_VERSION}`, `${DATAGEN_VERSION}` environment variables are set correctly.
+1. **Generating the factors entities with the Datagen:** In Datagen's directory (`ldbc_snb_datagen_spark`), issue the following commands. We assume that the Datagen project is built and the `${LDBC_SNB_DATAGEN_MAX_MEM}`, `${LDBC_SNB_DATAGEN_JAR}` environment variables are set correctly.
 
     ```bash
     export SF=desired_scale_factor

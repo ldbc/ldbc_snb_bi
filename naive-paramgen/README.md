@@ -4,4 +4,4 @@ This variant of the paramgen wilfully disregards concerns for [parameter curatio
 
 Using the bad paramgen requires the same steps as the [good paramgen with parameter curation](../paramgen/).
 
-:warning: The goal of this parameter generator is to demonstrate how to generate **bad parameters**. Therefore, it should not be used for any benchmarks other than ones demonstrating why parameter curation is importanat.
+:warning: The goal of this parameter generator is to demonstrate how to generate **bad parameters**. Therefore, it should not be used for any benchmarks other than ones demonstrating why parameter curation is important.
