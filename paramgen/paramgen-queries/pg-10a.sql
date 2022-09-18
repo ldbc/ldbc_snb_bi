@@ -18,8 +18,8 @@ FROM
         abs(frequency - (SELECT percentile_disc(0.55) WITHIN GROUP (ORDER BY frequency) FROM personNumFriends)) AS diff
     FROM personNumFriends
     -- only keep persons which exist in the benchmark's time window
-    JOIN Person_window
-      ON Person_window.personId = personNumFriends.id
+    JOIN personDays_window
+      ON personDays_window.id = personNumFriends.id
     ORDER BY diff, personNumFriends.id
     LIMIT 50),
     (SELECT

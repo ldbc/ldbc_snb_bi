@@ -50,10 +50,10 @@ jobs:
             scripts/get-sample-data-set.sh
             cd ..
       - run:
-          name: Download factors and temporal attributes
+          name: Download factors
           command: |
             cd paramgen
-            scripts/get-sample-all.sh
+            scripts/get-sample-factors.sh
             cd ..
       - run:
           name: Generate parameters

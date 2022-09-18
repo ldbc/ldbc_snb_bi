@@ -14,8 +14,8 @@ FROM
     LIMIT 20),
     (SELECT personNumFriends.id
     FROM personNumFriends
-    JOIN Person_window
-      ON Person_window.personId = personNumFriends.id
+    JOIN personDays_window
+      ON personDays_window.id = personNumFriends.id
     WHERE frequency = 1
     ORDER BY personNumFriends.id
     LIMIT 50),

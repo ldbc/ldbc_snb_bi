@@ -4,84 +4,25 @@ import duckdb
 con = duckdb.connect(database='scratch/factors.duckdb')
  
 factor_parquet_path = "factors/"
-temporal_parquet_path = "temporal/"
+temporal_parquet_path = "factors/"
 
-print("============ Initializing database ============")
-with open(f"paramgen-queries/ddl/schema.sql", "r") as schema_file:
-    con.execute(schema_file.read())
-
-print()
 print("============ Loading the factor tables ============")
 for entity in ["cityNumPersons", "cityPairsNumFriends", "companyNumEmployees", "countryNumMessages", "countryNumPersons", "countryPairsNumFriends", "creationDayAndLengthCategoryNumMessages", "creationDayAndTagNumMessages", "creationDayAndTagClassNumMessages", "creationDayNumMessages", "languageNumPosts", "lengthNumMessages", "people2Hops", "people4Hops", "personDisjointEmployerPairs", "personNumFriends", "tagClassNumMessages", "tagClassNumTags", "tagNumMessages", "tagNumPersons", "sameUniversityConnected"]:
     print(f"{entity}")
-    parquet_files = [f for f in os.listdir(f"{factor_parquet_path}{entity}/") if f.endswith(".parquet")]
-    if not parquet_files:
-        raise ValueError(f"No Parquet factor table files found for entity {entity}")
-    for parquet_file in parquet_files:
-        print(f"- {parquet_file}")
-        con.execute(f"DROP TABLE IF EXISTS {entity}")
-        con.execute(f"CREATE TABLE {entity} AS SELECT * FROM read_parquet('{factor_parquet_path}{entity}/{parquet_file}')")
+    con.execute(f"DROP TABLE IF EXISTS {entity}")
+    con.execute(f"CREATE TABLE {entity} AS SELECT * FROM read_parquet('{factor_parquet_path}{entity}/*.parquet')")
 
 print()
 print("============ Loading the temporal tables ============")
-print("Person_studyAt_University")
-parquet_files = [f for f in os.listdir(f"{temporal_parquet_path}Person_studyAt_University/") if f.endswith(".parquet")]
-if not parquet_files:
-    raise ValueError(f"No Parquet temporal table files found for entity Person_studyAt_University")
-for parquet_file in parquet_files:
-    print(f"- {parquet_file}")
+for entity in ["personDays", "personKnowsPersonDays", "personStudyAtUniversityDays", "personWorkAtCompanyDays"]:
+    print(f"{entity}")
+    con.execute(f"DROP TABLE IF EXISTS {entity}_window")
     con.execute(f"""
-        INSERT INTO Person_studyAt_University_window (
-            SELECT PersonId, UniversityId
-            FROM read_parquet('{temporal_parquet_path}Person_studyAt_University/{parquet_file}')
-            WHERE to_timestamp(creationDate/1000) < TIMESTAMP '2012-11-29'
-              AND to_timestamp(deletionDate/1000) > TIMESTAMP '2013-01-01'
-        );
-        """)
-
-print("Person_workAt_Company")
-parquet_files = [f for f in os.listdir(f"{temporal_parquet_path}Person_workAt_Company/") if f.endswith(".parquet")]
-if not parquet_files:
-    raise ValueError(f"No Parquet temporal table files found for entity Person_workAt_Company")
-for parquet_file in parquet_files:
-    print(f"- {parquet_file}")
-    con.execute(f"""
-        INSERT INTO Person_workAt_Company_window (
-            SELECT personId, companyId
-            FROM read_parquet('{temporal_parquet_path}Person_workAt_Company/{parquet_file}')
-            WHERE to_timestamp(creationDate/1000) < TIMESTAMP '2012-11-29'
-              AND to_timestamp(deletionDate/1000) > TIMESTAMP '2013-01-01'
-        );
-        """)
-
-print("Person")
-parquet_files = [f for f in os.listdir(f"{temporal_parquet_path}Person/") if f.endswith(".parquet")]
-if not parquet_files:
-    raise ValueError(f"No Parquet temporal table files found for entity Person")
-for parquet_file in parquet_files:
-    print(f"- {parquet_file}")
-    con.execute(f"""
-        INSERT INTO person_window (
-            SELECT id
-            FROM read_parquet('{temporal_parquet_path}Person/{parquet_file}')
-            WHERE to_timestamp(creationDate/1000) < TIMESTAMP '2012-11-29'
-              AND to_timestamp(deletionDate/1000) > TIMESTAMP '2013-01-01'
-        );
-        """)
-
-print("Person_knows_Person")
-parquet_files = [f for f in os.listdir(f"{temporal_parquet_path}Person_knows_Person/") if f.endswith(".parquet")]
-if not parquet_files:
-    raise ValueError(f"No Parquet temporal table files found for entity Person_knows_Person")
-for parquet_file in parquet_files:
-    print(f"- {parquet_file}")
-    con.execute(f"""
-        INSERT INTO knows_window (
-            SELECT person1Id, person2Id
-            FROM read_parquet('{temporal_parquet_path}Person_knows_Person/{parquet_file}')
-            WHERE to_timestamp(creationDate/1000) < TIMESTAMP '2012-11-29'
-              AND to_timestamp(deletionDate/1000) > TIMESTAMP '2013-01-01'
-        );
+        CREATE TABLE {entity}_window AS
+            SELECT * EXCLUDE (creationDay, deletionDay)
+            FROM read_parquet('{temporal_parquet_path}{entity}/*.parquet')
+            WHERE creationDay < TIMESTAMP '2012-11-29'
+              AND deletionDay > TIMESTAMP '2013-01-01'
         """)
 
 print()
