@@ -50,3 +50,10 @@ The paramgen implements [parameter curation](https://research.vu.nl/en/publicati
     ```
 
 1. The parameters will be placed in the `../parameters/` directory.
+
+## Memory consumption
+
+Note that the parameter generator uses a significant amount of memory.
+
+* SF3000: 56GiB
+* SF10000: 195GiB
