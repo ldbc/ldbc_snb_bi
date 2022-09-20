@@ -119,8 +119,7 @@ if __name__ == '__main__':
 
     results_file = open(f"output/results.csv", "a")
     timings_file = open(f"output/timings.csv", "a")
-    timings_file.write(f"tool|sf|q|parameters|time\n")
-
+    timings_file.write(f"tool|sf|day|q|parameters|time\n")
 
     network_start_date = datetime.date(2012, 11, 29)
     network_end_date = datetime.date(2013, 1, 1)
@@ -143,7 +142,9 @@ if __name__ == '__main__':
             session.write_transaction(write_query_fun, open(f'queries/bi-20-drop-graph.cypher', 'r').read())
             session.write_transaction(write_query_fun, open(f'queries/bi-20-create-graph.cypher', 'r').read())
 
-        run_queries(query_variants, session, sf, test, pgtuning, timings_file, results_file)
+        reads_time = run_queries(query_variants, session, sf, test, pgtuning, timings_file, results_file)
+        timings_file.write(f"Neo4j|{sf}|{batch_date}|reads||{reads_time:.6f}\n")
+
         batch_date = batch_date + batch_size
 
     results_file.close()

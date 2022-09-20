@@ -167,12 +167,13 @@ if __name__ == '__main__':
     open(f"output/timings.csv", "w").close()
 
     timings_file = open(f"output/timings.csv", "a")
-    timings_file.write(f"tool|sf|q|parameters|time\n")
+    timings_file.write(f"tool|sf|day|q|parameters|time\n")
     results_file = open(f"output/results.csv", "a")
 
     pg_con = psycopg2.connect(host="localhost", user="postgres", password="mysecretpassword", port=8000)
     pg_con.autocommit = True
     
-    run_queries(query_variants, pg_con, sf, test, pgtuning, None, timings_file, results_file)
-    
+    reads_time = run_queries(query_variants, pg_con, sf, test, pgtuning, None, timings_file, results_file)
+    timings_file.write(f"Umbra|{sf}||reads||{reads_time:.6f}\n")
+
     pg_con.close()

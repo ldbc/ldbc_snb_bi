@@ -159,7 +159,9 @@ else:
     # run alternating write-read blocks
     while batch_date < network_end_date and (not test or batch_date < test_end_date):
         run_batch_updates(pg_con, data_dir, batch_date, timings_file)
-        run_queries(query_variants, pg_con, sf, test, pgtuning, batch_date, timings_file, results_file)
+        reads_time = run_queries(query_variants, pg_con, sf, test, pgtuning, batch_date, timings_file, results_file)
+        timings_file.write(f"Umbra|{sf}|{batch_date}|reads||{reads_time:.6f}\n")
+
         batch_date = batch_date + batch_size
 
 timings_file.close()

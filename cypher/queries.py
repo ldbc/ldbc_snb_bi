@@ -174,9 +174,10 @@ if __name__ == '__main__':
 
     results_file = open(f"output/results.csv", "a")
     timings_file = open(f"output/timings.csv", "a")
-    timings_file.write(f"tool|sf|q|parameters|time\n")
+    timings_file.write(f"tool|sf|day|q|parameters|time\n")
 
-    run_queries(query_variants, session, sf, test, pgtuning, timings_file, results_file)
+    reads_time = run_queries(query_variants, session, sf, test, pgtuning, timings_file, results_file)
+    timings_file.write(f"Neo4j|{sf}||reads||{reads_time:.6f}\n")
 
     results_file.close()
     timings_file.close()
