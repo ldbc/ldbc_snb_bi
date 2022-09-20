@@ -97,7 +97,7 @@ jobs:
             cd ..
             scripts/cross-validate.sh cypher umbra
       - run:
-          name: Test TigerGraph toolchain with uncompressed CSVs
+          name: Test TigerGraph toolchain with compressed CSVs
           command: |
             # the sample data set contains compressed CSVs
             cd tigergraph
