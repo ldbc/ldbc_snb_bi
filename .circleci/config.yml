@@ -18,7 +18,7 @@ jobs:
       - run:
           name: Install visualization dependencies
           command: |
-            viz/scripts/install-dependencies.sh
+            sudo viz/scripts/install-dependencies.sh
       - run:
           name: Load Umbra Docker image
           command: |
