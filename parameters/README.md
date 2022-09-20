@@ -2,7 +2,7 @@
 
 This directory contains the query substistution parameters (`bi-*.csv`)
 
-The headers of the parameters are specified as a pipe-separated CSV file. It makes use the syntax of the [Neo4j CSV import tool](https://neo4j.com/docs/operations-manual/4.2/tools/neo4j-admin-import/#import-tool-header-format) to specify the type of each parameter. For example, the header
+The headers of the parameters are specified as a pipe-separated CSV file. It makes use of the syntax of the [Neo4j CSV import tool](https://neo4j.com/docs/operations-manual/4.2/tools/neo4j-admin-import/#import-tool-header-format) to specify the type of each parameter. For example, the header
 
 ```
 date:DATE|lengthThreshold:INT|languages:STRING[]
