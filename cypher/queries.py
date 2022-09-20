@@ -108,7 +108,7 @@ def run_query(session, query_num, query_variant, query_spec, query_parameters, t
     return (results, duration)
 
 
-def run_queries(query_variants, session, sf, test, pgtuning, timings_file, results_file):
+def run_queries(query_variants, session, sf, batch_id, test, pgtuning, timings_file, results_file):
     start = time.time()
 
     for query_variant in query_variants:
@@ -134,7 +134,7 @@ def run_queries(query_variants, session, sf, test, pgtuning, timings_file, resul
 
             (results, duration) = run_query(session, query_num, query_variant, query_spec, query_parameters_converted, test)
 
-            timings_file.write(f"Neo4j|{sf}|{query_variant}|{query_parameters_in_order}|{duration}\n")
+            timings_file.write(f"Neo4j|{sf}|{batch_id}|{query_variant}|{query_parameters_in_order}|{duration}\n")
             timings_file.flush()
             results_file.write(f"{query_num}|{query_variant}|{query_parameters_in_order}|{results}\n")
             results_file.flush()
@@ -180,7 +180,7 @@ if __name__ == '__main__':
     timings_file = open(f"output/timings.csv", "a")
     timings_file.write(f"tool|sf|day|q|parameters|time\n")
 
-    reads_time = run_queries(query_variants, session, sf, test, pgtuning, timings_file, results_file)
+    reads_time = run_queries(query_variants, session, sf, "", test, pgtuning, timings_file, results_file)
     timings_file.write(f"Neo4j|{sf}||reads||{reads_time:.6f}\n")
 
     results_file.close()

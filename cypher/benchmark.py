@@ -142,7 +142,7 @@ if __name__ == '__main__':
             session.write_transaction(write_query_fun, open(f'queries/bi-20-drop-graph.cypher', 'r').read())
             session.write_transaction(write_query_fun, open(f'queries/bi-20-create-graph.cypher', 'r').read())
 
-        reads_time = run_queries(query_variants, session, sf, test, pgtuning, timings_file, results_file)
+        reads_time = run_queries(query_variants, session, sf, batch_date, test, pgtuning, timings_file, results_file)
         timings_file.write(f"Neo4j|{sf}|{batch_date}|reads||{reads_time:.6f}\n")
 
         batch_date = batch_date + batch_size
