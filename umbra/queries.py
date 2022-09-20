@@ -116,6 +116,7 @@ def run_query(pg_con, query_num, query_variant, query_spec, query_parameters, te
 
 def run_queries(query_variants, pg_con, sf, test, pgtuning, batch_id, timings_file, results_file):
     start = time.time()
+
     for query_variant in query_variants:
         query_num = int(re.sub("[^0-9]", "", query_variant))
         query_subvariant = re.sub("[^ab]", "", query_variant)
@@ -149,6 +150,8 @@ def run_queries(query_variants, pg_con, sf, test, pgtuning, batch_id, timings_fi
             # - paramgen tuning: 50 queries
             if (test) or (not pgtuning and i == 10) or (pgtuning and i == 100):
                 break
+
+    return time.time() - start
 
 
 if __name__ == '__main__':

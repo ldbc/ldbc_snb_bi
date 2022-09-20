@@ -135,6 +135,7 @@ def run_queries(query_variants, results_file, timings_file, batch_date, args):
                 print(f"-> {results}")
             if args.test or i == args.nruns-1:
                 break
+
     return time.time() - start
 
 def run_precompute(args):
