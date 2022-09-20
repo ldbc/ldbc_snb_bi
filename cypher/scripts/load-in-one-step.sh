@@ -23,6 +23,13 @@ echo "==========================================================================
 
 scripts/stop.sh
 scripts/delete-database.sh
+
+start_time=$(date +%s.%3N)
+
 scripts/import.sh
 scripts/start.sh
 scripts/create-indices.sh
+
+end_time=$(date +%s.%3N)
+elapsed=$(echo "scale=3; $end_time - $start_time" | bc)
+echo -e "time\n${elapsed}" > output/load.csv
