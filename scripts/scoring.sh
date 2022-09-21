@@ -8,4 +8,5 @@ cd ..
 
 TOOL=${1}
 
+rm -f bi.duckdb
 python3 scripts/calculate-scores.py --timings_dir ${TOOL}/output/
