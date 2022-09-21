@@ -107,6 +107,9 @@ def run_query(endpoint, query_num, parameters):
 
 def run_queries(query_variants, results_file, timings_file, batch_date, args):
     sf = os.environ.get("SF")
+    if sf is None:
+        print("${SF} environment variable must be set")
+        exit(1)
     start = time.time()
     for query_variant in query_variants:
         print(f"========================= Q{query_variant} =========================")

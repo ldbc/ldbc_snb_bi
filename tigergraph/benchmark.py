@@ -20,6 +20,9 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     sf = os.environ.get("SF")
+    if sf is None:
+        print("${SF} environment variable must be set")
+        exit(1)
     results_file = open('output/results.csv', 'w')
     timings_file = open('output/timings.csv', 'w')
     timings_file.write(f"tool|sf|day|q|parameters|time\n")

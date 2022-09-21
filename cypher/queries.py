@@ -150,6 +150,9 @@ def run_queries(query_variants, session, sf, batch_id, test, pgtuning, timings_f
 
 if __name__ == '__main__':
     sf = os.environ.get("SF")
+    if sf is None:
+        print("${SF} environment variable must be set")
+        exit(1)
     test = False
     pgtuning = False
     if len(sys.argv) > 1:

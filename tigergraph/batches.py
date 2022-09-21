@@ -116,6 +116,9 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     sf = os.environ.get("SF")
+    if sf is None:
+        print("${SF} environment variable must be set")
+        exit(1)
     output = Path('output')
     output.mkdir(exist_ok=True)
     timings_file = open(output/'timings.csv', 'w')

@@ -79,6 +79,9 @@ if __name__ == '__main__':
     # env vars and arguments
 
     sf = os.environ.get("SF")
+    if sf is None:
+        print("${SF} environment variable must be set")
+        exit(1)
     test = False
     pgtuning = False
     if len(sys.argv) > 1:
