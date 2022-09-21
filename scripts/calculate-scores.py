@@ -125,7 +125,7 @@ con.execute("""
     """)
 s = con.fetchone()
 if s[0] == 0:
-    print(f"throughput score: n/a (throughput run was <2 hours)")
+    print(f"throughput score: n/a (throughput run was <1 hour)")
 else:
     con.execute("""
         SELECT (24 - (SELECT time/3600 FROM load_time)) * (n_batches / (t_batches/3600)) AS throughput
