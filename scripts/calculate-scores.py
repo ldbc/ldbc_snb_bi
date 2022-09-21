@@ -92,12 +92,13 @@ con.execute(f"""
 
 con.execute("""SELECT sf FROM timings LIMIT 1;""");
 sf = con.fetchone()[0];
+print(f"SF: {sf}")
 
 con.execute("""
     SELECT 3600 / ( exp(sum(ln(total_time::real)) * (1.0/count(total_time))) ) as power
     FROM power_test;
     """)
-p = con.fetchone()[0];
+p = con.fetchone()[0]
 print(f"power: {p:.02f}")
 print(f"power@SF: {p*sf:.02f}")
 
