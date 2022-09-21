@@ -11,6 +11,7 @@ cd ..
 echo "==============================================================================="
 echo "Loading the Umbra database"
 echo "-------------------------------------------------------------------------------"
+echo "SF: ${SF}"
 echo "UMBRA_BACKUP_DIR: ${UMBRA_BACKUP_DIR}"
 echo "UMBRA_DATABASE_DIR: ${UMBRA_DATABASE_DIR}"
 echo "UMBRA_LOG_DIR: ${UMBRA_LOG_DIR}"

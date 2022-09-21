@@ -11,6 +11,7 @@ cd ..
 echo "==============================================================================="
 echo "Loading the Neo4j database"
 echo "-------------------------------------------------------------------------------"
+echo "SF: ${SF}"
 echo "NEO4J_CONTAINER_ROOT: ${NEO4J_CONTAINER_ROOT}"
 echo "NEO4J_VERSION: ${NEO4J_VERSION}"
 echo "NEO4J_CONTAINER_NAME: ${NEO4J_CONTAINER_NAME}"
