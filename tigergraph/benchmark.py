@@ -20,8 +20,11 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     sf = os.environ.get("SF")
-    results_file = open('output/results.csv', 'w')
-    timings_file = open('output/timings.csv', 'w')
+    if sf is None:
+        print("${SF} environment variable must be set")
+        exit(1)
+    results_file = open(f'output/output-sf{sf}/results.csv', 'w')
+    timings_file = open(f'output/output-sf{sf}/timings.csv', 'w')
     timings_file.write(f"tool|sf|day|q|parameters|time\n")
     query_variants = ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "15a", "15b", "16a", "16b", "17", "18", "19a", "19b", "20a", "20b"]
     query_nums = [int(re.sub("[^0-9]", "", query_variant)) for query_variant in query_variants]
@@ -35,7 +38,7 @@ if __name__ == '__main__':
         writes_time = run_batch_update(batch_date, args)
         precompute_time = run_precompute(args)
         timings_file.write(f"TigerGraph|{sf}|{batch_date}|writes||{writes_time + precompute_time:.6f}\n")
-        reads_time = run_queries(query_variants, results_file, timings_file, batch_date, args)
+        reads_time = run_queries(query_variants, sf, results_file, timings_file, batch_date, args)
         timings_file.write(f"TigerGraph|{sf}|{batch_date}|reads||{reads_time:.6f}\n")
         batch_date = batch_date + batch_size
 

@@ -11,7 +11,8 @@ import re
 import neo4j
 import time
 import sys
-from queries import run_queries, write_query_fun
+from queries import run_queries, run_precomputations
+from pathlib import Path
 
 # Usage: benchmark.py [--test|--pgtuning]
 
@@ -79,6 +80,9 @@ if __name__ == '__main__':
     # env vars and arguments
 
     sf = os.environ.get("SF")
+    if sf is None:
+        print("${SF} environment variable must be set")
+        exit(1)
     test = False
     pgtuning = False
     if len(sys.argv) > 1:
@@ -114,11 +118,13 @@ if __name__ == '__main__':
         with open(f"dml/del-{entity}.cypher", "r") as delete_query_file:
             delete_queries[entity] = delete_query_file.read()
 
-    open(f"output/results.csv", "w").close()
-    open(f"output/timings.csv", "w").close()
+    output = Path(f'output/output-sf{sf}')
+    output.mkdir(parents=True, exist_ok=True)
+    open(f"output/output-sf{sf}/results.csv", "w").close()
+    open(f"output/output-sf{sf}/timings.csv", "w").close()
 
-    results_file = open(f"output/results.csv", "a")
-    timings_file = open(f"output/timings.csv", "a")
+    results_file = open(f"output/output-sf{sf}/results.csv", "a")
+    timings_file = open(f"output/output-sf{sf}/timings.csv", "a")
     timings_file.write(f"tool|sf|day|q|parameters|time\n")
 
     network_start_date = datetime.date(2012, 11, 29)
@@ -131,16 +137,7 @@ if __name__ == '__main__':
         print()
         print(f"----------------> Batch date: {batch_date} <---------------")
         run_batch_updates(session, data_dir, batch_date, insert_entities, delete_entities, insert_queries, delete_queries)
-
-        if "19a" in query_variants or "19b" in query_variants:
-            print("Creating graph (precomputing weights) for Q19")
-            session.write_transaction(write_query_fun, open(f'queries/bi-19-drop-graph.cypher', 'r').read())
-            session.write_transaction(write_query_fun, open(f'queries/bi-19-create-graph.cypher', 'r').read())
-
-        if "20a" in query_variants or "20b" in query_variants:
-            print("Creating graph (precomputing weights) for Q20")
-            session.write_transaction(write_query_fun, open(f'queries/bi-20-drop-graph.cypher', 'r').read())
-            session.write_transaction(write_query_fun, open(f'queries/bi-20-create-graph.cypher', 'r').read())
+        run_precomputations(sf, query_variants, session, timings_file)
 
         reads_time = run_queries(query_variants, session, sf, batch_date, test, pgtuning, timings_file, results_file)
         timings_file.write(f"Neo4j|{sf}|{batch_date}|reads||{reads_time:.6f}\n")

@@ -11,6 +11,7 @@ cd ..
 echo "==============================================================================="
 echo "Loading the TIGERGRAPH database"
 echo "-------------------------------------------------------------------------------"
+echo "SF: ${SF}"
 echo "TG_CONTAINER_NAME: ${TG_CONTAINER_NAME}"
 echo "TG_VERSION: ${TG_VERSION}"
 echo "TG_DATA_DIR (on the host machine): ${TG_DATA_DIR}"

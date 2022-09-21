@@ -3,8 +3,11 @@ import argparse
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--timings_dir', type=str, help='Directory containing the timings.csv file', required=True)
+parser.add_argument('--throughput_min_time', type=str, help='Minimum total execution time for throughput batches. Executions with a lower total throughput time are invalid.', default=3600)
+
 args = parser.parse_args()
 timings_dir = args.timings_dir
+throughput_min_time = args.throughput_min_time
 
 con = duckdb.connect("bi.duckdb")
 con.execute(f"""
@@ -47,7 +50,7 @@ con.execute(f"""
                 FROM throughput_test
                 WHERE q IN ('reads', 'writes')
             )
-            WHERE throughput_runtime_running_total >= 3600
+            WHERE throughput_runtime_running_total >= {throughput_min_time}
             LIMIT 1
         );
 
@@ -92,12 +95,13 @@ con.execute(f"""
 
 con.execute("""SELECT sf FROM timings LIMIT 1;""");
 sf = con.fetchone()[0];
+print(f"SF: {str(sf).rstrip('.0')}")
 
 con.execute("""
     SELECT 3600 / ( exp(sum(ln(total_time::real)) * (1.0/count(total_time))) ) as power
     FROM power_test;
     """)
-p = con.fetchone()[0];
+p = con.fetchone()[0]
 print(f"power: {p:.02f}")
 print(f"power@SF: {p*sf:.02f}")
 
@@ -125,7 +129,7 @@ con.execute("""
     """)
 s = con.fetchone()
 if s[0] == 0:
-    print(f"throughput score: n/a (throughput run was <2 hours)")
+    print(f"throughput score: n/a (throughput run was <{throughput_min_time}s")
 else:
     con.execute("""
         SELECT (24 - (SELECT time/3600 FROM load_time)) * (n_batches / (t_batches/3600)) AS throughput

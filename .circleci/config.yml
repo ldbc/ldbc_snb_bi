@@ -54,18 +54,14 @@ jobs:
             scripts/get-sample-data-set.sh
             cd ..
       - run:
-          name: Download factors
+          name: Generate parameters for sample data set
           command: |
             cd paramgen
             scripts/get-sample-factors.sh
-            cd ..
-      - run:
-          name: Generate parameters
-          command: |
-            cd paramgen
+            export SF=0.003
             scripts/paramgen.sh
             cd ..
-            head -n 5 parameters/*.csv
+            head -n 3 parameters/parameters-sf${SF}/*.csv
       - run:
           name: Test Umbra toolchain
           command: |
@@ -74,10 +70,11 @@ jobs:
             scripts/load-in-one-step.sh
             scripts/backup-database.sh
             scripts/restore-database.sh
+            scripts/queries.sh --test
             scripts/benchmark.sh --test
             scripts/stop.sh
             cd ..
-            scripts/scoring.sh umbra
+            scripts/score-test.sh umbra
       - run:
           name: Test Cypher toolchain with uncompressed CSVs
           command: |
@@ -85,11 +82,12 @@ jobs:
             export SF=0.003
             export NEO4J_CSV_DIR=`pwd`/social-network-sf${SF}-bi-composite-projected-fk-neo4j/graphs/csv/bi/composite-projected-fk/
             scripts/load-in-one-step.sh
+            scripts/queries.sh --test
             scripts/benchmark.sh --test
             scripts/stop.sh
             cd ..
             scripts/cross-validate.sh cypher umbra
-            scripts/scoring.sh cypher
+            scripts/score-test.sh cypher
       - run:
           name: Test Cypher toolchain with compressed CSVs
           command: |
@@ -99,11 +97,12 @@ jobs:
             scripts/load-in-one-step.sh
             scripts/backup-database.sh
             scripts/restore-database.sh
+            scripts/queries.sh --test
             scripts/benchmark.sh --test
             scripts/stop.sh
             cd ..
             scripts/cross-validate.sh cypher umbra
-            scripts/scoring.sh cypher
+            scripts/score-test.sh cypher
       - run:
           name: Test TigerGraph toolchain with compressed CSVs
           command: |
@@ -111,9 +110,10 @@ jobs:
             cd tigergraph
             . scripts/configure-data-set.sh
             scripts/load-in-one-step.sh
+            scripts/queries.sh --test
             scripts/benchmark.sh --test
             scripts/stop.sh
             cd ..
             scripts/cross-validate.sh tigergraph umbra
-            scripts/scoring.sh tigergraph
+            scripts/score-test.sh tigergraph
       - slack/status

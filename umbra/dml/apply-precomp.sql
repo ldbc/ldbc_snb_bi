@@ -56,7 +56,7 @@ weights(src, dst, w) as (
     SELECT
         least(m1.creatorpersonid, m2.creatorpersonid) AS src,
         greatest(m1.creatorpersonid, m2.creatorpersonid) AS dst,
-        greatest(floor(40 - sqrt(count(*)))::bigint, 1) AS w
+        greatest(round(40 - sqrt(count(*)))::bigint, 1) AS w
     from Person_knows_person pp, Message m1, Message m2
     where pp.person1id = m1.creatorpersonid and pp.person2id = m2.creatorpersonid and m1.parentmessageid = m2.messageid and m1.creatorpersonid <> m2.creatorpersonid
     group by src, dst

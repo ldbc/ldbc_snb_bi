@@ -10,6 +10,8 @@ MATCH
   (tag:Tag {name: $tag}),
   (person1:Person)<-[:HAS_CREATOR]-(message1:Message)-[:REPLY_OF*0..]->(post1:Post)<-[:CONTAINER_OF]-(forum1:Forum),
   (message1)-[:HAS_TAG]->(tag),
+// Having two HAS_MEMBER edges in the same MATCH clause ensures that person2 and person3 are different
+// as Cypher's edge-isomorphic matching does not allow for such a match in a single MATCH clause.
   (forum1)<-[:HAS_MEMBER]->(person2:Person)<-[:HAS_CREATOR]-(comment:Comment)-[:HAS_TAG]->(tag),
   (forum1)<-[:HAS_MEMBER]->(person3:Person)<-[:HAS_CREATOR]-(message2:Message),
   (comment)-[:REPLY_OF]->(message2)-[:REPLY_OF*0..]->(post2:Post)<-[:CONTAINER_OF]-(forum2:Forum)

@@ -11,6 +11,7 @@ cd ..
 echo "==============================================================================="
 echo "Loading the Umbra database"
 echo "-------------------------------------------------------------------------------"
+echo "SF: ${SF}"
 echo "UMBRA_BACKUP_DIR: ${UMBRA_BACKUP_DIR}"
 echo "UMBRA_DATABASE_DIR: ${UMBRA_DATABASE_DIR}"
 echo "UMBRA_LOG_DIR: ${UMBRA_LOG_DIR}"
@@ -25,14 +26,23 @@ if [ ! -d "${UMBRA_CSV_DIR}" ]; then
     exit 1
 fi
 
-scripts/stop.sh
+if [ "$(uname)" == "Darwin" ]; then
+    DATE_COMMAND=gdate
+else
+    DATE_COMMAND=date
+fi
 
-start_time=$(date +%s.%3N)
+scripts/stop.sh
+scripts/decompress-data-set.sh
+
+start_time=$(${DATE_COMMAND} +%s.%3N)
 
 scripts/create-db.sh
 scripts/start.sh
 scripts/load.sh
 
-end_time=$(date +%s.%3N)
+end_time=$(${DATE_COMMAND} +%s.%3N)
 elapsed=$(echo "scale=3; $end_time - $start_time" | bc)
-echo -e "time\n${elapsed}" > output/load.csv
+
+mkdir -p output/output-sf${SF}
+echo -e "time\n${elapsed}" > output/output-sf${SF}/load.csv

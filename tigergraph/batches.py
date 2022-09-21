@@ -116,8 +116,11 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     sf = os.environ.get("SF")
-    output = Path('output')
-    output.mkdir(exist_ok=True)
+    if sf is None:
+        print("${SF} environment variable must be set")
+        exit(1)
+    output = Path(f'output/output-sf{sf}/')
+    output.mkdir(parents=True, exist_ok=True)
     timings_file = open(output/'timings.csv', 'w')
     timings_file.write(f'tool|sf|day|q|parameters|time\n')
     network_start_date = date(2012, 11, 29)

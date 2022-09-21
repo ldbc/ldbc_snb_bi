@@ -6,6 +6,7 @@ import re
 import psycopg2
 import time
 import sys
+from pathlib import Path
 
 # Usage: queries.py [--test]
 
@@ -126,7 +127,7 @@ def run_queries(query_variants, pg_con, sf, test, pgtuning, batch_id, timings_fi
         query_spec = query_file.read()
         query_file.close()
 
-        parameters_csv = csv.DictReader(open(f'../parameters/bi-{query_variant}.csv'), delimiter='|')
+        parameters_csv = csv.DictReader(open(f'../parameters/parameters-sf{sf}/bi-{query_variant}.csv'), delimiter='|')
         parameters = [{"name": t[0], "type": t[1]} for t in [f.split(":") for f in parameters_csv.fieldnames]]
 
         i = 0
@@ -156,6 +157,9 @@ def run_queries(query_variants, pg_con, sf, test, pgtuning, batch_id, timings_fi
 
 if __name__ == '__main__':
     sf = os.environ.get("SF")
+    if sf is None:
+        print("${SF} environment variable must be set")
+        exit(1)
     test = False
     pgtuning = False
     if len(sys.argv) > 1:
@@ -166,12 +170,14 @@ if __name__ == '__main__':
 
     query_variants = ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "15a", "15b", "16a", "16b", "17", "18", "19a", "19b", "20a", "20b"]
 
-    open(f"output/results.csv", "w").close()
-    open(f"output/timings.csv", "w").close()
+    output = Path(f'output/output-sf{sf}')
+    output.mkdir(parents=True, exist_ok=True)
+    open(f"output/output-sf{sf}/results.csv", "w").close()
+    open(f"output/output-sf{sf}/timings.csv", "w").close()
 
-    timings_file = open(f"output/timings.csv", "a")
+    timings_file = open(f"output/output-sf{sf}/timings.csv", "a")
     timings_file.write(f"tool|sf|day|q|parameters|time\n")
-    results_file = open(f"output/results.csv", "a")
+    results_file = open(f"output/output-sf{sf}/results.csv", "a")
 
     pg_con = psycopg2.connect(host="localhost", user="postgres", password="mysecretpassword", port=8000)
     pg_con.autocommit = True

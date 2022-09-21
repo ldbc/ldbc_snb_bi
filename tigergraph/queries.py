@@ -105,8 +105,7 @@ def run_query(endpoint, query_num, parameters):
     return json.dumps(result_tuples), duration
 
 
-def run_queries(query_variants, results_file, timings_file, batch_date, args):
-    sf = os.environ.get("SF")
+def run_queries(query_variants, sf, results_file, timings_file, batch_date, args):
     start = time.time()
     for query_variant in query_variants:
         print(f"========================= Q{query_variant} =========================")
@@ -183,14 +182,19 @@ if __name__ == '__main__':
     parser.add_argument('--nruns', '-n', type=int, default=10, help='number of runs')
     parser.add_argument('--endpoint', type=str, default='http://127.0.0.1:9000',help='tigergraph endpoints')
     args = parser.parse_args()
-    
-    output = Path('output')
-    output.mkdir(exist_ok=True)
+
+    sf = os.environ.get("SF")
+    if sf is None:
+        print("${SF} environment variable must be set")
+        exit(1)
+
+    output = Path(f'output/output-sf{sf}')
+    output.mkdir(parents=True, exist_ok=True)
     results_file = open(output/'results.csv', 'w')
     timings_file = open(output/'timings.csv', 'w')
     timings_file.write(f"tool|sf|day|q|parameters|time\n")
     query_variants = ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "15a", "15b", "16a", "16b", "17", "18", "19a", "19b", "20a", "20b"]
     if not args.skip: run_precompute(args)
-    run_queries(query_variants, results_file, timings_file, 'None', args)
+    run_queries(query_variants, sf, results_file, timings_file, '', args)
     results_file.close()
     timings_file.close()

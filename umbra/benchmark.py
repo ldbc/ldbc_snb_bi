@@ -7,6 +7,7 @@ import psycopg2
 import time
 import sys
 from queries import run_queries
+from pathlib import Path
 
 # Usage: benchmark.py [--test|--pgtuning]
 
@@ -101,6 +102,9 @@ def run_batch_updates(pg_con, data_dir, batch_start_date, timings_file):
 query_variants = ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "15a", "15b", "16a", "16b", "17", "18", "19a", "19b", "20a", "20b"]
 
 sf = os.environ.get("SF")
+if sf is None:
+    print("${SF} environment variable must be set")
+    exit(1)
 test = False
 pgtuning = False
 local = False
@@ -133,12 +137,14 @@ delete_nodes = ["Comment", "Post", "Forum", "Person"]
 delete_edges = ["Forum_hasMember_Person", "Person_knows_Person", "Person_likes_Comment", "Person_likes_Post"]
 delete_entities = delete_nodes + delete_edges
 
-open(f"output/results.csv", "w").close()
-open(f"output/timings.csv", "w").close()
+output = Path(f'output/output-sf{sf}')
+output.mkdir(parents=True, exist_ok=True)
+open(f"output/output-sf{sf}/results.csv", "w").close()
+open(f"output/output-sf{sf}/timings.csv", "w").close()
 
-timings_file = open(f"output/timings.csv", "a")
+timings_file = open(f"output/output-sf{sf}/timings.csv", "a")
 timings_file.write(f"tool|sf|day|q|parameters|time\n")
-results_file = open(f"output/results.csv", "a")
+results_file = open(f"output/output-sf{sf}/results.csv", "a")
 
 pg_con = psycopg2.connect(host="localhost", user="postgres", password="mysecretpassword", port=8000)
 pg_con.autocommit = True

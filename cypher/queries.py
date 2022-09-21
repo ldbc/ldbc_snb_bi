@@ -6,6 +6,7 @@ import os
 import re
 import sys
 import json
+from pathlib import Path
 
 # Usage: queries.py [--test]
 
@@ -120,7 +121,7 @@ def run_queries(query_variants, session, sf, batch_id, test, pgtuning, timings_f
         query_spec = query_file.read()
         query_file.close()
 
-        parameters_csv = csv.DictReader(open(f'../parameters/bi-{query_variant}.csv'), delimiter='|')
+        parameters_csv = csv.DictReader(open(f'../parameters/parameters-sf{sf}/bi-{query_variant}.csv'), delimiter='|')
         parameters = [{"name": t[0], "type": t[1]} for t in [f.split(":") for f in parameters_csv.fieldnames]]
 
         i = 0
@@ -148,8 +149,31 @@ def run_queries(query_variants, session, sf, batch_id, test, pgtuning, timings_f
     return time.time() - start
 
 
+def run_precomputations(sf, query_variants, session, timings_file):
+    if "19a" in query_variants or "19b" in query_variants:
+        start = time.time()
+        print("Creating graph (precomputing weights) for Q19")
+        session.write_transaction(write_query_fun, open(f'queries/bi-19-drop-graph.cypher', 'r').read())
+        session.write_transaction(write_query_fun, open(f'queries/bi-19-create-graph.cypher', 'r').read())
+        end = time.time()
+        duration = end - start
+        timings_file.write(f"Neo4j|{sf}||q19precomputation||{duration}\n")
+
+    if "20a" in query_variants or "20b" in query_variants:
+        start = time.time()
+        print("Creating graph (precomputing weights) for Q20")
+        session.write_transaction(write_query_fun, open(f'queries/bi-20-drop-graph.cypher', 'r').read())
+        session.write_transaction(write_query_fun, open(f'queries/bi-20-create-graph.cypher', 'r').read())
+        end = time.time()
+        duration = end - start
+        timings_file.write(f"Neo4j|{sf}||q20precomputation||{duration}\n")
+
+
 if __name__ == '__main__':
     sf = os.environ.get("SF")
+    if sf is None:
+        print("${SF} environment variable must be set")
+        exit(1)
     test = False
     pgtuning = False
     if len(sys.argv) > 1:
@@ -163,22 +187,16 @@ if __name__ == '__main__':
     driver = neo4j.GraphDatabase.driver("bolt://localhost:7687")
     session = driver.session()
 
-    if "19a" in query_variants or "19b" in query_variants:
-        print("Creating graph (precomputing weights) for Q19")
-        session.write_transaction(write_query_fun, open(f'queries/bi-19-drop-graph.cypher', 'r').read())
-        session.write_transaction(write_query_fun, open(f'queries/bi-19-create-graph.cypher', 'r').read())
+    output = Path(f'output/output-sf{sf}')
+    output.mkdir(parents=True, exist_ok=True)
+    open(f"output/output-sf{sf}/results.csv", "w").close()
+    open(f"output/output-sf{sf}/timings.csv", "w").close()
 
-    if "20a" in query_variants or "20b" in query_variants:
-        print("Creating graph (precomputing weights) for Q20")
-        session.write_transaction(write_query_fun, open(f'queries/bi-20-drop-graph.cypher', 'r').read())
-        session.write_transaction(write_query_fun, open(f'queries/bi-20-create-graph.cypher', 'r').read())
-
-    open(f"output/results.csv", "w").close()
-    open(f"output/timings.csv", "w").close()
-
-    results_file = open(f"output/results.csv", "a")
-    timings_file = open(f"output/timings.csv", "a")
+    results_file = open(f"output/output-sf{sf}/results.csv", "a")
+    timings_file = open(f"output/output-sf{sf}/timings.csv", "a")
     timings_file.write(f"tool|sf|day|q|parameters|time\n")
+
+    run_precomputations(sf, query_variants, session, timings_file)
 
     reads_time = run_queries(query_variants, session, sf, "", test, pgtuning, timings_file, results_file)
     timings_file.write(f"Neo4j|{sf}||reads||{reads_time:.6f}\n")
