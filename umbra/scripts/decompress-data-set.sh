@@ -9,4 +9,4 @@ cd ..
 cd ${UMBRA_CSV_DIR}
 
 # decompress the CSVs but keep the original .csv.gz files
-find . -name *.csv.gz | xargs -I {} gunzip --keep {}
+find . -name *.csv.gz | xargs -I {} gunzip {}

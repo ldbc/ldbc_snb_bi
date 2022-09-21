@@ -33,6 +33,7 @@ else
 fi
 
 scripts/stop.sh
+scripts/decompress-data-set.sh
 
 start_time=$(${DATE_COMMAND} +%s.%3N)
 
