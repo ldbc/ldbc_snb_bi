@@ -126,7 +126,7 @@ def run_queries(query_variants, pg_con, sf, test, pgtuning, batch_id, timings_fi
         query_spec = query_file.read()
         query_file.close()
 
-        parameters_csv = csv.DictReader(open(f'../parameters/bi-{query_variant}.csv'), delimiter='|')
+        parameters_csv = csv.DictReader(open(f'../parameters/parameters-sf{sf}/bi-{query_variant}.csv'), delimiter='|')
         parameters = [{"name": t[0], "type": t[1]} for t in [f.split(":") for f in parameters_csv.fieldnames]]
 
         i = 0

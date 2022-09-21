@@ -11,7 +11,7 @@ export TG_DML_DIR=`pwd`/dml
 export TG_REST_PORT=9000
 export TG_SSH_PORT=14022
 export TG_WEB_PORT=14240
-export TG_ENDPOINT=http://127.0.0.1:$TG_REST_PORT
-export TG_PARAMETER=../parameters
+export TG_ENDPOINT=http://127.0.0.1:${TG_REST_PORT}
+export TG_PARAMETER=../parameters/parameters-sf${SF}
 
 popd > /dev/null

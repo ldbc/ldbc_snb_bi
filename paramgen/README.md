@@ -43,13 +43,13 @@ The paramgen implements [parameter curation](https://research.vu.nl/en/publicati
     scripts/get-sample-factors.sh
     ```
 
-1. To run the parameter generator, issue:
+1. To run the parameter generator, ensure that `${SF}` is set correctly and issue:
 
     ```bash
     scripts/paramgen.sh
     ```
 
-1. The parameters will be placed in the `../parameters/` directory.
+1. The parameters will be placed in the `../parameters/parameters-sf${SF}/` directory.
 
 ## Memory consumption
 
