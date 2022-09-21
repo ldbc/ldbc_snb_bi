@@ -13,4 +13,4 @@ fi
 
 . scripts/vars.sh
 
-python3 benchmark.py $@
+timeout 2h python3 benchmark.py $@

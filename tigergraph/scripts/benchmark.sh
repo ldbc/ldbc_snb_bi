@@ -18,4 +18,4 @@ if [ ! -d "${TG_PARAMETER}" ]; then
     exit 1
 fi
 
-python3 -u benchmark.py ${TG_DATA_DIR} --para $TG_PARAMETER --endpoint ${TG_ENDPOINT} $@
+timeout 2h python3 -u benchmark.py ${TG_DATA_DIR} --para $TG_PARAMETER --endpoint ${TG_ENDPOINT} $@
