@@ -41,6 +41,7 @@ The paramgen implements [parameter curation](https://research.vu.nl/en/publicati
 
     ```bash
     scripts/get-sample-factors.sh
+    export SF=0.003
     ```
 
 1. To run the parameter generator, ensure that `${SF}` is set correctly and issue:

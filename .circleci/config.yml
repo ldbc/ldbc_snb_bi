@@ -50,15 +50,11 @@ jobs:
             scripts/get-sample-data-set.sh
             cd ..
       - run:
-          name: Download factors
+          name: Generate parameters for sample data set
           command: |
             cd paramgen
             scripts/get-sample-factors.sh
-            cd ..
-      - run:
-          name: Generate parameters
-          command: |
-            cd paramgen
+            export SF=0.003
             scripts/paramgen.sh
             cd ..
             head -n 5 parameters/*.csv
