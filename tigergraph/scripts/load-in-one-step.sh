@@ -10,11 +10,17 @@ cd ..
 
 scripts/stop.sh
 
-start_time=$(date +%s.%3N)
+if [ "$(uname)" == "Darwin" ]; then
+    DATE_COMMAND=gdate
+else
+    DATE_COMMAND=date
+fi
+
+start_time=$(${DATE_COMMAND} +%s.%3N)
 
 scripts/start.sh
 scripts/setup.sh
 
-end_time=$(date +%s.%3N)
+end_time=$(${DATE_COMMAND} +%s.%3N)
 elapsed=$(echo "scale=3; $end_time - $start_time" | bc)
 echo -e "time\n${elapsed}" > output/load.csv
