@@ -57,7 +57,7 @@ jobs:
             export SF=0.003
             scripts/paramgen.sh
             cd ..
-            head -n 5 parameters/*.csv
+            head -n 3 parameters/parameters-sf${SF}/*.csv
       - run:
           name: Test Umbra toolchain
           command: |
