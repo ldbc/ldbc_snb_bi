@@ -12,6 +12,7 @@ import neo4j
 import time
 import sys
 from queries import run_queries, run_precomputations
+from pathlib import Path
 
 # Usage: benchmark.py [--test|--pgtuning]
 
@@ -117,11 +118,13 @@ if __name__ == '__main__':
         with open(f"dml/del-{entity}.cypher", "r") as delete_query_file:
             delete_queries[entity] = delete_query_file.read()
 
-    open(f"output/results.csv", "w").close()
-    open(f"output/timings.csv", "w").close()
+    output = Path(f'output/output-sf{sf}')
+    output.mkdir(parents=True, exist_ok=True)
+    open(f"output/output-sf{sf}/results.csv", "w").close()
+    open(f"output/output-sf{sf}/timings.csv", "w").close()
 
-    results_file = open(f"output/results.csv", "a")
-    timings_file = open(f"output/timings.csv", "a")
+    results_file = open(f"output/output-sf{sf}/results.csv", "a")
+    timings_file = open(f"output/output-sf{sf}/timings.csv", "a")
     timings_file.write(f"tool|sf|day|q|parameters|time\n")
 
     network_start_date = datetime.date(2012, 11, 29)

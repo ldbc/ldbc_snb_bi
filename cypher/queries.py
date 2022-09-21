@@ -6,6 +6,7 @@ import os
 import re
 import sys
 import json
+from pathlib import Path
 
 # Usage: queries.py [--test]
 
@@ -186,11 +187,13 @@ if __name__ == '__main__':
     driver = neo4j.GraphDatabase.driver("bolt://localhost:7687")
     session = driver.session()
 
-    open(f"output/results.csv", "w").close()
-    open(f"output/timings.csv", "w").close()
+    output = Path(f'output/output-sf{sf}')
+    output.mkdir(parents=True, exist_ok=True)
+    open(f"output/output-sf{sf}/results.csv", "w").close()
+    open(f"output/output-sf{sf}/timings.csv", "w").close()
 
-    results_file = open(f"output/results.csv", "a")
-    timings_file = open(f"output/timings.csv", "a")
+    results_file = open(f"output/output-sf{sf}/results.csv", "a")
+    timings_file = open(f"output/output-sf{sf}/timings.csv", "a")
     timings_file.write(f"tool|sf|day|q|parameters|time\n")
 
     run_precomputations(sf, query_variants, session, timings_file)

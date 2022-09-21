@@ -39,4 +39,6 @@ scripts/create-indices.sh
 
 end_time=$(${DATE_COMMAND} +%s.%3N)
 elapsed=$(echo "scale=3; $end_time - $start_time" | bc)
-echo -e "time\n${elapsed}" > output/load.csv
+
+mkdir -p output/output-sf${SF}
+echo -e "time\n${elapsed}" > output/output-sf${SF}/load.csv

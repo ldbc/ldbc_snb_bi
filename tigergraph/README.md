@@ -90,7 +90,7 @@ For a test run, use:
 scripts/queries.sh --test
 ```
 
-Results are written to `output/results.csv` and `output/timings.csv`.
+Results are written to `output/output-sf${SF}/results.csv` and `output/output-sf${SF}/timings.csv`.
 
 ## Benchmarks
 
