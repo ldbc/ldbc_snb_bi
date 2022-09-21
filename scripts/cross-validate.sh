@@ -14,5 +14,5 @@ fi
 numdiff \
     --separators='\|\n;: ,{}[]' \
     --absolute-tolerance 0.001 \
-    ${1}/output/results.csv \
-    ${2}/output/results.csv
+    ${1}/output/output-sf${SF}/results.csv \
+    ${2}/output/output-sf${SF}/results.csv

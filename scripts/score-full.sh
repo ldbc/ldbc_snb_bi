@@ -16,4 +16,4 @@ fi
 TOOL=${1}
 
 rm -f bi.duckdb
-python3 scripts/calculate-scores.py --timings_dir ${TOOL}/output/ --throughput_min_time 7200
+python3 scripts/calculate-scores.py --timings_dir ${TOOL}/output/output-sf${SF}/ --throughput_min_time 7200
