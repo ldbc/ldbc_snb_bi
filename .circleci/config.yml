@@ -70,7 +70,7 @@ jobs:
             scripts/benchmark.sh --test
             scripts/stop.sh
             cd ..
-            scripts/scoring.sh umbra
+            scripts/score-test.sh umbra
       - run:
           name: Test Cypher toolchain with uncompressed CSVs
           command: |
@@ -83,7 +83,7 @@ jobs:
             scripts/stop.sh
             cd ..
             scripts/cross-validate.sh cypher umbra
-            scripts/scoring.sh cypher
+            scripts/score-test.sh cypher
       - run:
           name: Test Cypher toolchain with compressed CSVs
           command: |
@@ -98,7 +98,7 @@ jobs:
             scripts/stop.sh
             cd ..
             scripts/cross-validate.sh cypher umbra
-            scripts/scoring.sh cypher
+            scripts/score-test.sh cypher
       - run:
           name: Test TigerGraph toolchain with compressed CSVs
           command: |
@@ -111,5 +111,5 @@ jobs:
             scripts/stop.sh
             cd ..
             scripts/cross-validate.sh tigergraph umbra
-            scripts/scoring.sh tigergraph
+            scripts/score-test.sh tigergraph
       - slack/status
