@@ -11,7 +11,7 @@ import re
 import neo4j
 import time
 import sys
-from queries import run_queries, write_query_fun
+from queries import run_queries, run_precomputations
 
 # Usage: benchmark.py [--test|--pgtuning]
 
@@ -134,16 +134,7 @@ if __name__ == '__main__':
         print()
         print(f"----------------> Batch date: {batch_date} <---------------")
         run_batch_updates(session, data_dir, batch_date, insert_entities, delete_entities, insert_queries, delete_queries)
-
-        if "19a" in query_variants or "19b" in query_variants:
-            print("Creating graph (precomputing weights) for Q19")
-            session.write_transaction(write_query_fun, open(f'queries/bi-19-drop-graph.cypher', 'r').read())
-            session.write_transaction(write_query_fun, open(f'queries/bi-19-create-graph.cypher', 'r').read())
-
-        if "20a" in query_variants or "20b" in query_variants:
-            print("Creating graph (precomputing weights) for Q20")
-            session.write_transaction(write_query_fun, open(f'queries/bi-20-drop-graph.cypher', 'r').read())
-            session.write_transaction(write_query_fun, open(f'queries/bi-20-create-graph.cypher', 'r').read())
+        run_precomputations(sf, query_variants, session, timings_file)
 
         reads_time = run_queries(query_variants, session, sf, batch_date, test, pgtuning, timings_file, results_file)
         timings_file.write(f"Neo4j|{sf}|{batch_date}|reads||{reads_time:.6f}\n")

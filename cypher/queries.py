@@ -148,6 +148,26 @@ def run_queries(query_variants, session, sf, batch_id, test, pgtuning, timings_f
     return time.time() - start
 
 
+def run_precomputations(sf, query_variants, session, timings_file):
+    if "19a" in query_variants or "19b" in query_variants:
+        start = time.time()
+        print("Creating graph (precomputing weights) for Q19")
+        session.write_transaction(write_query_fun, open(f'queries/bi-19-drop-graph.cypher', 'r').read())
+        session.write_transaction(write_query_fun, open(f'queries/bi-19-create-graph.cypher', 'r').read())
+        end = time.time()
+        duration = end - start
+        timings_file.write(f"Neo4j|{sf}||q19precomputation||{duration}\n")
+
+    if "20a" in query_variants or "20b" in query_variants:
+        start = time.time()
+        print("Creating graph (precomputing weights) for Q20")
+        session.write_transaction(write_query_fun, open(f'queries/bi-20-drop-graph.cypher', 'r').read())
+        session.write_transaction(write_query_fun, open(f'queries/bi-20-create-graph.cypher', 'r').read())
+        end = time.time()
+        duration = end - start
+        timings_file.write(f"Neo4j|{sf}||q20precomputation||{duration}\n")
+
+
 if __name__ == '__main__':
     sf = os.environ.get("SF")
     if sf is None:
@@ -166,22 +186,14 @@ if __name__ == '__main__':
     driver = neo4j.GraphDatabase.driver("bolt://localhost:7687")
     session = driver.session()
 
-    if "19a" in query_variants or "19b" in query_variants:
-        print("Creating graph (precomputing weights) for Q19")
-        session.write_transaction(write_query_fun, open(f'queries/bi-19-drop-graph.cypher', 'r').read())
-        session.write_transaction(write_query_fun, open(f'queries/bi-19-create-graph.cypher', 'r').read())
-
-    if "20a" in query_variants or "20b" in query_variants:
-        print("Creating graph (precomputing weights) for Q20")
-        session.write_transaction(write_query_fun, open(f'queries/bi-20-drop-graph.cypher', 'r').read())
-        session.write_transaction(write_query_fun, open(f'queries/bi-20-create-graph.cypher', 'r').read())
-
     open(f"output/results.csv", "w").close()
     open(f"output/timings.csv", "w").close()
 
     results_file = open(f"output/results.csv", "a")
     timings_file = open(f"output/timings.csv", "a")
     timings_file.write(f"tool|sf|day|q|parameters|time\n")
+
+    run_precomputations(sf, query_variants, session, timings_file)
 
     reads_time = run_queries(query_variants, session, sf, "", test, pgtuning, timings_file, results_file)
     timings_file.write(f"Neo4j|{sf}||reads||{reads_time:.6f}\n")
