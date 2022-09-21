@@ -76,6 +76,11 @@ jobs:
             cd ..
             scripts/score-test.sh umbra
       - run:
+          name: Visualize results
+          command: |
+            cd viz
+            R -f plot.R
+      - run:
           name: Test Cypher toolchain with uncompressed CSVs
           command: |
             cd cypher
