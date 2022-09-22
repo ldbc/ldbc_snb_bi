@@ -1,5 +1,5 @@
 /* Q11. Friend triangles
-\set country '\'Belarus\''
+\set country '\'China\''
 \set startDate '\'2010-06-01\''::timestamp
 \set endDate '\'2010-07-01\''::timestamp
  */
