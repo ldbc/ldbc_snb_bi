@@ -33,7 +33,10 @@ WHERE Person_Delete_candidates.id = Person_studyAt_University.PersonId
 DELETE FROM Person_knows_Person
 USING Person_Delete_candidates
 WHERE Person_Delete_candidates.id = Person_knows_Person.Person1Id
-   OR Person_Delete_candidates.id = Person_knows_Person.Person2Id
+;
+DELETE FROM Person_knows_Person
+USING Person_Delete_candidates
+WHERE Person_Delete_candidates.id = Person_knows_Person.Person2Id
 ;
 
 DELETE FROM Person_hasInterest_Tag
@@ -225,6 +228,8 @@ WHERE sub.id = Comment_hasTag_Tag.CommentId
 ----------------------------------------------------------------------------------------------------
 DELETE FROM Person_knows_Person
 USING Person_knows_Person_Delete_candidates
-WHERE (Person_knows_Person.Person1Id = Person_knows_Person_Delete_candidates.src AND Person_knows_Person.Person2Id = Person_knows_Person_Delete_candidates.trg)
-   OR (Person_knows_Person.Person1Id = Person_knows_Person_Delete_candidates.trg AND Person_knows_Person.Person2Id = Person_knows_Person_Delete_candidates.src)
+WHERE
+least(Person_knows_Person.Person1Id, Person_knows_Person.Person2Id) = least(Person_knows_Person_Delete_candidates.src, Person_knows_Person_Delete_candidates.trg)
+AND
+greatest(Person_knows_Person.Person1Id, Person_knows_Person.Person2Id) = greatest(Person_knows_Person_Delete_candidates.src, Person_knows_Person_Delete_candidates.trg)
 ;
