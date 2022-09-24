@@ -6,7 +6,7 @@ import re
 import psycopg2
 import time
 import sys
-from queries import run_queries
+from queries import run_script, run_queries, run_precomputations
 from pathlib import Path
 
 # Usage: benchmark.py [--test|--pgtuning]
@@ -19,25 +19,7 @@ def execute(cur, query):
     #    print(f"Duration: {end - start}:\n{query}")
 
 
-def run_script(pg_con, cur, filename):
-    with open(filename, "r") as f:
-        queries_file = f.read()
-        # strip comments
-        queries_file = re.sub(r"\n--.*", "", queries_file)
-        queries = queries_file.split(";")
-        for query in queries:
-            if query.isspace():
-                continue
-
-            sql_statement = re.findall(r"^((CREATE|INSERT|DROP|DELETE|SELECT|COPY|UPDATE|ALTER) [A-Za-z0-9_ ]*)", query, re.MULTILINE)
-            print(f"{sql_statement[0][0].strip()} ...")
-            start = time.time()
-            cur.execute(query)
-            pg_con.commit()
-            end = time.time()
-            duration = end - start
-            print(f"-> {duration:.4f} seconds")
-
+query_variants = ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "15a", "15b", "16a", "16b", "17", "18", "19a", "19b", "20a", "20b"]
 
 def run_batch_updates(pg_con, data_dir, batch_start_date, timings_file):
     # format date to yyyy-mm-dd
@@ -90,7 +72,7 @@ def run_batch_updates(pg_con, data_dir, batch_start_date, timings_file):
     print()
 
     print("Apply precomp . . .")
-    run_script(pg_con, cur, "dml/apply-precomp.sql")
+    run_precomputations(query_variants, pg_con, cur, batch_id, sf, timings_file)
     print("Done.")
     print()
 
@@ -98,8 +80,6 @@ def run_batch_updates(pg_con, data_dir, batch_start_date, timings_file):
     duration = end - start
     timings_file.write(f"Umbra|{sf}|{batch_id}|writes||{duration}\n")
 
-
-query_variants = ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "15a", "15b", "16a", "16b", "17", "18", "19a", "19b", "20a", "20b"]
 
 sf = os.environ.get("SF")
 if sf is None:

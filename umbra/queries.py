@@ -86,6 +86,25 @@ def cast_parameter_to_driver_input(value, parameter_type):
         raise ValueError(f"Parameter type {parameter_type} not found")
 
 
+def run_script(pg_con, cur, filename):
+    with open(filename, "r") as f:
+        queries_file = f.read()
+        # strip comments
+        queries_file = re.sub(r"\n--.*", "", queries_file)
+        queries = queries_file.split(";")
+        for query in queries:
+            if query.isspace():
+                continue
+
+            sql_statement = re.findall(r"^((CREATE|INSERT|DROP|DELETE|SELECT|COPY|UPDATE|ALTER) [A-Za-z0-9_ ]*)", query, re.MULTILINE)
+            print(f"{sql_statement[0][0].strip()} ...")
+            start = time.time()
+            cur.execute(query)
+            pg_con.commit()
+            end = time.time()
+            duration = end - start
+            print(f"-> {duration:.4f} seconds")
+
 def run_query(pg_con, query_num, query_variant, query_spec, query_parameters, test):
     if test:
         print(f'Q{query_variant}: {query_parameters}')
@@ -115,6 +134,28 @@ def run_query(pg_con, query_num, query_variant, query_spec, query_parameters, te
     return (json.dumps(result_tuples), duration)
 
 param_dir_env = os.environ.get("UMBRA_PARAM_DIR")
+
+def run_precomputations(query_variants, pg_con, cur, batch_id, sf, timings_file):
+    if "4" in query_variants:
+        start = time.time()
+        run_script(pg_con, cur, "dml/precomp/bi-4.sql")
+        end = time.time()
+        timings_file.write(f"Umbra|{sf}|{batch_id}|q4precomputation||{end-start}\n")
+    if "6" in query_variants:
+        start = time.time()
+        run_script(pg_con, cur, "dml/precomp/bi-6.sql")
+        end = time.time()
+        timings_file.write(f"Umbra|{sf}|{batch_id}|q6precomputation||{end-start}\n")
+    if "19a" in query_variants or "19b" in query_variants:
+        start = time.time()
+        run_script(pg_con, cur, "dml/precomp/bi-19.sql")
+        end = time.time()
+        timings_file.write(f"Umbra|{sf}|{batch_id}|q19precomputation||{end-start}\n")
+    if "20a" in query_variants or "20b" in query_variants:
+        start = time.time()
+        run_script(pg_con, cur, "dml/precomp/bi-20.sql")
+        end = time.time()
+        timings_file.write(f"Umbra|{sf}|{batch_id}|q20precomputation||{end-start}\n")
 
 def run_queries(query_variants, pg_con, sf, test, pgtuning, batch_id, timings_file, results_file):
     param_dir = param_dir_env

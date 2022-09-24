@@ -85,7 +85,10 @@ run_script(pg_con, cur, "dml/create-static-materialized-views.sql")
 print("Done.")
 
 print("Apply precomputation . . . ")
-run_script(pg_con, cur, "dml/apply-precomp.sql")
+run_script(pg_con, cur, "dml/precomp/bi-4.sql")
+run_script(pg_con, cur, "dml/precomp/bi-6.sql")
+run_script(pg_con, cur, "dml/precomp/bi-19.sql")
+run_script(pg_con, cur, "dml/precomp/bi-20.sql")
 print("Done.")
 
 print("Loaded initial snapshot to Umbra.")
