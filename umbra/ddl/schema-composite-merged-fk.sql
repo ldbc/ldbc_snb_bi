@@ -64,7 +64,7 @@ CREATE TABLE University (
 
 CREATE TABLE Comment (
     creationDate timestamp with time zone NOT NULL,
-    id bigint PRIMARY KEY,
+    id bigint NOT NULL, --PRIMARY KEY,
     locationIP varchar(40) NOT NULL,
     browserUsed varchar(40) NOT NULL,
     content varchar(2000) NOT NULL,
@@ -84,7 +84,7 @@ CREATE TABLE Forum (
 
 CREATE TABLE Post (
     creationDate timestamp with time zone NOT NULL,
-    id bigint PRIMARY KEY,
+    id bigint NOT NULL, --PRIMARY KEY,
     imageFile varchar(40),
     locationIP varchar(40) NOT NULL,
     browserUsed varchar(40) NOT NULL,

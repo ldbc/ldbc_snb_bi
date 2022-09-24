@@ -114,8 +114,12 @@ def run_query(pg_con, query_num, query_variant, query_spec, query_parameters, te
         print(f"-> {result_tuples}")
     return (json.dumps(result_tuples), duration)
 
+param_dir_env = os.environ.get("UMBRA_PARAM_DIR")
 
 def run_queries(query_variants, pg_con, sf, test, pgtuning, batch_id, timings_file, results_file):
+    param_dir = param_dir_env
+    if param_dir is None:
+        param_dir = f"../parameters/parameters-sf{sf}"
     start = time.time()
 
     for query_variant in query_variants:
@@ -127,7 +131,7 @@ def run_queries(query_variants, pg_con, sf, test, pgtuning, batch_id, timings_fi
         query_spec = query_file.read()
         query_file.close()
 
-        parameters_csv = csv.DictReader(open(f'../parameters/parameters-sf{sf}/bi-{query_variant}.csv'), delimiter='|')
+        parameters_csv = csv.DictReader(open(f'{param_dir}/bi-{query_variant}.csv'), delimiter='|')
         parameters = [{"name": t[0], "type": t[1]} for t in [f.split(":") for f in parameters_csv.fieldnames]]
 
         i = 0
