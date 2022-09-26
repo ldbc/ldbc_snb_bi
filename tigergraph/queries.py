@@ -114,7 +114,10 @@ def run_queries(query_variants, parameter_csvs, sf, results_file, timings_file, 
         query_num = int(re.sub("[^0-9]", "", query_variant))
         parameters_csv = parameter_csvs[query_variant]
 
-        for i,query_parameters in enumerate(parameters_csv):
+        i = 0
+        for query_parameters in parameters_csv:
+            i = i + 1
+
             query_parameters_split = {k.split(":")[0]: v for k, v in query_parameters.items()}
             query_parameters_in_order = json.dumps(query_parameters_split)
 
