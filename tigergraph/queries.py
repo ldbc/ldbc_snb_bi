@@ -9,6 +9,8 @@ import os
 import subprocess
 import datetime
 import json
+from itertools import cycle
+
 # query timeout value in miliseconds
 HEADERS = {'GSQL-TIMEOUT': '36000000'}
 
@@ -105,15 +107,17 @@ def run_query(endpoint, query_num, parameters):
     return json.dumps(result_tuples), duration
 
 
-def run_queries(query_variants, sf, results_file, timings_file, batch_date, args):
+def run_queries(query_variants, parameter_csvs, sf, results_file, timings_file, batch_date, args):
     start = time.time()
     for query_variant in query_variants:
         print(f"========================= Q{query_variant} =========================")
         query_num = int(re.sub("[^0-9]", "", query_variant))
-        parameters_csv = csv.DictReader(open(args.para / f'bi-{query_variant}.csv'), delimiter='|')
-        parameters = [{"name": t[0], "type": t[1]} for t in [f.split(":") for f in parameters_csv.fieldnames]]
+        parameters_csv = parameter_csvs[query_variant]
 
-        for i,query_parameters in enumerate(parameters_csv):
+        i = 0
+        for query_parameters in parameters_csv:
+            i = i + 1
+
             query_parameters_split = {k.split(":")[0]: v for k, v in query_parameters.items()}
             query_parameters_in_order = json.dumps(query_parameters_split)
 
@@ -194,7 +198,13 @@ if __name__ == '__main__':
     timings_file = open(output/'timings.csv', 'w')
     timings_file.write(f"tool|sf|day|q|parameters|time\n")
     query_variants = ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "15a", "15b", "16a", "16b", "17", "18", "19a", "19b", "20a", "20b"]
+
+    parameter_csvs = {}
+    for query_variant in query_variants:
+        # wrap parameters into infinite loop iterator
+        parameter_csvs[query_variant] = cycle(csv.DictReader(open(f'../parameters/parameters-sf{sf}/bi-{query_variant}.csv'), delimiter='|'))
+
     if not args.skip: run_precompute(args)
-    run_queries(query_variants, sf, results_file, timings_file, '', args)
+    run_queries(query_variants, parameter_csvs, sf, results_file, timings_file, '', args)
     results_file.close()
     timings_file.close()

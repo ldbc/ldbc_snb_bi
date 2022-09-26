@@ -8,6 +8,8 @@ import os
 import time
 import re
 import requests
+from itertools import cycle
+import csv
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='LDBC TigerGraph BI workload Benchmark')
@@ -29,6 +31,12 @@ if __name__ == '__main__':
     timings_file = open(output/'timings.csv', 'w')
     timings_file.write(f"tool|sf|day|q|parameters|time\n")
     query_variants = ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "15a", "15b", "16a", "16b", "17", "18", "19a", "19b", "20a", "20b"]
+
+    parameter_csvs = {}
+    for query_variant in query_variants:
+        # wrap parameters into infinite loop iterator
+        parameter_csvs[query_variant] = cycle(csv.DictReader(open(f'../parameters/parameters-sf{sf}/bi-{query_variant}.csv'), delimiter='|'))
+
     query_nums = [int(re.sub("[^0-9]", "", query_variant)) for query_variant in query_variants]
     start_date = date(2012, 11, 29)
     end_date = date(2013, 1, 1)
@@ -40,7 +48,7 @@ if __name__ == '__main__':
         writes_time = run_batch_update(batch_date, args)
         precompute_time = run_precompute(args)
         timings_file.write(f"TigerGraph|{sf}|{batch_date}|writes||{writes_time + precompute_time:.6f}\n")
-        reads_time = run_queries(query_variants, sf, results_file, timings_file, batch_date, args)
+        reads_time = run_queries(query_variants, parameter_csvs, sf, results_file, timings_file, batch_date, args)
         timings_file.write(f"TigerGraph|{sf}|{batch_date}|reads||{reads_time:.6f}\n")
         batch_date = batch_date + batch_size
 

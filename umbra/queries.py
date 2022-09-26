@@ -7,6 +7,7 @@ import psycopg2
 import time
 import sys
 from pathlib import Path
+from itertools import cycle
 
 # Usage: queries.py [--test]
 
@@ -157,7 +158,7 @@ def run_precomputations(query_variants, pg_con, cur, batch_id, sf, timings_file)
         end = time.time()
         timings_file.write(f"Umbra|{sf}|{batch_id}|q20precomputation||{end-start}\n")
 
-def run_queries(query_variants, pg_con, sf, test, pgtuning, batch_id, timings_file, results_file):
+def run_queries(query_variants, parameter_csvs, pg_con, sf, test, pgtuning, batch_id, timings_file, results_file):
     param_dir = param_dir_env
     if param_dir is None:
         param_dir = f"../parameters/parameters-sf{sf}"
@@ -172,8 +173,7 @@ def run_queries(query_variants, pg_con, sf, test, pgtuning, batch_id, timings_fi
         query_spec = query_file.read()
         query_file.close()
 
-        parameters_csv = csv.DictReader(open(f'{param_dir}/bi-{query_variant}.csv'), delimiter='|')
-        parameters = [{"name": t[0], "type": t[1]} for t in [f.split(":") for f in parameters_csv.fieldnames]]
+        parameters_csv = parameter_csvs[query_variant]
 
         i = 0
         for query_parameters in parameters_csv:
@@ -215,6 +215,12 @@ if __name__ == '__main__':
 
     query_variants = ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "15a", "15b", "16a", "16b", "17", "18", "19a", "19b", "20a", "20b"]
 
+    parameter_csvs = {}
+    for query_variant in query_variants:
+        # wrap parameters into infinite loop iterator
+        parameter_csvs[query_variant] = cycle(csv.DictReader(open(f'../parameters/parameters-sf{sf}/bi-{query_variant}.csv'), delimiter='|'))
+
+
     output = Path(f'output/output-sf{sf}')
     output.mkdir(parents=True, exist_ok=True)
     open(f"output/output-sf{sf}/results.csv", "w").close()
@@ -227,7 +233,7 @@ if __name__ == '__main__':
     pg_con = psycopg2.connect(host="localhost", user="postgres", password="mysecretpassword", port=8000)
     pg_con.autocommit = True
     
-    reads_time = run_queries(query_variants, pg_con, sf, test, pgtuning, None, timings_file, results_file)
+    reads_time = run_queries(query_variants, parameter_csvs, pg_con, sf, test, pgtuning, None, timings_file, results_file)
     timings_file.write(f"Umbra|{sf}||reads||{reads_time:.6f}\n")
 
     pg_con.close()
