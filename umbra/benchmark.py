@@ -8,6 +8,7 @@ import time
 import sys
 from queries import run_script, run_queries, run_precomputations
 from pathlib import Path
+from itertools import cycle
 
 # Usage: benchmark.py [--test|--pgtuning]
 
@@ -106,6 +107,11 @@ if local:
 else:
     dbs_data_dir = '/data'
 
+parameter_csvs = {}
+for query_variant in query_variants:
+    # wrap parameters into infinite loop iterator
+    parameter_csvs[query_variant] = cycle(csv.DictReader(open(f'../parameters/parameters-sf{sf}/bi-{query_variant}.csv'), delimiter='|'))
+
 print(f"- Input data directory, ${{UMBRA_CSV_DIR}}: {data_dir}")
 
 insert_nodes = ["Comment", "Forum", "Person", "Post"]
@@ -140,12 +146,13 @@ batch_size = relativedelta(days=1)
 batch_date = network_start_date
 
 if pgtuning:
-    run_queries(query_variants, pg_con, sf, test, pgtuning, batch_date, timings_file, results_file)
+    run_queries(query_variants, parameter_csvs, pg_con, sf, test, pgtuning, batch_date, timings_file, results_file)
 else:
-    # run alternating write-read blocks
+    # Run alternating write-read blocks.
+    # The first write-read block is the power batch, while the rest are the throughput batches.
     while batch_date < network_end_date and (not test or batch_date < test_end_date):
         run_batch_updates(pg_con, data_dir, batch_date, timings_file)
-        reads_time = run_queries(query_variants, pg_con, sf, test, pgtuning, batch_date, timings_file, results_file)
+        reads_time = run_queries(query_variants, parameter_csvs, pg_con, sf, test, pgtuning, batch_date, timings_file, results_file)
         timings_file.write(f"Umbra|{sf}|{batch_date}|reads||{reads_time:.6f}\n")
 
         batch_date = batch_date + batch_size

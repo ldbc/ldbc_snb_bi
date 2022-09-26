@@ -13,6 +13,7 @@ import time
 import sys
 from queries import run_queries, run_precomputations
 from pathlib import Path
+from itertools import cycle
 
 # Usage: benchmark.py [--test|--pgtuning]
 
@@ -98,6 +99,11 @@ if __name__ == '__main__':
 
     print(f"- Input data directory, ${{NEO4J_CSV_DIR}}: {data_dir}")
 
+    parameter_csvs = {}
+    for query_variant in query_variants:
+        # wrap parameters into infinite loop iterator
+        parameter_csvs[query_variant] = cycle(csv.DictReader(open(f'../parameters/parameters-sf{sf}/bi-{query_variant}.csv'), delimiter='|'))
+
     # to ensure that all inserted edges have their endpoints at the time of their insertion, we insert nodes first and edges second
     insert_nodes = ["Comment", "Forum", "Person", "Post"]
     insert_edges = ["Comment_hasCreator_Person", "Comment_hasTag_Tag", "Comment_isLocatedIn_Country", "Comment_replyOf_Comment", "Comment_replyOf_Post", "Forum_containerOf_Post", "Forum_hasMember_Person", "Forum_hasModerator_Person", "Forum_hasTag_Tag", "Person_hasInterest_Tag", "Person_isLocatedIn_City", "Person_knows_Person", "Person_likes_Comment", "Person_likes_Post", "Person_studyAt_University", "Person_workAt_Company", "Post_hasCreator_Person", "Post_hasTag_Tag", "Post_isLocatedIn_Country"]
@@ -132,14 +138,15 @@ if __name__ == '__main__':
     batch_size = relativedelta(days=1)
     batch_date = network_start_date
 
-    # run alternating write-read blocks
+    # Run alternating write-read blocks.
+    # The first write-read block is the power batch, while the rest are the throughput batches.
     while batch_date < network_end_date and (not test or batch_date < datetime.date(2012, 12, 2)):
         print()
         print(f"----------------> Batch date: {batch_date} <---------------")
         run_batch_updates(session, data_dir, batch_date, insert_entities, delete_entities, insert_queries, delete_queries)
         run_precomputations(sf, query_variants, session, timings_file)
 
-        reads_time = run_queries(query_variants, session, sf, batch_date, test, pgtuning, timings_file, results_file)
+        reads_time = run_queries(query_variants, parameter_csvs, session, sf, batch_date, test, pgtuning, timings_file, results_file)
         timings_file.write(f"Neo4j|{sf}|{batch_date}|reads||{reads_time:.6f}\n")
 
         batch_date = batch_date + batch_size

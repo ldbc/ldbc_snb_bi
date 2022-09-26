@@ -7,6 +7,7 @@ import re
 import sys
 import json
 from pathlib import Path
+from itertools import cycle
 
 # Usage: queries.py [--test]
 
@@ -109,7 +110,7 @@ def run_query(session, query_num, query_variant, query_spec, query_parameters, t
     return (results, duration)
 
 
-def run_queries(query_variants, session, sf, batch_id, test, pgtuning, timings_file, results_file):
+def run_queries(query_variants, parameter_csvs, session, sf, batch_id, test, pgtuning, timings_file, results_file):
     start = time.time()
 
     for query_variant in query_variants:
@@ -121,7 +122,7 @@ def run_queries(query_variants, session, sf, batch_id, test, pgtuning, timings_f
         query_spec = query_file.read()
         query_file.close()
 
-        parameters_csv = csv.DictReader(open(f'../parameters/parameters-sf{sf}/bi-{query_variant}.csv'), delimiter='|')
+        parameters_csv = parameter_csvs[query_variant]
 
         i = 0
         for query_parameters in parameters_csv:
@@ -183,6 +184,11 @@ if __name__ == '__main__':
 
     query_variants = ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "15a", "15b", "16a", "16b", "17", "18", "19a", "19b", "20a", "20b"]
 
+    parameter_csvs = {}
+    for query_variant in query_variants:
+        # wrap parameters into infinite loop iterator
+        parameter_csvs[query_variant] = cycle(csv.DictReader(open(f'../parameters/parameters-sf{sf}/bi-{query_variant}.csv'), delimiter='|'))
+
     driver = neo4j.GraphDatabase.driver("bolt://localhost:7687")
     session = driver.session()
 
@@ -197,7 +203,7 @@ if __name__ == '__main__':
 
     run_precomputations(sf, query_variants, session, timings_file)
 
-    reads_time = run_queries(query_variants, session, sf, "", test, pgtuning, timings_file, results_file)
+    reads_time = run_queries(query_variants, parameter_csvs, session, sf, "", test, pgtuning, timings_file, results_file)
     timings_file.write(f"Neo4j|{sf}||reads||{reads_time:.6f}\n")
 
     results_file.close()
