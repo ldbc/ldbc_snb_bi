@@ -48,7 +48,7 @@ if __name__ == '__main__':
         writes_time = run_batch_update(batch_date, args)
         precompute_time = run_precompute(args)
         timings_file.write(f"TigerGraph|{sf}|{batch_date}|writes||{writes_time + precompute_time:.6f}\n")
-        reads_time = run_queries(query_variants, sf, results_file, timings_file, batch_date, args)
+        reads_time = run_queries(query_variants, parameter_csvs, sf, results_file, timings_file, batch_date, args)
         timings_file.write(f"TigerGraph|{sf}|{batch_date}|reads||{reads_time:.6f}\n")
         batch_date = batch_date + batch_size
 
