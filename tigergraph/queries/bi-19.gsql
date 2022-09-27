@@ -9,7 +9,7 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi19(VERTEX<City> city1Id, VERTEX<City> city
   OrAccum @next, @isTarget;
   MinAccum<DOUBLE> @@threshold;
   P = {Person.*};
-  @@threshold += P.size();
+  @@threshold += P.size() * 40;
 
   city1 = {city1Id};
   city2 = {city2Id};
