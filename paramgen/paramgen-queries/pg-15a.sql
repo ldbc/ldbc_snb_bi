@@ -13,7 +13,7 @@ FROM
     FROM (
       SELECT *
       FROM people4Hops
-      LIMIT 500
+      LIMIT 80
     ) people4Hops_sample
     -- two hops from person1Id
     JOIN personKnowsPersonDays_window knows1
@@ -32,4 +32,3 @@ JOIN personKnowsPersonDays_window knows3
 WHERE middleCandidate = knows3.person2Id
 
 ORDER BY md5(131*p1Id + 241*p2Id), md5(p1Id)
-LIMIT 400
