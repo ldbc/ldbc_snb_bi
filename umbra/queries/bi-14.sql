@@ -6,7 +6,8 @@
 WITH PersonPairCandidates AS (
     SELECT Person1.id AS Person1Id
          , Person2.id AS Person2Id
-         , City1.id AS Person1LocationCityId
+         , City1.id AS cityId
+         , City1.name AS cityName
       FROM Country Country1
       JOIN City City1
         ON City1.PartOfCountryId = Country1.id
@@ -23,84 +24,39 @@ WITH PersonPairCandidates AS (
      WHERE Country1.name = :country1
        AND Country2.name = :country2
 )
-,  case1 AS (
-    SELECT DISTINCT Person1Id, Person2Id, 4 AS score
-      FROM PersonPairCandidates
-         , Message m -- message by p2
-         , Message r -- reply by p1
-     WHERE
-        -- join
-           m.MessageId = r.ParentMessageId
-       AND Person1Id = r.CreatorPersonId
-       AND Person2Id = m.CreatorPersonId
-)
-,  case2 AS (
-    SELECT DISTINCT Person1Id, Person2Id, 1 AS score
-      FROM PersonPairCandidates
-         , Message m -- message by p1
-         , Message r -- reply by p2
-     WHERE
-        -- join
-           m.MessageId = r.ParentMessageId
-       AND Person2Id = r.CreatorPersonId
-       AND Person1Id = m.CreatorPersonId
-)
-,  case3 AS (
-    SELECT DISTINCT Person1Id, Person2Id, 10 AS score
-      FROM PersonPairCandidates
-         , Message m -- message by p2
-         , Person_likes_Message l
-     WHERE
-        -- join
-           Person2Id = m.CreatorPersonId
-       AND m.MessageId = l.MessageId
-       AND l.PersonId = Person1Id
-)
-,  case4 AS (
-    SELECT DISTINCT Person1Id, Person2Id, 1 AS score
-      FROM PersonPairCandidates
-         , Message m -- message by p1
-         , Person_likes_Message l
-     WHERE
-        -- join
-           Person1Id = m.CreatorPersonId
-       AND m.MessageId = l.MessageId
-       AND l.PersonId = Person2Id
+,  PPC(Person1Id, Person2Id, Flipped) AS (
+   SELECT Person1Id AS Person1Id, Person2Id AS Person2Id, false AS Flipped FROM PersonPairCandidates
+   UNION ALL
+   SELECT Person2Id AS Person1Id, Person1Id AS Person2Id, true As Flipped FROM PersonPairCandidates
 )
 ,  pair_scores AS (
-    SELECT Person1Id, Person2Id, sum(score) AS score
-      FROM (          SELECT * FROM case1
-            UNION ALL SELECT * FROM case2
-            UNION ALL SELECT * FROM case3
-            UNION ALL SELECT * FROM case4
-           ) t
-     GROUP BY Person1Id, Person2Id
+    SELECT CASE WHEN Flipped THEN Person2Id ELSE Person1Id END AS Person1Id,
+           CASE WHEN Flipped THEN Person1Id ELSE Person2Id END AS Person2Id,
+        (
+        CASE WHEN EXISTS (SELECT 1 FROM Message m, Message r WHERE m.MessageId = r.ParentMessageId AND Person1Id = r.CreatorPersonId AND Person2Id = m.CreatorPersonId AND EXISTS (SELECT 1 FROM PPC x WHERE x.Person1Id = r.CreatorPersonId)) THEN (CASE WHEN Flipped THEN 1 ELSE 4 END) ELSE 0 END +
+        CASE WHEN EXISTS (SELECT 1 FROM Message m, Person_likes_Message l WHERE Person2Id = m.CreatorPersonId AND m.MessageId = l.MessageId AND l.PersonId = Person1Id AND EXISTS (SELECT 1 FROM PPC x WHERE x.Person1Id = l.PersonId)) THEN (CASE WHEN Flipped THEN 1 ELSE 10 END) ELSE 0 END
+        ) as score
+      FROM PPC
+)
+,  pair_scoresX AS (
+    SELECT Person1Id, Person2Id, sum(score) as score
+      FROM pair_scores
+      GROUP BY Person1Id, Person2Id
 )
 ,  score_ranks AS (
-    SELECT PersonPairCandidates.Person1Id
-         , PersonPairCandidates.Person2Id
-         , City.name AS cityName
-         , coalesce(s.score, 0) AS score
-         , row_number() OVER (PARTITION BY City.id ORDER BY s.score DESC NULLS LAST, PersonPairCandidates.Person1Id, PersonPairCandidates.Person2Id) AS rownum
-      FROM Country
-      JOIN City
-        ON City.PartOfCountryId = Country.id
-      JOIN PersonPairCandidates
-        ON PersonPairCandidates.Person1LocationCityId = City.id
-      LEFT JOIN pair_scores s
+    SELECT DISTINCT ON (cityId)
+         PersonPairCandidates.Person1Id, PersonPairCandidates.Person2Id, cityId, cityName
+         , s.score AS score
+      FROM PersonPairCandidates
+      LEFT JOIN pair_scoresX s
              ON s.Person1Id = PersonPairCandidates.Person1Id
             AND s.person2Id = PersonPairCandidates.Person2Id
-     WHERE
-        -- filter
-           Country.name = :country1
+      ORDER BY cityId, s.score DESC
 )
 SELECT score_ranks.Person1Id AS "person1.id"
      , score_ranks.Person2Id AS "person2.id"
      , score_ranks.cityName AS "city1.name"
      , score_ranks.score
   FROM score_ranks
- WHERE
-    -- filter
-       score_ranks.rownum = 1
  ORDER BY score_ranks.score DESC, score_ranks.Person1Id, score_ranks.Person2Id
 ;
