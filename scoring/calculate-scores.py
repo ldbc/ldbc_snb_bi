@@ -20,18 +20,23 @@ con.execute(f"""
     DROP TABLE IF EXISTS all_throughput_batches;
     DROP TABLE IF EXISTS results_table_sorted;
 
-    CREATE TABLE load_time         (time float);
-    CREATE TABLE timings           (tool string, sf float, day string, q string, parameters string, time float);
-    CREATE TABLE power_test        (q string, total_time float);
+    CREATE TABLE load_time(time float);
+    CREATE TABLE timings(tool string, sf float, day string, q string, parameters string, time float);
+    CREATE TABLE power_test_individual(q string, time float);
+    CREATE TABLE power_test_aggregated(q string, total_time float);
 
     COPY load_time FROM '{timings_dir}/load.csv'    (HEADER, DELIMITER '|');
     COPY timings   FROM '{timings_dir}/timings.csv' (HEADER, DELIMITER '|');
 
-    INSERT INTO power_test
-        SELECT q, sum(time) AS total_time
+    INSERT INTO power_test_individual
+        SELECT q, time
         FROM timings
         WHERE day = (SELECT min(day) FROM timings)
-          AND q != 'reads'
+          AND q != 'reads';
+
+    INSERT INTO power_test_aggregated
+        SELECT q, sum(time) AS total_time
+        FROM power_test_individual
         GROUP BY q;
 
     CREATE TABLE throughput_test AS
@@ -74,11 +79,11 @@ con.execute(f"""
             SELECT -1 AS qid, NULL AS q, (SELECT printf('%.1f', time) FROM load_time) AS t
           UNION ALL
             SELECT 0 AS qid, NULL AS q, printf('%.1f', total_time) AS t
-            FROM power_test
+            FROM power_test_aggregated
             WHERE q = 'write'
           UNION ALL
             SELECT regexp_replace('0' || q, '\D','','g')::int AS qid, q, printf('%.1f', total_time) AS t
-            FROM power_test
+            FROM power_test_aggregated
             WHERE q != 'write'
           UNION ALL
             SELECT 21 AS qid, NULL AS q, CASE WHEN n_batches = 0 THEN 'n/a' ELSE n_batches END AS t
@@ -99,7 +104,7 @@ print(f"SF: {str(sf).rstrip('.0')}")
 
 con.execute("""
     SELECT 3600 / ( exp(sum(ln(total_time::real)) * (1.0/count(total_time))) ) as power
-    FROM power_test;
+    FROM power_test_aggregated;
     """)
 p = con.fetchone()[0]
 print(f"power: {p:.02f}")
@@ -116,13 +121,14 @@ print(f"power test read time: {r:.01f}")
 print()
 
 con.execute("""
-    SELECT string_agg( t, ' \n') AS power_test
-    FROM results_table_sorted;
+    COPY 
+        (SELECT string_agg(t, ' \n') AS power_test_aggregated
+        FROM results_table_sorted)
+    TO 'runtimes.tex'
+    (HEADER false, QUOTE '')
+    ;
     """)
-s = con.fetchone();
-print(f"""results (TeX code):
-{s[0]}
-""")
+
 
 con.execute("""
     SELECT * FROM throughput_batches
