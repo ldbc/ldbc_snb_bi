@@ -9,11 +9,26 @@ dsts(t) as (
     from Person_workat_company pwc, Company c
     where pwc.companyid = c.id and c.name=:company
 ),
+-- Try to find any path with a faster two way BFS
+anyPath(pos) as (
+    select f from srcs
+    union
+    (
+        with
+        ss as (select pos from anyPath)
+        select dst
+        from anyPath, PathQ20
+        where pos = src and not exists (select 1 from ss, dsts where ss.pos = dsts.t)
+    )
+),
+pathExists as (
+    select 1 where exists (select 1 from anyPath ss, dsts where ss.pos = dsts.t)
+),
 shorts(dir, gsrc, dst, w, dead, iter) as (
     (
-        select false, f, f, 0, false, 0 from srcs
+        select false, f, f, 0, false, 0 from srcs where exists (select 1 from pathExists)
         union all
-        select true, t, t, 0, false, 0 from dsts
+        select true, t, t, 0, false, 0 from dsts where exists (select 1 from pathExists)
     )
     union all
     (
