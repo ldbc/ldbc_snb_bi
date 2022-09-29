@@ -2,11 +2,13 @@ import duckdb
 import argparse
 
 parser = argparse.ArgumentParser()
+parser.add_argument('--tool', type=str, help='Name of the SUT, e.g. PostgreSQL', required=True)
 parser.add_argument('--timings_dir', type=str, help='Directory containing the timings.csv file', required=True)
 parser.add_argument('--throughput_min_time', type=str, help='Minimum total execution time for throughput batches. Executions with a lower total throughput time are invalid.', default=3600)
 
 args = parser.parse_args()
 timings_dir = args.timings_dir
+tool = args.tool
 throughput_min_time = args.throughput_min_time
 
 con = duckdb.connect("bi.duckdb")
@@ -101,7 +103,8 @@ con.execute(f"""
 
 con.execute("""SELECT sf FROM timings LIMIT 1;""");
 sf = con.fetchone()[0];
-print(f"SF: {round(sf, 3)}")
+sf_string = str(round(sf, 3))
+print(f"SF: {sf_string}")
 
 con.execute("""
     SELECT 3600 / ( exp(sum(ln(total_time::real)) * (1.0/count(total_time))) ) as power
@@ -121,29 +124,29 @@ r = con.fetchone()[0];
 print(f"power test read time: {r:.01f}")
 print()
 
-con.execute("""
+con.execute(f"""
     COPY 
         (SELECT string_agg(t, ' \n')
         FROM results_table_sorted)
-    TO 'runtimes.tex' (HEADER false, QUOTE '');
+    TO 'runtimes-{tool}-sf{sf_string}.tex' (HEADER false, QUOTE '');
     """)
 
-con.execute("""
+con.execute(f"""
     COPY
         (SELECT
             q,
             count,
-            printf('\\numprint{%.3f}', min_time) AS min,
-            printf('\\numprint{%.3f}', max_time) AS max,
-            printf('\\numprint{%.3f}', avg_time) AS mean,
-            printf('\\numprint{%.3f}', p50_time) AS p50,
-            printf('\\numprint{%.3f}', p90_time) AS p90,
-            printf('\\numprint{%.3f}', p95_time) AS p95,
-            printf('\\numprint{%.3f} \\\\', p99_time) AS 'p99 \\\\',
+            printf('\\numprint{{%.3f}}', min_time) AS min,
+            printf('\\numprint{{%.3f}}', max_time) AS max,
+            printf('\\numprint{{%.3f}}', avg_time) AS mean,
+            printf('\\numprint{{%.3f}}', p50_time) AS p50,
+            printf('\\numprint{{%.3f}}', p90_time) AS p90,
+            printf('\\numprint{{%.3f}}', p95_time) AS p95,
+            printf('\\numprint{{%.3f}} \\\\', p99_time) AS 'p99 \\\\',
         FROM power_test_stats
         ORDER BY qid, q
         )
-    TO 'stats.tex' (HEADER true, QUOTE '', DELIMITER ' & ');
+    TO 'stats-{tool}-sf{sf_string}.tex' (HEADER true, QUOTE '', DELIMITER ' & ');
     """)
 
 

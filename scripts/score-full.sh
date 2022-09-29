@@ -15,6 +15,6 @@ fi
 # This variant should be used for audit runs: by ensuring a minimum throughput time
 # it guarantees that the calculated scores use a sufficiently long sample.
 
-export THROUGHPUT_MIN_TIME=7200
+export THROUGHPUT_MIN_TIME=3600
 
 ../scripts/configurable-score.sh ${@}
