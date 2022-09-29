@@ -11,18 +11,9 @@ throughput_min_time = args.throughput_min_time
 
 con = duckdb.connect("bi.duckdb")
 con.execute(f"""
-    DROP TABLE IF EXISTS timings;
-    DROP TABLE IF EXISTS load_time;
-    DROP TABLE IF EXISTS power_test;
-    DROP TABLE IF EXISTS throughput_test;
-    DROP TABLE IF EXISTS throughput_score;
-    DROP TABLE IF EXISTS throughput_batches;
-    DROP TABLE IF EXISTS all_throughput_batches;
-    DROP TABLE IF EXISTS results_table_sorted;
-
-    CREATE TABLE load_time(time float);
-    CREATE TABLE timings(tool string, sf float, day string, q string, parameters string, time float);
-    CREATE TABLE power_test_individual(qid int, q string, time float);
+    CREATE OR REPLACE TABLE load_time(time float);
+    CREATE OR REPLACE TABLE timings(tool string, sf float, day string, q string, parameters string, time float);
+    CREATE OR REPLACE TABLE power_test_individual(qid int, q string, time float);
 
     COPY load_time FROM '{timings_dir}/load.csv'    (HEADER, DELIMITER '|');
     COPY timings   FROM '{timings_dir}/timings.csv' (HEADER, DELIMITER '|');
@@ -33,7 +24,7 @@ con.execute(f"""
         WHERE day = (SELECT min(day) FROM timings)
           AND q != 'reads';
 
-    CREATE TABLE power_test_stats AS
+    CREATE OR REPLACE TABLE power_test_stats AS
         SELECT
             qid,
             q,
@@ -49,12 +40,12 @@ con.execute(f"""
         FROM power_test_individual
         GROUP BY qid, q;
 
-    CREATE TABLE throughput_test AS
+    CREATE OR REPLACE TABLE throughput_test AS
         SELECT *
         FROM timings
         WHERE q IN ('reads', 'writes');
 
-    CREATE TABLE throughput_batches AS
+    CREATE OR REPLACE TABLE throughput_batches AS
         SELECT count(day)/2 AS n_batches, sum(time) AS t_batches -- /2 is needed because writes+reads are counted separately 
         FROM throughput_test
         WHERE day <= (
@@ -69,11 +60,11 @@ con.execute(f"""
             LIMIT 1
         );
 
-    CREATE TABLE all_throughput_batches AS
+    CREATE OR REPLACE TABLE all_throughput_batches AS
         SELECT count(day)/2 AS n_batches, sum(time) As t_batches
         FROM throughput_test;
 
-    CREATE TABLE throughput_score AS
+    CREATE OR REPLACE TABLE throughput_score AS
         SELECT
             CASE WHEN n_batches = 0
                 THEN null
@@ -83,7 +74,7 @@ con.execute(f"""
         FROM throughput_batches;
 
     -- order as t_load, w, followed by q_1, ..., q_20
-    CREATE TABLE results_table_sorted AS
+    CREATE OR REPLACE TABLE results_table_sorted AS
         SELECT *
         FROM (
             SELECT -1 AS qid, NULL AS q, (SELECT printf('%.1f', time) FROM load_time) AS t
