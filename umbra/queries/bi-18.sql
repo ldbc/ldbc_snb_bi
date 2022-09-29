@@ -12,7 +12,7 @@ SELECT k.Person1Id AS InterestedId, k.Person2Id AS FriendId
 FROM PersonWithInterest p, Person_knows_Person k
 WHERE p.PersonId = k.Person1Id
 )
-SELECT k1.InterestedId AS "person1.id", k2.InterestedId AS "person2.id", count(DISTINCT k1.FriendId) AS mutualFriendCount
+SELECT k1.InterestedId AS "person1.id", k2.InterestedId AS "person2.id", count(k1.FriendId) AS mutualFriendCount
 FROM FriendsOfInterested k1
 JOIN FriendsOfInterested k2
   ON k1.FriendId = k2.FriendId -- pattern: mutualFriend
