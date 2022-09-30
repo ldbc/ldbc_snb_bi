@@ -9,8 +9,8 @@ import sys
 from queries import run_script, run_queries, run_precomputations
 from pathlib import Path
 from itertools import cycle
+import argparse
 
-# Usage: benchmark.py [--test|--pgtuning]
 
 def execute(cur, query):
     #start = time.time()
@@ -82,25 +82,18 @@ def run_batch_updates(pg_con, data_dir, batch_start_date, timings_file):
     timings_file.write(f"Umbra|{sf}|{batch_id}|writes||{duration}\n")
 
 
-sf = os.environ.get("SF")
-if sf is None:
-    print("${SF} environment variable must be set")
-    exit(1)
-test = False
-pgtuning = False
-local = False
-for arg in sys.argv[1:]:
-    if arg == "--test":
-        test = True
-    if arg == "--pgtuning":
-        pgtuning = True
-    if arg == "--local":
-        local = True
-
-data_dir = os.environ.get("UMBRA_CSV_DIR")
-if data_dir is None:
-    print("${UMBRA_CSV_DIR} environment variable must be set")
-    exit(1)
+parser = argparse.ArgumentParser()
+parser.add_argument('--scale_factor', type=float, help='Scale factor', required=True)
+parser.add_argument('--test', action='store_true', help='Test execution: 1 query/batch', required=False)
+parser.add_argument('--pgtuning', action='store_true', help='Paramgen tuning execution: 100 queries/batch', required=False)
+parser.add_argument('--local', action='store_true', help='Local run (outside of a container)', required=False)
+parser.add_argument('--data_dir', type=str, help='Directory with the initial_snapshot, insert, and delete directories', required=True)
+args = parser.parse_args()
+sf = args.scale_factor
+test = args.test
+pgtuning = args.pgtuning
+local = args.local
+data_dir = args.data_dir
 
 if local:
     dbs_data_dir = data_dir

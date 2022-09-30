@@ -8,8 +8,7 @@ import sys
 import json
 from pathlib import Path
 from itertools import cycle
-
-# Usage: queries.py [--test]
+import argparse
 
 result_mapping = {
      1: [{"name": "year", "type": "INT32"}, {"name": "isComment", "type": "BOOL"}, {"name": "lengthCategory", "type": "INT32"}, {"name": "messageCount", "type": "INT32"}, {"name": "averageMessageLength", "type": "FLOAT32"}, {"name": "sumMessageLength", "type": "INT32"}, {"name": "percentageOfMessages", "type": "FLOAT32"}],
@@ -170,17 +169,16 @@ def run_precomputations(sf, query_variants, session, timings_file):
 
 
 if __name__ == '__main__':
-    sf = os.environ.get("SF")
-    if sf is None:
-        print("${SF} environment variable must be set")
-        exit(1)
-    test = False
-    pgtuning = False
-    if len(sys.argv) > 1:
-        if sys.argv[1] == "--test":
-            test = True
-        if sys.argv[1] == "--pgtuning":
-            pgtuning = True
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--scale_factor', type=float, help='Scale factor', required=True)
+    parser.add_argument('--data_dir', type=str, help='Directory with the initial_snapshot, insert, and delete directories', required=True)
+    parser.add_argument('--test', action='store_true', help='Test execution: 1 query/batch', required=False)
+    parser.add_argument('--pgtuning', action='store_true', help='Paramgen tuning execution: 100 queries/batch', required=False)
+    args = parser.parse_args()
+    sf = args.scale_factor
+    test = args.test
+    pgtuning = args.pgtuning
+    data_dir = args.data_dir
 
     query_variants = ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "15a", "15b", "16a", "16b", "17", "18", "19a", "19b", "20a", "20b"]
 

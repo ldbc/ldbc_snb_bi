@@ -3,14 +3,16 @@ import sys
 import os
 import re
 import time
+import argparse
 
-if len(sys.argv) < 2:
-    print("Umbra loader script")
-    print("Usage: load.py <UMBRA_CSV_DIR>")
-    exit(1)
 
-data_dir = sys.argv[1]
-local = len(sys.argv) == 3 and sys.argv[2] == "--local"
+parser = argparse.ArgumentParser()
+parser.add_argument('--data_dir', type=str, help='Directory with the initial_snapshot, insert, and delete directories', required=True)
+parser.add_argument('--local', type=bool, help='Local run (outside of a container)', required=False)
+args = parser.parse_args()
+data_dir = args.data_dir
+local = args.local
+
 
 pg_con = psycopg2.connect(host="localhost", user="postgres", password="mysecretpassword", port=8000)
 pg_con.autocommit = True
