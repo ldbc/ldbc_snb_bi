@@ -132,7 +132,10 @@ def run_queries(query_variants, parameter_csvs, sf, results_file, timings_file, 
             results_file.flush()
             timings_file.write(f"TigerGraph|{sf}|{batch_date}|{query_variant}|{query_parameters_in_order}|{duration:.6f}\n")
             timings_file.flush()
-            # test run: 1 query, regular run: 10 queries
+
+            # - test run: 1 query
+            # - regular run: 40 queries
+            # - paramgen tuning: 50 queries
             if args.test:
                 print(f"-> {duration:.4f} seconds")
                 print(f"-> {results}")
@@ -183,7 +186,7 @@ if __name__ == '__main__':
     parser.add_argument('--skip', action='store_true', help='skip precomputation')
     parser.add_argument('--test', action='store_true', help='test mode only run one time')
     parser.add_argument('--temp', type=Path, default=Path('/tmp'), help='folder for temparoty files')
-    parser.add_argument('--nruns', '-n', type=int, default=10, help='number of runs')
+    parser.add_argument('--nruns', '-n', type=int, default=40, help='number of runs')
     parser.add_argument('--endpoint', type=str, default='http://127.0.0.1:9000',help='tigergraph endpoints')
     args = parser.parse_args()
 

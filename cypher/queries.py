@@ -141,9 +141,9 @@ def run_queries(query_variants, parameter_csvs, session, sf, batch_id, test, pgt
             results_file.flush()
 
             # - test run: 1 query
-            # - regular run: 10 queries
+            # - regular run: 40 queries
             # - paramgen tuning: 50 queries
-            if (test) or (not pgtuning and i == 10) or (pgtuning and i == 100):
+            if (test) or (not pgtuning and i == 40) or (pgtuning and i == 100):
                 break
 
     return time.time() - start
