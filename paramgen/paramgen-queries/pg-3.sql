@@ -8,5 +8,5 @@ FROM (
         CASE id % 2 == 0 WHEN true THEN 'China' ELSE 'India' END AS country
     FROM tagClassNumMessages
     ORDER BY diff, tagClassName
-    LIMIT 40
+    LIMIT 80
 )
