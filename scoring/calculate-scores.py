@@ -2,44 +2,52 @@ import duckdb
 import argparse
 
 parser = argparse.ArgumentParser()
+parser.add_argument('--tool', type=str, help='Name of the SUT, e.g. PostgreSQL', required=True)
 parser.add_argument('--timings_dir', type=str, help='Directory containing the timings.csv file', required=True)
 parser.add_argument('--throughput_min_time', type=str, help='Minimum total execution time for throughput batches. Executions with a lower total throughput time are invalid.', default=3600)
 
 args = parser.parse_args()
 timings_dir = args.timings_dir
+tool = args.tool
 throughput_min_time = args.throughput_min_time
 
 con = duckdb.connect("bi.duckdb")
 con.execute(f"""
-    DROP TABLE IF EXISTS timings;
-    DROP TABLE IF EXISTS load_time;
-    DROP TABLE IF EXISTS power_test;
-    DROP TABLE IF EXISTS throughput_test;
-    DROP TABLE IF EXISTS throughput_score;
-    DROP TABLE IF EXISTS throughput_batches;
-    DROP TABLE IF EXISTS all_throughput_batches;
-    DROP TABLE IF EXISTS results_table_sorted;
-
-    CREATE TABLE load_time         (time float);
-    CREATE TABLE timings           (tool string, sf float, day string, q string, parameters string, time float);
-    CREATE TABLE power_test        (q string, total_time float);
+    CREATE OR REPLACE TABLE load_time(time float);
+    CREATE OR REPLACE TABLE timings(tool string, sf float, day string, q string, parameters string, time float);
+    CREATE OR REPLACE TABLE power_test_individual(qid int, q string, time float);
 
     COPY load_time FROM '{timings_dir}/load.csv'    (HEADER, DELIMITER '|');
     COPY timings   FROM '{timings_dir}/timings.csv' (HEADER, DELIMITER '|');
 
-    INSERT INTO power_test
-        SELECT q, sum(time) AS total_time
+    INSERT INTO power_test_individual
+        SELECT regexp_replace('0' || q, '\D','','g')::int AS qid, q, time
         FROM timings
         WHERE day = (SELECT min(day) FROM timings)
-          AND q != 'reads'
-        GROUP BY q;
+          AND q != 'reads';
 
-    CREATE TABLE throughput_test AS
+    CREATE OR REPLACE TABLE power_test_stats AS
+        SELECT
+            qid,
+            q,
+            count(time) AS count,
+            min(time) AS min_time,
+            max(time) AS max_time,
+            avg(time) AS avg_time,
+            sum(time) AS total_time,
+            percentile_disc(0.50) WITHIN GROUP (ORDER BY time) AS p50_time,
+            percentile_disc(0.90) WITHIN GROUP (ORDER BY time) AS p90_time,
+            percentile_disc(0.95) WITHIN GROUP (ORDER BY time) AS p95_time,
+            percentile_disc(0.99) WITHIN GROUP (ORDER BY time) AS p99_time,
+        FROM power_test_individual
+        GROUP BY qid, q;
+
+    CREATE OR REPLACE TABLE throughput_test AS
         SELECT *
         FROM timings
         WHERE q IN ('reads', 'writes');
 
-    CREATE TABLE throughput_batches AS
+    CREATE OR REPLACE TABLE throughput_batches AS
         SELECT count(day)/2 AS n_batches, sum(time) AS t_batches -- /2 is needed because writes+reads are counted separately 
         FROM throughput_test
         WHERE day <= (
@@ -54,11 +62,11 @@ con.execute(f"""
             LIMIT 1
         );
 
-    CREATE TABLE all_throughput_batches AS
+    CREATE OR REPLACE TABLE all_throughput_batches AS
         SELECT count(day)/2 AS n_batches, sum(time) As t_batches
         FROM throughput_test;
 
-    CREATE TABLE throughput_score AS
+    CREATE OR REPLACE TABLE throughput_score AS
         SELECT
             CASE WHEN n_batches = 0
                 THEN null
@@ -68,17 +76,17 @@ con.execute(f"""
         FROM throughput_batches;
 
     -- order as t_load, w, followed by q_1, ..., q_20
-    CREATE TABLE results_table_sorted AS
+    CREATE OR REPLACE TABLE results_table_sorted AS
         SELECT *
         FROM (
             SELECT -1 AS qid, NULL AS q, (SELECT printf('%.1f', time) FROM load_time) AS t
           UNION ALL
             SELECT 0 AS qid, NULL AS q, printf('%.1f', total_time) AS t
-            FROM power_test
+            FROM power_test_stats
             WHERE q = 'write'
           UNION ALL
             SELECT regexp_replace('0' || q, '\D','','g')::int AS qid, q, printf('%.1f', total_time) AS t
-            FROM power_test
+            FROM power_test_stats
             WHERE q != 'write'
           UNION ALL
             SELECT 21 AS qid, NULL AS q, CASE WHEN n_batches = 0 THEN 'n/a' ELSE n_batches END AS t
@@ -95,15 +103,16 @@ con.execute(f"""
 
 con.execute("""SELECT sf FROM timings LIMIT 1;""");
 sf = con.fetchone()[0];
-print(f"SF: {str(sf).rstrip('.0')}")
+sf_string = str(round(sf, 3))
+print(f"SF: {sf_string}")
 
 con.execute("""
     SELECT 3600 / ( exp(sum(ln(total_time::real)) * (1.0/count(total_time))) ) as power
-    FROM power_test;
+    FROM power_test_stats;
     """)
 p = con.fetchone()[0]
-print(f"power: {p:.02f}")
-print(f"power@SF: {p*sf:.02f}")
+print(f"power score:    {p:.02f}")
+print(f"power@SF score: {p*sf:.02f}")
 
 con.execute("""
     SELECT time
@@ -115,33 +124,50 @@ r = con.fetchone()[0];
 print(f"power test read time: {r:.01f}")
 print()
 
-con.execute("""
-    SELECT string_agg( t, ' \n') AS power_test
-    FROM results_table_sorted;
+con.execute(f"""
+    COPY 
+        (SELECT string_agg(t, ' \n')
+        FROM results_table_sorted)
+    TO 'runtimes-{tool}-sf{sf_string}.tex' (HEADER false, QUOTE '');
     """)
-s = con.fetchone();
-print(f"""results (TeX code):
-{s[0]}
-""")
+
+con.execute(f"""
+    COPY
+        (SELECT
+            q,
+            count,
+            printf('\\numprint{{%.3f}}', min_time) AS min,
+            printf('\\numprint{{%.3f}}', max_time) AS max,
+            printf('\\numprint{{%.3f}}', avg_time) AS mean,
+            printf('\\numprint{{%.3f}}', p50_time) AS p50,
+            printf('\\numprint{{%.3f}}', p90_time) AS p90,
+            printf('\\numprint{{%.3f}}', p95_time) AS p95,
+            printf('\\numprint{{%.3f}} \\\\', p99_time) AS 'p99 \\\\',
+        FROM power_test_stats
+        ORDER BY qid, q
+        )
+    TO 'stats-{tool}-sf{sf_string}.tex' (HEADER true, QUOTE '', DELIMITER ' & ');
+    """)
+
 
 con.execute("""
     SELECT * FROM throughput_batches
     """)
 s = con.fetchone()
 if s[0] == 0:
-    print(f"throughput score: n/a (throughput run was <{throughput_min_time}s")
+    print(f"throughput score: n/a (the throughput run was <{throughput_min_time}s)")
 else:
     con.execute("""
         SELECT (24 - (SELECT time/3600 FROM load_time)) * (n_batches / (t_batches/3600)) AS throughput
         FROM throughput_batches;
         """)
     t = con.fetchone()[0];
-    print(f"throughput: {t:.02f}")
-    print(f"throughput@SF: {t*sf:.02f}")
+    print(f"throughput score: {t:.02f}")
+    print(f"throughput@SF score: {t*sf:.02f}")
 
 con.execute("""
     SELECT * FROM all_throughput_batches
     """)
 tb = con.fetchone()
 print()
-print(f"total throughput batches run: {tb[0]}, {tb[1]:.1f}s")
+print(f"total throughput batches executed: {tb[0]} batches in {tb[1]:.1f}s")
