@@ -13,7 +13,8 @@ import csv
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='LDBC TigerGraph BI workload Benchmark')
-    parser.add_argument('data_dir', type=Path, help='The directory to load data from')
+    parser.add_argument('--scale_factor', type=float, help='Scale factor', required=True)
+    parser.add_argument('--data_dir', type=Path, help='The directory to load data from')
     parser.add_argument('--cluster', action='store_true', help='load concurrently on cluster')
     parser.add_argument('--para', type=Path, default=Path('../parameters'), help='parameter folder')
     parser.add_argument('--test', action='store_true', help='test mode only run one time')
@@ -21,10 +22,8 @@ if __name__ == '__main__':
     parser.add_argument('--endpoint', type=str, default = 'http://127.0.0.1:9000', help='tigergraph rest port')
     args = parser.parse_args()
 
-    sf = os.environ.get("SF")
-    if sf is None:
-        print("${SF} environment variable must be set")
-        exit(1)
+    sf = args.scale_factor
+
     output = Path(f'output/output-sf{sf}')
     output.mkdir(parents=True, exist_ok=True)
     results_file = open(output/'results.csv', 'w')

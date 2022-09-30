@@ -181,6 +181,7 @@ def run_precompute(args):
 # main functions
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='BI query driver')
+    parser.add_argument('--scale_factor', type=float, help='Scale factor', required=True)
     parser.add_argument('--cluster', action='store_true', help='load concurrently on cluster')
     parser.add_argument('--para', type=Path, default=Path('../parameters'), help='parameter folder')
     parser.add_argument('--skip', action='store_true', help='skip precomputation')
@@ -190,10 +191,7 @@ if __name__ == '__main__':
     parser.add_argument('--endpoint', type=str, default='http://127.0.0.1:9000',help='tigergraph endpoints')
     args = parser.parse_args()
 
-    sf = os.environ.get("SF")
-    if sf is None:
-        print("${SF} environment variable must be set")
-        exit(1)
+    sf = args.scale_factor
 
     output = Path(f'output/output-sf{sf}')
     output.mkdir(parents=True, exist_ok=True)

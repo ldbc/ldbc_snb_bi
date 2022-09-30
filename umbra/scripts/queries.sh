@@ -8,4 +8,4 @@ cd ..
 
 . scripts/vars.sh
 
-python3 queries.py $@
+python3 queries.py --scale_factor ${SF} --data_dir ${UMBRA_CSV_DIR} $@

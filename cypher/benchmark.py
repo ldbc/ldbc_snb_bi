@@ -14,8 +14,7 @@ import sys
 from queries import run_queries, run_precomputations
 from pathlib import Path
 from itertools import cycle
-
-# Usage: benchmark.py [--test|--pgtuning]
+import argparse
 
 
 def write_batch_fun(tx, query_spec, batch, csv_file):
@@ -78,26 +77,18 @@ if __name__ == '__main__':
     driver = neo4j.GraphDatabase.driver("bolt://localhost:7687")
     session = driver.session()
 
-    # env vars and arguments
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--scale_factor', type=float, help='Scale factor', required=True)
+    parser.add_argument('--data_dir', type=str, help='Directory with the initial_snapshot, insert, and delete directories', required=True)
+    parser.add_argument('--test', action='store_true', help='Test execution: 1 query/batch', required=False)
+    parser.add_argument('--pgtuning', action='store_true', help='Paramgen tuning execution: 100 queries/batch', required=False)
+    args = parser.parse_args()
+    sf = args.scale_factor
+    test = args.test
+    pgtuning = args.pgtuning
+    data_dir = args.data_dir 
 
-    sf = os.environ.get("SF")
-    if sf is None:
-        print("${SF} environment variable must be set")
-        exit(1)
-    test = False
-    pgtuning = False
-    if len(sys.argv) > 1:
-        if sys.argv[1] == "--test":
-            test = True
-        if sys.argv[1] == "--pgtuning":
-            pgtuning = True
-
-    data_dir = os.environ.get("NEO4J_CSV_DIR")
-    if data_dir is None:
-        print("${NEO4J_CSV_DIR} environment variable must be set")
-        exit(1)
-
-    print(f"- Input data directory, ${{NEO4J_CSV_DIR}}: {data_dir}")
+    print(f"- Input data directory: {data_dir}")
 
     parameter_csvs = {}
     for query_variant in query_variants:
