@@ -46,7 +46,7 @@ if __name__ == '__main__':
     batch_date = start_date
 
     if queries_only:
-        run_precompute(args)
+        run_precompute(args, timings_file, sf, batch_date)
         run_queries(query_variants, parameter_csvs, sf, results_file, timings_file, batch_date, args)
     else:
         current_batch = 1
