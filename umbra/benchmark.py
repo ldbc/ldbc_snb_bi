@@ -88,12 +88,14 @@ parser.add_argument('--test', action='store_true', help='Test execution: 1 query
 parser.add_argument('--pgtuning', action='store_true', help='Paramgen tuning execution: 100 queries/batch', required=False)
 parser.add_argument('--local', action='store_true', help='Local run (outside of a container)', required=False)
 parser.add_argument('--data_dir', type=str, help='Directory with the initial_snapshot, insert, and delete directories', required=True)
+parser.add_argument('--queries', action='store_true', help='Only run queries', required=False)
 args = parser.parse_args()
 sf = args.scale_factor
 test = args.test
 pgtuning = args.pgtuning
 local = args.local
 data_dir = args.data_dir
+queries_only = args.queries
 
 if local:
     dbs_data_dir = data_dir
@@ -138,7 +140,7 @@ test_end_date = datetime.date(2012, 12, 2)
 batch_size = relativedelta(days=1)
 batch_date = network_start_date
 
-if pgtuning:
+if queries_only:
     run_queries(query_variants, parameter_csvs, pg_con, sf, test, pgtuning, batch_date, timings_file, results_file)
 else:
     # Run alternating write-read blocks.

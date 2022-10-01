@@ -8,4 +8,4 @@ cd ..
 
 . scripts/vars.sh
 
-python3 queries.py --scale_factor ${SF} --data_dir ${NEO4J_CSV_DIR} $@
+python3 benchmark.py --queries --scale_factor ${SF} --data_dir ${NEO4J_CSV_DIR} $@

@@ -1,15 +1,11 @@
 #!/usr/bin/python3
-import argparse
 from pathlib import Path
 import time
-import csv
 import requests
 import re
-import os
 import subprocess
 import datetime
 import json
-from itertools import cycle
 
 # query timeout value in miliseconds
 HEADERS = {'GSQL-TIMEOUT': '36000000'}
@@ -177,35 +173,3 @@ def run_precompute(args):
         subprocess.run(f'gsql -g ldbc_snb RUN LOADING JOB load_precompute', shell=True)
     print(f'load_precompute:\t\t{time.time()-t1:.4f} s')
     return time.time() - t0
-
-# main functions
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='BI query driver')
-    parser.add_argument('--scale_factor', type=str, help='Scale factor', required=True)
-    parser.add_argument('--cluster', action='store_true', help='load concurrently on cluster')
-    parser.add_argument('--para', type=Path, default=Path('../parameters'), help='parameter folder')
-    parser.add_argument('--skip', action='store_true', help='skip precomputation')
-    parser.add_argument('--test', action='store_true', help='test mode only run one time')
-    parser.add_argument('--temp', type=Path, default=Path('/tmp'), help='folder for temparoty files')
-    parser.add_argument('--nruns', '-n', type=int, default=40, help='number of runs')
-    parser.add_argument('--endpoint', type=str, default='http://127.0.0.1:9000',help='tigergraph endpoints')
-    args = parser.parse_args()
-
-    sf = args.scale_factor
-
-    output = Path(f'output/output-sf{sf}')
-    output.mkdir(parents=True, exist_ok=True)
-    results_file = open(output/'results.csv', 'w')
-    timings_file = open(output/'timings.csv', 'w')
-    timings_file.write(f"tool|sf|day|q|parameters|time\n")
-    query_variants = ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "15a", "15b", "16a", "16b", "17", "18", "19a", "19b", "20a", "20b"]
-
-    parameter_csvs = {}
-    for query_variant in query_variants:
-        # wrap parameters into infinite loop iterator
-        parameter_csvs[query_variant] = cycle(csv.DictReader(open(f'../parameters/parameters-sf{sf}/bi-{query_variant}.csv'), delimiter='|'))
-
-    if not args.skip: run_precompute(args)
-    run_queries(query_variants, parameter_csvs, sf, results_file, timings_file, '', args)
-    results_file.close()
-    timings_file.close()

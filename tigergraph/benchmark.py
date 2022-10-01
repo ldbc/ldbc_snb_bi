@@ -20,9 +20,11 @@ if __name__ == '__main__':
     parser.add_argument('--test', action='store_true', help='test mode only run one time')
     parser.add_argument('--nruns', '-n', type=int, default=10, help='number of runs')
     parser.add_argument('--endpoint', type=str, default = 'http://127.0.0.1:9000', help='tigergraph rest port')
+    parser.add_argument('--queries', action='store_true', help='Only run queries', required=False)
     args = parser.parse_args()
 
     sf = args.scale_factor
+    queries_only = args.queries
 
     output = Path(f'output/output-sf{sf}')
     output.mkdir(parents=True, exist_ok=True)
@@ -43,13 +45,18 @@ if __name__ == '__main__':
     batch_size = timedelta(days=1)
     needClean = False
     batch_date = start_date
-    while batch_date < end_date and (not args.test or batch_date < test_end_date):
-        writes_time = run_batch_update(batch_date, args)
-        precompute_time = run_precompute(args)
-        timings_file.write(f"TigerGraph|{sf}|{batch_date}|writes||{writes_time + precompute_time:.6f}\n")
-        reads_time = run_queries(query_variants, parameter_csvs, sf, results_file, timings_file, batch_date, args)
-        timings_file.write(f"TigerGraph|{sf}|{batch_date}|reads||{reads_time:.6f}\n")
-        batch_date = batch_date + batch_size
+
+    if queries_only:
+        run_precompute(args)
+        run_queries(query_variants, parameter_csvs, sf, results_file, timings_file, batch_date, args)
+    else:
+        while batch_date < end_date and (not args.test or batch_date < test_end_date):
+            writes_time = run_batch_update(batch_date, args)
+            precompute_time = run_precompute(args)
+            timings_file.write(f"TigerGraph|{sf}|{batch_date}|writes||{writes_time + precompute_time:.6f}\n")
+            reads_time = run_queries(query_variants, parameter_csvs, sf, results_file, timings_file, batch_date, args)
+            timings_file.write(f"TigerGraph|{sf}|{batch_date}|reads||{reads_time:.6f}\n")
+            batch_date = batch_date + batch_size
 
     results_file.close()
     timings_file.close()

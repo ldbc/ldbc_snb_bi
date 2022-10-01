@@ -1,14 +1,8 @@
-import csv
 import datetime
 import json
 import os
 import re
-import psycopg2
 import time
-import sys
-from pathlib import Path
-from itertools import cycle
-import argparse
 
 
 result_mapping = {
@@ -198,43 +192,3 @@ def run_queries(query_variants, parameter_csvs, pg_con, sf, test, pgtuning, batc
                 break
 
     return time.time() - start
-
-
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--scale_factor', type=str, help='Scale factor', required=True)
-    parser.add_argument('--test', action='store_true', help='Test execution: 1 query/batch', required=False)
-    parser.add_argument('--pgtuning', action='store_true', help='Paramgen tuning execution: 100 queries/batch', required=False)
-    parser.add_argument('--local', action='store_true', help='Local run (outside of a container)', required=False)
-    parser.add_argument('--data_dir', type=str, help='Directory with the initial_snapshot, insert, and delete directories', required=True)
-    args = parser.parse_args()
-    sf = args.scale_factor
-    test = args.test
-    pgtuning = args.pgtuning
-    local = args.local
-    data_dir = args.data_dir
-
-    query_variants = ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "15a", "15b", "16a", "16b", "17", "18", "19a", "19b", "20a", "20b"]
-
-    parameter_csvs = {}
-    for query_variant in query_variants:
-        # wrap parameters into infinite loop iterator
-        parameter_csvs[query_variant] = cycle(csv.DictReader(open(f'../parameters/parameters-sf{sf}/bi-{query_variant}.csv'), delimiter='|'))
-
-
-    output = Path(f'output/output-sf{sf}')
-    output.mkdir(parents=True, exist_ok=True)
-    open(f"output/output-sf{sf}/results.csv", "w").close()
-    open(f"output/output-sf{sf}/timings.csv", "w").close()
-
-    timings_file = open(f"output/output-sf{sf}/timings.csv", "a")
-    timings_file.write(f"tool|sf|day|q|parameters|time\n")
-    results_file = open(f"output/output-sf{sf}/results.csv", "a")
-
-    pg_con = psycopg2.connect(host="localhost", user="postgres", password="mysecretpassword", port=8000)
-    pg_con.autocommit = True
-    
-    reads_time = run_queries(query_variants, parameter_csvs, pg_con, sf, test, pgtuning, None, timings_file, results_file)
-    timings_file.write(f"Umbra|{sf}||reads||{reads_time:.6f}\n")
-
-    pg_con.close()

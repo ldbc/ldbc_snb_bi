@@ -82,11 +82,13 @@ if __name__ == '__main__':
     parser.add_argument('--data_dir', type=str, help='Directory with the initial_snapshot, insert, and delete directories', required=True)
     parser.add_argument('--test', action='store_true', help='Test execution: 1 query/batch', required=False)
     parser.add_argument('--pgtuning', action='store_true', help='Paramgen tuning execution: 100 queries/batch', required=False)
+    parser.add_argument('--queries', action='store_true', help='Only run queries', required=False)
     args = parser.parse_args()
     sf = args.scale_factor
     test = args.test
     pgtuning = args.pgtuning
     data_dir = args.data_dir 
+    queries_only = args.queries
 
     print(f"- Input data directory: {data_dir}")
 
@@ -129,18 +131,22 @@ if __name__ == '__main__':
     batch_size = relativedelta(days=1)
     batch_date = network_start_date
 
-    # Run alternating write-read blocks.
-    # The first write-read block is the power batch, while the rest are the throughput batches.
-    while batch_date < network_end_date and (not test or batch_date < datetime.date(2012, 12, 2)):
-        print()
-        print(f"----------------> Batch date: {batch_date} <---------------")
-        run_batch_updates(session, data_dir, batch_date, insert_entities, delete_entities, insert_queries, delete_queries)
+    if queries_only:
         run_precomputations(sf, query_variants, session, timings_file)
-
         reads_time = run_queries(query_variants, parameter_csvs, session, sf, batch_date, test, pgtuning, timings_file, results_file)
-        timings_file.write(f"Neo4j|{sf}|{batch_date}|reads||{reads_time:.6f}\n")
+    else:
+        # Run alternating write-read blocks.
+        # The first write-read block is the power batch, while the rest are the throughput batches.
+        while batch_date < network_end_date and (not test or batch_date < datetime.date(2012, 12, 2)):
+            print()
+            print(f"----------------> Batch date: {batch_date} <---------------")
+            run_batch_updates(session, data_dir, batch_date, insert_entities, delete_entities, insert_queries, delete_queries)
+            run_precomputations(sf, query_variants, session, timings_file)
 
-        batch_date = batch_date + batch_size
+            reads_time = run_queries(query_variants, parameter_csvs, session, sf, batch_date, test, pgtuning, timings_file, results_file)
+            timings_file.write(f"Neo4j|{sf}|{batch_date}|reads||{reads_time:.6f}\n")
+
+            batch_date = batch_date + batch_size
 
     results_file.close()
     timings_file.close()

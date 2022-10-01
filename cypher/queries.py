@@ -1,14 +1,7 @@
-import neo4j
 import datetime
 import time
-import csv
-import os
 import re
-import sys
 import json
-from pathlib import Path
-from itertools import cycle
-import argparse
 
 result_mapping = {
      1: [{"name": "year", "type": "INT32"}, {"name": "isComment", "type": "BOOL"}, {"name": "lengthCategory", "type": "INT32"}, {"name": "messageCount", "type": "INT32"}, {"name": "averageMessageLength", "type": "FLOAT32"}, {"name": "sumMessageLength", "type": "INT32"}, {"name": "percentageOfMessages", "type": "FLOAT32"}],
@@ -166,46 +159,3 @@ def run_precomputations(sf, query_variants, session, timings_file):
         end = time.time()
         duration = end - start
         timings_file.write(f"Neo4j|{sf}||q20precomputation||{duration}\n")
-
-
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--scale_factor', type=str, help='Scale factor', required=True)
-    parser.add_argument('--data_dir', type=str, help='Directory with the initial_snapshot, insert, and delete directories', required=True)
-    parser.add_argument('--test', action='store_true', help='Test execution: 1 query/batch', required=False)
-    parser.add_argument('--pgtuning', action='store_true', help='Paramgen tuning execution: 100 queries/batch', required=False)
-    args = parser.parse_args()
-    sf = args.scale_factor
-    test = args.test
-    pgtuning = args.pgtuning
-    data_dir = args.data_dir
-
-    query_variants = ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "15a", "15b", "16a", "16b", "17", "18", "19a", "19b", "20a", "20b"]
-
-    parameter_csvs = {}
-    for query_variant in query_variants:
-        # wrap parameters into infinite loop iterator
-        parameter_csvs[query_variant] = cycle(csv.DictReader(open(f'../parameters/parameters-sf{sf}/bi-{query_variant}.csv'), delimiter='|'))
-
-    driver = neo4j.GraphDatabase.driver("bolt://localhost:7687")
-    session = driver.session()
-
-    output = Path(f'output/output-sf{sf}')
-    output.mkdir(parents=True, exist_ok=True)
-    open(f"output/output-sf{sf}/results.csv", "w").close()
-    open(f"output/output-sf{sf}/timings.csv", "w").close()
-
-    results_file = open(f"output/output-sf{sf}/results.csv", "a")
-    timings_file = open(f"output/output-sf{sf}/timings.csv", "a")
-    timings_file.write(f"tool|sf|day|q|parameters|time\n")
-
-    run_precomputations(sf, query_variants, session, timings_file)
-
-    reads_time = run_queries(query_variants, parameter_csvs, session, sf, "", test, pgtuning, timings_file, results_file)
-    timings_file.write(f"Neo4j|{sf}||reads||{reads_time:.6f}\n")
-
-    results_file.close()
-    timings_file.close()
-
-    session.close()
-    driver.close()
