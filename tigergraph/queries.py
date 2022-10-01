@@ -113,7 +113,7 @@ def run_queries(query_variants, parameter_csvs, sf, results_file, timings_file, 
             if args.test:
                 print(f"-> {duration:.4f} seconds")
                 print(f"-> {results}")
-            if args.test or i == args.nruns-1:
+            if args.test or i == args.nruns:
                 break
 
     return time.time() - start
