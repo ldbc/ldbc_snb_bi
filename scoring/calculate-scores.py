@@ -144,11 +144,23 @@ con.execute(f"""
             printf('\\numprint{{%.3f}}', p95_time) AS p95,
             printf('\\numprint{{%.3f}} \\\\', p99_time) AS 'p99 \\\\',
         FROM power_test_stats
+        WHERE count > 1
         ORDER BY qid, q
         )
-    TO 'stats-{tool}-sf{sf_string}.tex' (HEADER true, QUOTE '', DELIMITER ' & ');
+    TO 'queries-{tool}-sf{sf_string}.tex' (HEADER true, QUOTE '', DELIMITER ' & ');
     """)
 
+con.execute(f"""
+    COPY
+        (SELECT
+            q,
+            printf('\\numprint{{%.3f}} \\\\', min_time) AS 'time \\\\',
+        FROM power_test_stats
+        WHERE count = 1
+        ORDER BY qid, q
+        )
+    TO 'operations-{tool}-sf{sf_string}.tex' (HEADER true, QUOTE '', DELIMITER ' & ');
+    """)
 
 con.execute("""
     SELECT * FROM throughput_batches
