@@ -137,15 +137,34 @@ if __name__ == '__main__':
     else:
         # Run alternating write-read blocks.
         # The first write-read block is the power batch, while the rest are the throughput batches.
+
+        current_batch = 1
         while batch_date < network_end_date and (not test or batch_date < datetime.date(2012, 12, 2)):
             print()
             print(f"----------------> Batch date: {batch_date} <---------------")
+            if current_batch == 1:
+                print(f"Power batch")
+            else:
+                print(f"Throughput batch")
+
+            if current_batch == 2:
+                start = time.time()
+
             run_batch_updates(session, data_dir, batch_date, insert_entities, delete_entities, insert_queries, delete_queries)
             run_precomputations(sf, query_variants, session, timings_file)
 
             reads_time = run_queries(query_variants, parameter_csvs, session, sf, batch_date, test, pgtuning, timings_file, results_file)
             timings_file.write(f"Neo4j|{sf}|{batch_date}|reads||{reads_time:.6f}\n")
 
+            # checking if 1 hour (and a bit) has elapsed for the throughput batches
+            if current_batch >= 2:
+                end = time.time()
+                duration = end - start
+                if duration > 3605:
+                    print("1h elapsed for the throughput batches, stopping the benchmark")
+                    break
+
+            current_batch = current_batch + 1
             batch_date = batch_date + batch_size
 
     results_file.close()

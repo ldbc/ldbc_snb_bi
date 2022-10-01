@@ -50,13 +50,35 @@ if __name__ == '__main__':
         run_precompute(args)
         run_queries(query_variants, parameter_csvs, sf, results_file, timings_file, batch_date, args)
     else:
+        current_batch = 1
         while batch_date < end_date and (not args.test or batch_date < test_end_date):
+            print()
+            print(f"----------------> Batch date: {batch_date} <---------------")
+            if current_batch == 1:
+                print(f"Power batch")
+            else:
+                print(f"Throughput batch")
+
+            if current_batch == 2:
+                start = time.time()
+
             writes_time = run_batch_update(batch_date, args)
             precompute_time = run_precompute(args)
             timings_file.write(f"TigerGraph|{sf}|{batch_date}|writes||{writes_time + precompute_time:.6f}\n")
             reads_time = run_queries(query_variants, parameter_csvs, sf, results_file, timings_file, batch_date, args)
             timings_file.write(f"TigerGraph|{sf}|{batch_date}|reads||{reads_time:.6f}\n")
+
+            # checking if 1 hour (and a bit) has elapsed for the throughput batches
+            if current_batch >= 2:
+                end = time.time()
+                duration = end - start
+                if duration > 3605:
+                    print("1h elapsed for the throughput batches, stopping the benchmark")
+                    break
+
+            current_batch = current_batch + 1
             batch_date = batch_date + batch_size
+
 
     results_file.close()
     timings_file.close()

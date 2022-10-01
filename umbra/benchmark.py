@@ -145,12 +145,33 @@ if queries_only:
 else:
     # Run alternating write-read blocks.
     # The first write-read block is the power batch, while the rest are the throughput batches.
+    current_batch = 1
     while batch_date < network_end_date and (not test or batch_date < test_end_date):
+        print()
+        print(f"----------------> Batch date: {batch_date} <---------------")
+        if current_batch == 1:
+            print(f"Power batch")
+        else:
+            print(f"Throughput batch")
+
+        if current_batch == 2:
+            start = time.time()
+
         run_batch_updates(pg_con, data_dir, batch_date, timings_file)
         reads_time = run_queries(query_variants, parameter_csvs, pg_con, sf, test, pgtuning, batch_date, timings_file, results_file)
         timings_file.write(f"Umbra|{sf}|{batch_date}|reads||{reads_time:.6f}\n")
 
+        # checking if 1 hour (and a bit) has elapsed for the throughput batches
+        if current_batch >= 2:
+            end = time.time()
+            duration = end - start
+            if duration > 3605:
+                print("1h elapsed for the throughput batches, stopping the benchmark")
+                break
+
+        current_batch = current_batch + 1
         batch_date = batch_date + batch_size
+
 
 timings_file.close()
 results_file.close()
