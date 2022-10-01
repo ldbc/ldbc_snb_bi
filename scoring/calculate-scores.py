@@ -103,7 +103,7 @@ con.execute(f"""
 
 con.execute("""SELECT sf FROM timings LIMIT 1;""");
 sf = con.fetchone()[0];
-sf_string = str(round(sf, 3))
+sf_string = str(round(sf, 3)).rstrip('0').rstrip('.')
 print(f"SF: {sf_string}")
 
 con.execute("""
