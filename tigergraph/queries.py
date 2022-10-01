@@ -113,19 +113,21 @@ def run_queries(query_variants, parameter_csvs, sf, results_file, timings_file, 
             if args.test:
                 print(f"-> {duration:.4f} seconds")
                 print(f"-> {results}")
-            if args.test or i == args.nruns:
+            if args.test or i == args.nruns-1:
                 break
 
     return time.time() - start
 
-def run_precompute(args):
+def run_precompute(args, timings_file, sf, batch_id):
     t0 = time.time()
     print(f"==================== Precompute for BI 19,4,6,20 ======================")
     # compute values and print to files
     for q in [4,6,20]:
         t1 = time.time()
         requests.get(f'{args.endpoint}/query/ldbc_snb/precompute_bi{q}', headers=HEADERS)
-        print(f'precompute_bi{q}:\t\t{time.time()-t1:.4f} s')
+        duration = time.time()-t1
+        print(f'precompute_bi{q}:\t\t{duration:.4f} s')
+        timings_file.write(f"TigerGraph|{sf}|{batch_id}|q{q}precomputation||{duration}\n")
 
     # precompute q19
     t1 = time.time()

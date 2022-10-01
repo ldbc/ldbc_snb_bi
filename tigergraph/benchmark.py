@@ -51,6 +51,7 @@ if __name__ == '__main__':
     else:
         current_batch = 1
         while batch_date < end_date and (not args.test or batch_date < test_end_date):
+            batch_id = batch_date.strftime('%Y-%m-%d')
             print()
             print(f"----------------> Batch date: {batch_date} <---------------")
             if current_batch == 1:
@@ -62,7 +63,7 @@ if __name__ == '__main__':
                 start = time.time()
 
             writes_time = run_batch_update(batch_date, args)
-            precompute_time = run_precompute(args)
+            precompute_time = run_precompute(args, timings_file, sf, batch_date)
             timings_file.write(f"TigerGraph|{sf}|{batch_date}|writes||{writes_time + precompute_time:.6f}\n")
             reads_time = run_queries(query_variants, parameter_csvs, sf, results_file, timings_file, batch_date, args)
             timings_file.write(f"TigerGraph|{sf}|{batch_date}|reads||{reads_time:.6f}\n")
