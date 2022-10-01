@@ -17,11 +17,7 @@ def write_batch_fun(tx, query_spec, batch, csv_file):
 
 
 def run_update(session, query_spec, batch, csv_file):
-    start = time.time()
     result = session.write_transaction(write_batch_fun, query_spec, batch, csv_file)
-    end = time.time()
-    duration = end - start
-
     num_changes = result[0]
     return num_changes
 
