@@ -202,7 +202,7 @@ def run_queries(query_variants, parameter_csvs, pg_con, sf, test, pgtuning, batc
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--scale_factor', type=float, help='Scale factor', required=True)
+    parser.add_argument('--scale_factor', type=str, help='Scale factor', required=True)
     parser.add_argument('--test', action='store_true', help='Test execution: 1 query/batch', required=False)
     parser.add_argument('--pgtuning', action='store_true', help='Paramgen tuning execution: 100 queries/batch', required=False)
     parser.add_argument('--local', action='store_true', help='Local run (outside of a container)', required=False)

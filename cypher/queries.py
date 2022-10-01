@@ -170,7 +170,7 @@ def run_precomputations(sf, query_variants, session, timings_file):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--scale_factor', type=float, help='Scale factor', required=True)
+    parser.add_argument('--scale_factor', type=str, help='Scale factor', required=True)
     parser.add_argument('--data_dir', type=str, help='Directory with the initial_snapshot, insert, and delete directories', required=True)
     parser.add_argument('--test', action='store_true', help='Test execution: 1 query/batch', required=False)
     parser.add_argument('--pgtuning', action='store_true', help='Paramgen tuning execution: 100 queries/batch', required=False)

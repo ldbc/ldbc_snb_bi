@@ -13,7 +13,7 @@ import csv
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='LDBC TigerGraph BI workload Benchmark')
-    parser.add_argument('--scale_factor', type=float, help='Scale factor', required=True)
+    parser.add_argument('--scale_factor', type=str, help='Scale factor', required=True)
     parser.add_argument('--data_dir', type=Path, help='The directory to load data from')
     parser.add_argument('--cluster', action='store_true', help='load concurrently on cluster')
     parser.add_argument('--para', type=Path, default=Path('../parameters'), help='parameter folder')

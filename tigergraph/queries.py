@@ -181,7 +181,7 @@ def run_precompute(args):
 # main functions
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='BI query driver')
-    parser.add_argument('--scale_factor', type=float, help='Scale factor', required=True)
+    parser.add_argument('--scale_factor', type=str, help='Scale factor', required=True)
     parser.add_argument('--cluster', action='store_true', help='load concurrently on cluster')
     parser.add_argument('--para', type=Path, default=Path('../parameters'), help='parameter folder')
     parser.add_argument('--skip', action='store_true', help='skip precomputation')
