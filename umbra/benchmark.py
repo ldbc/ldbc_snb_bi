@@ -2,10 +2,8 @@ import csv
 import datetime
 from dateutil.relativedelta import relativedelta
 import os
-import re
 import psycopg2
 import time
-import sys
 from queries import run_script, run_queries, run_precomputations
 from pathlib import Path
 from itertools import cycle

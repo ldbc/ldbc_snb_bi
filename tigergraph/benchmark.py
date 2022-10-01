@@ -4,12 +4,11 @@ from pathlib import Path
 from datetime import date, timedelta
 from queries import run_queries, run_precompute
 from batches import run_batch_update
-import os
 import time
 import re
-import requests
 from itertools import cycle
 import csv
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='LDBC TigerGraph BI workload Benchmark')

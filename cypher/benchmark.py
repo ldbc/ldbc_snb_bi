@@ -1,16 +1,10 @@
-from datetime import datetime, date
+from datetime import datetime
 from dateutil.relativedelta import relativedelta
 import time
-import sys
 import os
 import csv
 import datetime
-from dateutil.relativedelta import relativedelta
-import os
-import re
 import neo4j
-import time
-import sys
 from queries import run_queries, run_precomputations
 from pathlib import Path
 from itertools import cycle
