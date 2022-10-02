@@ -45,6 +45,7 @@ if __name__ == '__main__':
     needClean = False
     batch_date = start_date
 
+    benchmark_start = time.time()
     if queries_only:
         run_precompute(args, timings_file, sf, batch_date)
         run_queries(query_variants, parameter_csvs, sf, results_file, timings_file, batch_date, args)
@@ -79,6 +80,11 @@ if __name__ == '__main__':
             current_batch = current_batch + 1
             batch_date = batch_date + batch_size
 
+    benchmark_end = time.time()
+    benchmark_duration = benchmark_end - benchmark_start
+    benchmark_file = open(output/'benchmark.csv', 'w')
+    benchmark_file.write(f"{benchmark_duration:.6f}")
+    benchmark_file.close()
 
     results_file.close()
     timings_file.close()

@@ -112,7 +112,7 @@ delete_nodes = ["Comment", "Post", "Forum", "Person"]
 delete_edges = ["Forum_hasMember_Person", "Person_knows_Person", "Person_likes_Comment", "Person_likes_Post"]
 delete_entities = delete_nodes + delete_edges
 
-output = Path(f'output/output-sf{sf}')
+output = Path(f"output/output-sf{sf}")
 output.mkdir(parents=True, exist_ok=True)
 open(f"output/output-sf{sf}/results.csv", "w").close()
 open(f"output/output-sf{sf}/timings.csv", "w").close()
@@ -125,14 +125,15 @@ pg_con = psycopg2.connect(host="localhost", user="postgres", password="mysecretp
 pg_con.autocommit = True
 cur = pg_con.cursor()
 
-run_script(pg_con, cur, f"ddl/schema-delete-candidates.sql");
-
-
 network_start_date = datetime.date(2012, 11, 29)
 network_end_date = datetime.date(2013, 1, 1)
 test_end_date = datetime.date(2012, 12, 2)
 batch_size = relativedelta(days=1)
 batch_date = network_start_date
+
+benchmark_start = time.time()
+
+run_script(pg_con, cur, f"ddl/schema-delete-candidates.sql")
 
 if queries_only:
     run_queries(query_variants, parameter_csvs, pg_con, sf, test, pgtuning, batch_date, timings_file, results_file)
@@ -166,9 +167,14 @@ else:
         current_batch = current_batch + 1
         batch_date = batch_date + batch_size
 
+cur.close()
+pg_con.close()
+
+benchmark_end = time.time()
+benchmark_duration = benchmark_end - benchmark_start
+benchmark_file = open(f"output/output-sf{sf}/benchmark.csv", "w")
+benchmark_file.write(f"{benchmark_duration:.6f}")
+benchmark_file.close()
 
 timings_file.close()
 results_file.close()
-
-cur.close()
-pg_con.close()

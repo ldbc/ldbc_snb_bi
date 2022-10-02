@@ -121,6 +121,8 @@ if __name__ == '__main__':
     batch_size = relativedelta(days=1)
     batch_date = network_start_date
 
+    benchmark_start = time.time()
+
     if queries_only:
         run_precomputations(sf, query_variants, session, timings_file)
         reads_time = run_queries(query_variants, parameter_csvs, session, sf, batch_date, test, pgtuning, timings_file, results_file)
@@ -156,6 +158,12 @@ if __name__ == '__main__':
 
             current_batch = current_batch + 1
             batch_date = batch_date + batch_size
+
+    benchmark_end = time.time()
+    benchmark_duration = benchmark_end - benchmark_start
+    benchmark_file = open(f"output/output-sf{sf}/benchmark.csv", "w")
+    benchmark_file.write(f"{benchmark_duration:.6f}")
+    benchmark_file.close()
 
     results_file.close()
     timings_file.close()
