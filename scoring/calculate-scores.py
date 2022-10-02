@@ -147,7 +147,7 @@ con.execute(f"""
         WHERE count > 1
         ORDER BY qid, q
         )
-    TO 'queries-{tool}-sf{sf_string}.tex' (HEADER true, QUOTE '', DELIMITER ' & ');
+    TO 'queries-{tool}-sf{sf_string}.tex' (HEADER false, QUOTE '', DELIMITER ' & ');
     """)
 
 con.execute(f"""
@@ -159,7 +159,7 @@ con.execute(f"""
         WHERE count = 1
         ORDER BY qid, q
         )
-    TO 'operations-{tool}-sf{sf_string}.tex' (HEADER true, QUOTE '', DELIMITER ' & ');
+    TO 'operations-{tool}-sf{sf_string}.tex' (HEADER false, QUOTE '', DELIMITER ' & ');
     """)
 
 con.execute("""
