@@ -5,11 +5,10 @@ Note that some BI queries cannot be expressed (efficiently) in vanilla Cypher so
 
 ## Generating the data set
 
-The Neo4j implementation expects the data to be in `composite-projected-fk` CSV layout, without headers and with quoted fields.
-To generate data that confirms this requirement, run Datagen with the `--explode-edges` and the `--format-options header=false,quoteAll=true` options.
-This implementation also supports compressed data sets, both for the initial load and for batches. To generate compressed data sets, include `compression=gzip` in the Datagen's `--format-options`. The scripts in this repository change between compressed and uncompressed representations.
+The Neo4j implementation expects the data to be in `composite-projected-fk` CSV layout, without headers and with quoted fields. (Rationale: Files should not have headers as these are provided separately in the `headers/` directory and quoting the fields in the CSV is required to [preserve trailing spaces](https://neo4j.com/docs/operations-manual/4.3/tools/neo4j-admin-import/#import-tool-header-format).)
 
-(Rationale: Files should not have headers as these are provided separately in the `headers/` directory and quoting the fields in the CSV is required to [preserve trailing spaces](https://neo4j.com/docs/operations-manual/4.3/tools/neo4j-admin-import/#import-tool-header-format).)
+To generate data that confirms these requirements, run Datagen with the `--explode-edges` and the `--format-options header=false,quoteAll=true` options.
+This implementation also supports compressed data sets (`.csv.gz` files), both for the initial load and for batches. The scripts in this repository automatically detect whether a compressed or an uncompressed data set is used.
 
 In Datagen's directory (`ldbc_snb_datagen_spark`), issue the following commands. We assume that the Datagen project is built and the `${PLATFORM_VERSION}`, `${DATAGEN_VERSION}` environment variables are set correctly.
 
