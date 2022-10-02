@@ -108,8 +108,7 @@ def run_queries(query_variants, parameter_csvs, sf, results_file, timings_file, 
             timings_file.flush()
 
             # - test run: 1 query
-            # - regular run: 40 queries
-            # - paramgen tuning: 50 queries
+            # - regular run: 30 queries
             if args.test:
                 print(f"-> {duration:.4f} seconds")
                 print(f"-> {results}")

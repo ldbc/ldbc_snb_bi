@@ -17,7 +17,7 @@ if __name__ == '__main__':
     parser.add_argument('--cluster', action='store_true', help='load concurrently on cluster')
     parser.add_argument('--para', type=Path, default=Path('../parameters'), help='parameter folder')
     parser.add_argument('--test', action='store_true', help='test mode only run one time')
-    parser.add_argument('--nruns', '-n', type=int, default=40, help='number of runs')
+    parser.add_argument('--nruns', '-n', type=int, default=30, help='number of runs')
     parser.add_argument('--endpoint', type=str, default = 'http://127.0.0.1:9000', help='tigergraph rest port')
     parser.add_argument('--queries', action='store_true', help='Only run queries', required=False)
     args = parser.parse_args()
