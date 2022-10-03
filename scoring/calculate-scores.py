@@ -207,7 +207,7 @@ else:
     con.execute(f"""
         COPY
             (SELECT
-                (SELECT printf('\\numprint{{%.2f}}', time                 ) FROM benchmark_time        ),
+                (SELECT printf('\\numprint{{%.2f}} minutes', time/60      ) FROM benchmark_time        ),
                 (SELECT printf('\\numprint{{%.2f}}', power                ) FROM power_score           ),
                 (SELECT printf('\\numprint{{%.2f}}', power_at_sf          ) FROM power_at_sf_score     ),
                 (SELECT printf('\\numprint{{%.2f}}', throughput           ) FROM throughput_score      ),
