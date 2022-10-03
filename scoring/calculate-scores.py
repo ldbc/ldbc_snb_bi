@@ -1,5 +1,7 @@
 import duckdb
 import argparse
+import os
+import glob
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--tool', type=str, help='Name of the SUT, e.g. PostgreSQL', required=True)
@@ -110,6 +112,10 @@ sf = con.fetchone()[0]
 sf_string = str(round(sf, 3)).rstrip('0').rstrip('.')
 print(f"SF: {sf_string}")
 
+# cleanup old .tex files
+for f in glob.glob(f'./*-{tool}-sf{sf_string}.tex'):
+    os.remove(f)
+
 con.execute("""
     CREATE OR REPLACE TABLE power_score AS
         SELECT 3600 / ( exp(sum(ln(total_time::real)) * (1.0/count(total_time))) ) AS power
@@ -201,11 +207,11 @@ else:
     con.execute(f"""
         COPY
             (SELECT
-                (SELECT time FROM benchmark_time),
-                (SELECT power FROM power_score),
-                (SELECT power_at_sf FROM power_at_sf_score),
-                (SELECT throughput FROM throughput_score),
-                (SELECT throughput_at_sf FROM throughput_at_sf_score),
+                (SELECT printf('\\numprint{{%.2f}}', time                 ) FROM benchmark_time        ),
+                (SELECT printf('\\numprint{{%.2f}}', power                ) FROM power_score           ),
+                (SELECT printf('\\numprint{{%.2f}}', power_at_sf          ) FROM power_at_sf_score     ),
+                (SELECT printf('\\numprint{{%.2f}}', throughput           ) FROM throughput_score      ),
+                (SELECT printf('\\numprint{{%.2f}} \\\\', throughput_at_sf) FROM throughput_at_sf_score),
             )
         TO 'summary-{tool}-sf{sf_string}.tex' (HEADER false, QUOTE '', DELIMITER ' & ');
         """)
