@@ -29,7 +29,7 @@ if __name__ == '__main__':
     output.mkdir(parents=True, exist_ok=True)
     results_file = open(output/'results.csv', 'w')
     timings_file = open(output/'timings.csv', 'w')
-    timings_file.write(f"tool|sf|day|q|parameters|time\n")
+    timings_file.write(f"tool|sf|day|batch_type|q|parameters|time\n")
     query_variants = ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "15a", "15b", "16a", "16b", "17", "18", "19a", "19b", "20a", "20b"]
 
     parameter_csvs = {}
@@ -47,27 +47,29 @@ if __name__ == '__main__':
 
     benchmark_start = time.time()
     if queries_only:
-        run_precompute(args, timings_file, sf, batch_date)
-        run_queries(query_variants, parameter_csvs, sf, results_file, timings_file, batch_date, args)
+        batch_type =  "power"
+        run_precompute(args, timings_file, sf, batch_date, batch_type)
+        run_queries(query_variants, parameter_csvs, sf, results_file, timings_file, batch_date, batch_type, args)
     else:
         current_batch = 1
         while batch_date < end_date and (not args.test or batch_date < test_end_date):
-            batch_id = batch_date.strftime('%Y-%m-%d')
-            print()
-            print(f"----------------> Batch date: {batch_date} <---------------")
             if current_batch == 1:
-                print(f"Power batch")
+                batch_type = "power"
             else:
-                print(f"Throughput batch")
+                batch_type = "throughput"
+            print()
+            print(f"----------------> Batch date: {batch_date}, batch type: {batch_type} <---------------")
+
+            batch_id = batch_date.strftime('%Y-%m-%d')
 
             if current_batch == 2:
                 start = time.time()
 
             writes_time = run_batch_update(batch_date, args)
-            precompute_time = run_precompute(args, timings_file, sf, batch_date)
-            timings_file.write(f"TigerGraph|{sf}|{batch_date}|writes||{writes_time + precompute_time:.6f}\n")
-            reads_time = run_queries(query_variants, parameter_csvs, sf, results_file, timings_file, batch_date, args)
-            timings_file.write(f"TigerGraph|{sf}|{batch_date}|reads||{reads_time:.6f}\n")
+            precompute_time = run_precompute(args, timings_file, sf, batch_date, batch_type)
+            timings_file.write(f"TigerGraph|{sf}|{batch_date}|{batch_type}|writes||{writes_time + precompute_time:.6f}\n")
+            reads_time = run_queries(query_variants, parameter_csvs, sf, results_file, timings_file, batch_date, batch_type, args)
+            timings_file.write(f"TigerGraph|{sf}|{batch_date}|{batch_type}|reads||{reads_time:.6f}\n")
 
             # checking if 1 hour (and a bit) has elapsed for the throughput batches
             if current_batch >= 2:

@@ -83,7 +83,7 @@ def run_query(session, query_num, query_variant, query_spec, query_parameters, t
     return (results, duration)
 
 
-def run_queries(query_variants, parameter_csvs, session, sf, batch_id, test, pgtuning, timings_file, results_file):
+def run_queries(query_variants, parameter_csvs, session, sf, batch_id, batch_type, test, pgtuning, timings_file, results_file):
     start = time.time()
 
     for query_variant in query_variants:
@@ -108,7 +108,7 @@ def run_queries(query_variants, parameter_csvs, session, sf, batch_id, test, pgt
 
             (results, duration) = run_query(session, query_num, query_variant, query_spec, query_parameters_converted, test)
 
-            timings_file.write(f"Neo4j|{sf}|{batch_id}|{query_variant}|{query_parameters_in_order}|{duration}\n")
+            timings_file.write(f"Neo4j|{sf}|{batch_id}|{batch_type}|{query_variant}|{query_parameters_in_order}|{duration}\n")
             timings_file.flush()
             results_file.write(f"{query_num}|{query_variant}|{query_parameters_in_order}|{results}\n")
             results_file.flush()
@@ -122,7 +122,7 @@ def run_queries(query_variants, parameter_csvs, session, sf, batch_id, test, pgt
     return time.time() - start
 
 
-def run_precomputations(sf, query_variants, session, timings_file):
+def run_precomputations(sf, query_variants, session, batch_date, batch_type, timings_file):
     if "19a" in query_variants or "19b" in query_variants:
         start = time.time()
         print("Creating graph (precomputing weights) for Q19")
@@ -130,7 +130,7 @@ def run_precomputations(sf, query_variants, session, timings_file):
         session.write_transaction(write_query_fun, open(f'queries/bi-19-create-graph.cypher', 'r').read())
         end = time.time()
         duration = end - start
-        timings_file.write(f"Neo4j|{sf}||q19precomputation||{duration}\n")
+        timings_file.write(f"Neo4j|{sf}|{batch_date}|{batch_type}|q19precomputation||{duration}\n")
 
     if "20a" in query_variants or "20b" in query_variants:
         start = time.time()
@@ -139,4 +139,4 @@ def run_precomputations(sf, query_variants, session, timings_file):
         session.write_transaction(write_query_fun, open(f'queries/bi-20-create-graph.cypher', 'r').read())
         end = time.time()
         duration = end - start
-        timings_file.write(f"Neo4j|{sf}||q20precomputation||{duration}\n")
+        timings_file.write(f"Neo4j|{sf}|{batch_date}|{batch_type}|q20precomputation||{duration}\n")

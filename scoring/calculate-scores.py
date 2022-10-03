@@ -14,11 +14,13 @@ throughput_min_time = args.throughput_min_time
 con = duckdb.connect("bi.duckdb")
 con.execute(f"""
     CREATE OR REPLACE TABLE load_time(time float);
+    CREATE OR REPLACE TABLE benchmark_time(time float);
     CREATE OR REPLACE TABLE timings(tool string, sf float, day string, q string, parameters string, time float);
     CREATE OR REPLACE TABLE power_test_individual(qid int, q string, time float);
 
-    COPY load_time FROM '{timings_dir}/load.csv'    (HEADER, DELIMITER '|');
-    COPY timings   FROM '{timings_dir}/timings.csv' (HEADER, DELIMITER '|');
+    COPY benchmark_time FROM '{timings_dir}/benchmark.csv' (HEADER, DELIMITER '|');
+    COPY load_time      FROM '{timings_dir}/load.csv'      (HEADER, DELIMITER '|');
+    COPY timings        FROM '{timings_dir}/timings.csv'   (HEADER, DELIMITER '|');
 
     INSERT INTO power_test_individual
         SELECT regexp_replace('0' || q, '\D','','g')::int AS qid, q, time
@@ -170,11 +172,21 @@ if s[0] == 0:
     print(f"throughput score: n/a (the throughput run was <{throughput_min_time}s)")
 else:
     con.execute("""
-        SELECT (24 - (SELECT time/3600 FROM load_time)) * (n_batches / (t_batches/3600)) AS throughput
-        FROM throughput_batches;
+        CREATE OR REPLACE TABLE throughput_score AS
+            SELECT (24 - (SELECT time/3600 FROM load_time)) * (n_batches / (t_batches/3600)) AS throughput
+            FROM throughput_batches;
         """)
+
+    con.execute("""SELECT throughput FROM throughput_score""")
     t = con.fetchone()[0];
     print(f"throughput score: {t:.02f}")
+
+    con.execute("""
+        CREATE OR REPLACE TABLE throughput_at_sf_score AS
+            SELECT (SELECT throughput FROM throughput_score)*(SELECT sf FROM timings LIMIT 1) AS throughput_at_sf
+        """)
+    con.execute("""SELECT throughput_at_sf FROM throughput_at_sf_score""")
+    t = con.fetchone()[0];
     print(f"throughput@SF score: {t*sf:.02f}")
 
 con.execute("""
@@ -183,3 +195,15 @@ con.execute("""
 tb = con.fetchone()
 print()
 print(f"total throughput batches executed: {tb[0]} batches in {tb[1]:.1f}s")
+
+con.execute(f"""
+    COPY
+        (SELECT
+            (SELECT time FROM benchmark_time)
+            (SELECT power FROM power_score),
+            (SELECT power_at_sf FROM power_at_sf_score),
+            (SELECT throughput FROM throughput_score),
+            (SELECT throughput_at_sf FROM throughput_at_sf_score),
+        )
+    TO 'summary-{tool}-sf{sf_string}.tex' (HEADER false, QUOTE '', DELIMITER ' & ');
+    """)

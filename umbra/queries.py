@@ -109,29 +109,29 @@ def run_query(pg_con, query_num, query_variant, query_spec, query_parameters, te
 
 param_dir_env = os.environ.get("UMBRA_PARAM_DIR")
 
-def run_precomputations(query_variants, pg_con, cur, batch_id, sf, timings_file):
+def run_precomputations(query_variants, pg_con, cur, batch_id, batch_type, sf, timings_file):
     if "4" in query_variants:
         start = time.time()
         run_script(pg_con, cur, "dml/precomp/bi-4.sql")
         end = time.time()
-        timings_file.write(f"Umbra|{sf}|{batch_id}|q4precomputation||{end-start}\n")
+        timings_file.write(f"Umbra|{sf}|{batch_id}|{batch_type}|q4precomputation||{end-start}\n")
     if "6" in query_variants:
         start = time.time()
         run_script(pg_con, cur, "dml/precomp/bi-6.sql")
         end = time.time()
-        timings_file.write(f"Umbra|{sf}|{batch_id}|q6precomputation||{end-start}\n")
+        timings_file.write(f"Umbra|{sf}|{batch_id}|{batch_type}|q6precomputation||{end-start}\n")
     if "19a" in query_variants or "19b" in query_variants:
         start = time.time()
         run_script(pg_con, cur, "dml/precomp/bi-19.sql")
         end = time.time()
-        timings_file.write(f"Umbra|{sf}|{batch_id}|q19precomputation||{end-start}\n")
+        timings_file.write(f"Umbra|{sf}|{batch_id}|{batch_type}|q19precomputation||{end-start}\n")
     if "20a" in query_variants or "20b" in query_variants:
         start = time.time()
         run_script(pg_con, cur, "dml/precomp/bi-20.sql")
         end = time.time()
-        timings_file.write(f"Umbra|{sf}|{batch_id}|q20precomputation||{end-start}\n")
+        timings_file.write(f"Umbra|{sf}|{batch_id}|{batch_type}|q20precomputation||{end-start}\n")
 
-def run_queries(query_variants, parameter_csvs, pg_con, sf, test, pgtuning, batch_id, timings_file, results_file):
+def run_queries(query_variants, parameter_csvs, pg_con, sf, test, pgtuning, batch_id, batch_type, timings_file, results_file):
     param_dir = param_dir_env
     if param_dir is None:
         param_dir = f"../parameters/parameters-sf{sf}"
@@ -159,7 +159,7 @@ def run_queries(query_variants, parameter_csvs, pg_con, sf, test, pgtuning, batc
 
             (results, duration) = run_query(pg_con, query_num, query_variant, query_spec, query_parameters_converted, test)
 
-            timings_file.write(f"Umbra|{sf}|{batch_id}|{query_variant}|{query_parameters_in_order}|{duration}\n")
+            timings_file.write(f"Umbra|{sf}|{batch_id}|{batch_type}|{query_variant}|{query_parameters_in_order}|{duration}\n")
             timings_file.flush()
             results_file.write(f"{query_num}|{query_variant}|{query_parameters_in_order}|{results}\n")
             results_file.flush()

@@ -122,7 +122,7 @@ if __name__ == '__main__':
     output = Path(f'output/output-sf{sf}/')
     output.mkdir(parents=True, exist_ok=True)
     timings_file = open(output/'timings.csv', 'w')
-    timings_file.write(f'tool|sf|day|q|parameters|time\n')
+    timings_file.write(f'tool|sf|day|batch_type|q|parameters|time\n')
     network_start_date = date(2012, 11, 29)
     network_end_date = date(2013, 1, 1)
     batch_date = network_start_date

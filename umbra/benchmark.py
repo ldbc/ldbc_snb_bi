@@ -16,7 +16,7 @@ def execute(cur, query):
 
 query_variants = ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "15a", "15b", "16a", "16b", "17", "18", "19a", "19b", "20a", "20b"]
 
-def run_batch_updates(pg_con, data_dir, batch_start_date, timings_file):
+def run_batch_updates(pg_con, data_dir, batch_start_date, batch_type, timings_file):
     # format date to yyyy-mm-dd
     batch_id = batch_start_date.strftime('%Y-%m-%d')
     batch_dir = f"batch_id={batch_id}"
@@ -67,13 +67,13 @@ def run_batch_updates(pg_con, data_dir, batch_start_date, timings_file):
     print()
 
     print("Apply precomp . . .")
-    run_precomputations(query_variants, pg_con, cur, batch_id, sf, timings_file)
+    run_precomputations(query_variants, pg_con, cur, batch_id, batch_type, sf, timings_file)
     print("Done.")
     print()
 
     end = time.time()
     duration = end - start
-    timings_file.write(f"Umbra|{sf}|{batch_id}|writes||{duration}\n")
+    timings_file.write(f"Umbra|{sf}|{batch_id}|{batch_type}|writes||{duration}\n")
 
 
 parser = argparse.ArgumentParser()
@@ -118,7 +118,7 @@ open(f"output/output-sf{sf}/results.csv", "w").close()
 open(f"output/output-sf{sf}/timings.csv", "w").close()
 
 timings_file = open(f"output/output-sf{sf}/timings.csv", "a")
-timings_file.write(f"tool|sf|day|q|parameters|time\n")
+timings_file.write(f"tool|sf|day|batch_type|q|parameters|time\n")
 results_file = open(f"output/output-sf{sf}/results.csv", "a")
 
 pg_con = psycopg2.connect(host="localhost", user="postgres", password="mysecretpassword", port=8000)
@@ -136,25 +136,25 @@ benchmark_start = time.time()
 run_script(pg_con, cur, f"ddl/schema-delete-candidates.sql")
 
 if queries_only:
-    run_queries(query_variants, parameter_csvs, pg_con, sf, test, pgtuning, batch_date, timings_file, results_file)
+    run_queries(query_variants, parameter_csvs, pg_con, sf, test, pgtuning, batch_date, "power", timings_file, results_file)
 else:
     # Run alternating write-read blocks.
     # The first write-read block is the power batch, while the rest are the throughput batches.
     current_batch = 1
     while batch_date < network_end_date and (not test or batch_date < test_end_date):
-        print()
-        print(f"----------------> Batch date: {batch_date} <---------------")
         if current_batch == 1:
-            print(f"Power batch")
+            batch_type = "power"
         else:
-            print(f"Throughput batch")
+            batch_type = "throughput"
+        print()
+        print(f"----------------> Batch date: {batch_date}, batch type: {batch_type} <---------------")
 
         if current_batch == 2:
             start = time.time()
 
-        run_batch_updates(pg_con, data_dir, batch_date, timings_file)
-        reads_time = run_queries(query_variants, parameter_csvs, pg_con, sf, test, pgtuning, batch_date, timings_file, results_file)
-        timings_file.write(f"Umbra|{sf}|{batch_date}|reads||{reads_time:.6f}\n")
+        run_batch_updates(pg_con, data_dir, batch_date, batch_type, timings_file)
+        reads_time = run_queries(query_variants, parameter_csvs, pg_con, sf, test, pgtuning, batch_date, batch_type, timings_file, results_file)
+        timings_file.write(f"Umbra|{sf}|{batch_date}|{batch_type}|reads||{reads_time:.6f}\n")
 
         # checking if 1 hour (and a bit) has elapsed for the throughput batches
         if current_batch >= 2:

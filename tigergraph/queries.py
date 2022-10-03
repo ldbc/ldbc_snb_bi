@@ -81,7 +81,7 @@ def run_query(endpoint, query_num, parameters):
     return json.dumps(result_tuples), duration
 
 
-def run_queries(query_variants, parameter_csvs, sf, results_file, timings_file, batch_date, args):
+def run_queries(query_variants, parameter_csvs, sf, results_file, timings_file, batch_date, batch_type, args):
     start = time.time()
     for query_variant in query_variants:
         print(f"========================= Q{query_variant} =========================")
@@ -104,7 +104,7 @@ def run_queries(query_variants, parameter_csvs, sf, results_file, timings_file, 
 
             results_file.write(f"{query_num}|{query_variant}|{query_parameters_in_order}|{results}\n")
             results_file.flush()
-            timings_file.write(f"TigerGraph|{sf}|{batch_date}|{query_variant}|{query_parameters_in_order}|{duration:.6f}\n")
+            timings_file.write(f"TigerGraph|{sf}|{batch_date}|{batch_type}|{query_variant}|{query_parameters_in_order}|{duration:.6f}\n")
             timings_file.flush()
 
             # - test run: 1 query
@@ -117,7 +117,7 @@ def run_queries(query_variants, parameter_csvs, sf, results_file, timings_file, 
 
     return time.time() - start
 
-def run_precompute(args, timings_file, sf, batch_id):
+def run_precompute(args, timings_file, sf, batch_id, batch_type):
     t0 = time.time()
     print(f"==================== Precompute for BI 19,4,6,20 ======================")
     # compute values and print to files
@@ -126,7 +126,7 @@ def run_precompute(args, timings_file, sf, batch_id):
         requests.get(f'{args.endpoint}/query/ldbc_snb/precompute_bi{q}', headers=HEADERS)
         duration = time.time()-t1
         print(f'precompute_bi{q}:\t\t{duration:.4f} s')
-        timings_file.write(f"TigerGraph|{sf}|{batch_id}|q{q}precomputation||{duration}\n")
+        timings_file.write(f"TigerGraph|{sf}|{batch_id}|{batch_type}|q{q}precomputation||{duration}\n")
 
     # precompute q19
     t1 = time.time()
