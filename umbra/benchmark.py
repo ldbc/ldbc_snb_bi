@@ -16,9 +16,8 @@ def execute(cur, query):
 
 query_variants = ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "15a", "15b", "16a", "16b", "17", "18", "19a", "19b", "20a", "20b"]
 
-def run_batch_updates(pg_con, data_dir, batch_start_date, batch_type, timings_file):
-    # format date to yyyy-mm-dd
-    batch_id = batch_start_date.strftime('%Y-%m-%d')
+def run_batch_updates(pg_con, data_dir, batch_date, batch_type, timings_file):
+    batch_id = batch_date.strftime('%Y-%m-%d')
     batch_dir = f"batch_id={batch_id}"
     print(f"#################### {batch_dir} ####################")
 
@@ -173,6 +172,7 @@ pg_con.close()
 benchmark_end = time.time()
 benchmark_duration = benchmark_end - benchmark_start
 benchmark_file = open(f"output/output-sf{sf}/benchmark.csv", "w")
+benchmark_file.write(f"time")
 benchmark_file.write(f"{benchmark_duration:.6f}")
 benchmark_file.close()
 

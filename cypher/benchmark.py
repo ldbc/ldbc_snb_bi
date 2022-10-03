@@ -22,9 +22,8 @@ def run_update(session, query_spec, batch, csv_file):
     return num_changes
 
 
-def run_batch_updates(session, data_dir, batch_start_date, insert_entities, delete_entities, insert_queries, delete_queries):
-    # format date to yyyy-mm-dd
-    batch_id = batch_start_date.strftime('%Y-%m-%d')
+def run_batch_updates(session, data_dir, batch_date, batch_type, insert_entities, delete_entities, insert_queries, delete_queries):
+    batch_id = batch_date.strftime('%Y-%m-%d')
     batch_dir = f"batch_id={batch_id}"
     print(f"#################### {batch_dir} ####################")
 
@@ -37,12 +36,7 @@ def run_batch_updates(session, data_dir, batch_start_date, insert_entities, dele
         print(f"{entity}:")
         for csv_file in [f for f in os.listdir(batch_path) if f.endswith('.csv') or f.endswith('.csv.gz')]:
             print(f"- {entity}/{batch_dir}/{csv_file}")
-            num_changes = run_update(session, insert_queries[entity], batch_dir, csv_file)
-            if num_changes == 0:
-                print("!!! No changes occured")
-            else:
-                print(f"> {num_changes} changes")
-            print()
+            run_update(session, insert_queries[entity], batch_dir, csv_file)
 
     print("## Deletes")
     for entity in delete_entities:
@@ -53,12 +47,7 @@ def run_batch_updates(session, data_dir, batch_start_date, insert_entities, dele
         print(f"{entity}:")
         for csv_file in [f for f in os.listdir(batch_path) if f.endswith('.csv') or f.endswith('.csv.gz')]:
             print(f"- {entity}/{batch_dir}/{csv_file}")
-            num_changes = run_update(session, delete_queries[entity], batch_dir, csv_file)
-            if num_changes == 0:
-                print("!!! No changes occured")
-            else:
-                print(f"> {num_changes} changes")
-            print()
+            run_update(session, delete_queries[entity], batch_dir, csv_file)
 
 
 if __name__ == '__main__':
@@ -144,7 +133,7 @@ if __name__ == '__main__':
                 start = time.time()
 
             run_batch_updates(session, data_dir, batch_date, batch_type, insert_entities, delete_entities, insert_queries, delete_queries)
-            run_precomputations(sf, query_variants, session, batch_type, timings_file)
+            run_precomputations(sf, query_variants, session, batch_date, batch_type, timings_file)
 
             reads_time = run_queries(query_variants, parameter_csvs, session, sf, batch_date, batch_type, test, pgtuning, timings_file, results_file)
             timings_file.write(f"Neo4j|{sf}|{batch_date}|{batch_type}|reads||{reads_time:.6f}\n")
@@ -163,6 +152,7 @@ if __name__ == '__main__':
     benchmark_end = time.time()
     benchmark_duration = benchmark_end - benchmark_start
     benchmark_file = open(f"output/output-sf{sf}/benchmark.csv", "w")
+    benchmark_file.write(f"time")
     benchmark_file.write(f"{benchmark_duration:.6f}")
     benchmark_file.close()
 
