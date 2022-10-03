@@ -172,8 +172,8 @@ pg_con.close()
 benchmark_end = time.time()
 benchmark_duration = benchmark_end - benchmark_start
 benchmark_file = open(f"output/output-sf{sf}/benchmark.csv", "w")
-benchmark_file.write(f"time")
-benchmark_file.write(f"{benchmark_duration:.6f}")
+benchmark_file.write(f"time\n")
+benchmark_file.write(f"{benchmark_duration:.6f}\n")
 benchmark_file.close()
 
 timings_file.close()
