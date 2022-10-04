@@ -84,7 +84,10 @@ def run_query(endpoint, query_num, parameters):
 def run_queries(query_variants, parameter_csvs, sf, results_file, timings_file, batch_date, batch_type, args):
     start = time.time()
     for query_variant in query_variants:
-        print(f"========================= Q{query_variant} =========================")
+        query_num = int(re.sub("[^0-9]", "", query_variant))
+        query_subvariant = re.sub("[^ab]", "", query_variant)
+
+        print(f"========================= Q {query_num:02d}{query_subvariant.rjust(1)} =========================")
         query_num = int(re.sub("[^0-9]", "", query_variant))
         parameters_csv = parameter_csvs[query_variant]
 
