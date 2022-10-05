@@ -2,7 +2,6 @@
 \set country1 '\'Chile\''
 \set country2 '\'Argentina\''
  */
--- TODO: maybe LATERAL joins could work for top-1 selection
 WITH PersonPairCandidates AS (
     SELECT Person1.id AS Person1Id
          , Person2.id AS Person2Id
