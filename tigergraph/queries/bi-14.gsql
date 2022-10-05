@@ -7,7 +7,8 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi14(STRING country1, STRING country2) SYNTA
   MinAccum<VERTEX<Person>> @person2;
   SetAccum<VERTEX<Person>> @knows, @p2s1, @p2s2, @p2s3, @p2s4;
   OrAccum @valid, @selected;
-  HeapAccum<pairScore>(1, score DESC, person1Id ASC, person2Id ASC) @cityresults, @@result;
+  HeapAccum<pairScore>(1, score DESC, person1Id ASC, person2Id ASC) @cityresults;
+  HeapAccum<pairScore>(100, score DESC, person1Id ASC, person2Id ASC) @@result;
   MinAccum<UINT> @min_pid2;
   
   P1candidate = SELECT p 
@@ -73,7 +74,6 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi14(STRING country1, STRING country2) SYNTA
         c1.@cityresults += pairScore(p1.id, p1.@min_pid2, c1.name, 0)
       END; 
   
-  @@result.resize(City1.size());
   City1 = SELECT c1 FROM City1:c1
     ACCUM @@result += c1.@cityresults.top();
   PRINT @@result as result;
