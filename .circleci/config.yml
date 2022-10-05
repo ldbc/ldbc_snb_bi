@@ -65,8 +65,13 @@ jobs:
             . scripts/use-sample-data-set.sh
             scripts/load-in-one-step.sh
             scripts/backup-database.sh
-            scripts/restore-database.sh
             scripts/queries.sh --test
+
+            # benchmark run in validation mode
+            scripts/benchmark.sh --validate
+
+            # benchmark run in test mode
+            scripts/restore-database.sh
             scripts/benchmark.sh --test
             scripts/stop.sh
             cd ..
@@ -78,9 +83,18 @@ jobs:
             export SF=0.003
             export NEO4J_CSV_DIR=`pwd`/social-network-sf${SF}-bi-composite-projected-fk-neo4j/graphs/csv/bi/composite-projected-fk/
             scripts/load-in-one-step.sh
+            scripts/backup-database.sh
             scripts/queries.sh --test
+
+            # benchmark run in validation mode
+            scripts/benchmark.sh --validate
+
+            # benchmark run in test mode
+            scripts/restore-database.sh
             scripts/benchmark.sh --test
             scripts/stop.sh
+
+            # cross-validate using the test mode results
             cd ..
             scripts/cross-validate.sh cypher umbra
             scripts/score-test.sh cypher ${SF}
@@ -92,10 +106,17 @@ jobs:
             . scripts/use-sample-data-set.sh
             scripts/load-in-one-step.sh
             scripts/backup-database.sh
-            scripts/restore-database.sh
             scripts/queries.sh --test
+
+            # benchmark run in validation mode
+            scripts/benchmark.sh --validate
+
+            # benchmark run in test mode
+            scripts/restore-database.sh
             scripts/benchmark.sh --test
             scripts/stop.sh
+
+            # cross-validate using the test mode results
             cd ..
             scripts/cross-validate.sh cypher umbra
             scripts/score-test.sh cypher ${SF}
@@ -107,8 +128,16 @@ jobs:
             . scripts/configure-data-set.sh
             scripts/load-in-one-step.sh
             scripts/queries.sh --test
+
+            # benchmark run in validation mode
+            scripts/benchmark.sh --validate
+
+            # benchmark run in test mode
+            scripts/restore-database.sh
             scripts/benchmark.sh --test
             scripts/stop.sh
+
+            # cross-validate using the test mode results
             cd ..
             scripts/cross-validate.sh tigergraph umbra
             scripts/score-test.sh tigergraph ${SF}
