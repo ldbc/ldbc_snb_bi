@@ -60,6 +60,7 @@ if __name__ == '__main__':
     parser.add_argument('--scale_factor', type=str, help='Scale factor', required=True)
     parser.add_argument('--data_dir', type=str, help='Directory with the initial_snapshot, insert, and delete directories', required=True)
     parser.add_argument('--test', action='store_true', help='Test execution: 1 query/batch', required=False)
+    parser.add_argument('--validate', action='store_true', help='Validation mode', required=False)
     parser.add_argument('--pgtuning', action='store_true', help='Paramgen tuning execution: 100 queries/batch', required=False)
     parser.add_argument('--queries', action='store_true', help='Only run queries', required=False)
     args = parser.parse_args()
@@ -68,6 +69,7 @@ if __name__ == '__main__':
     pgtuning = args.pgtuning
     data_dir = args.data_dir 
     queries_only = args.queries
+    validate = args.validate
 
     print(f"- Input data directory: {data_dir}")
 
@@ -107,6 +109,7 @@ if __name__ == '__main__':
 
     network_start_date = datetime.date(2012, 11, 29)
     network_end_date = datetime.date(2013, 1, 1)
+    test_end_date = datetime.date(2012, 12, 2)
     batch_size = relativedelta(days=1)
     batch_date = network_start_date
 
@@ -121,7 +124,9 @@ if __name__ == '__main__':
         # The first write-read block is the power batch, while the rest are the throughput batches.
 
         current_batch = 1
-        while batch_date < network_end_date and (not test or batch_date < datetime.date(2012, 12, 2)):
+        while batch_date < network_end_date and \
+            (not test or batch_date < test_end_date) and\
+            (not validate or batch_date == network_start_date):
             if current_batch == 1:
                 batch_type = "power"
             else:
