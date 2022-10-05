@@ -133,7 +133,7 @@ jobs:
             scripts/benchmark.sh --validate
 
             # benchmark run in test mode
-            scripts/restore-database.sh
+            scripts/load-in-one-step.sh # doing a full load instead of validation
             scripts/benchmark.sh --test
             scripts/stop.sh
 
