@@ -122,7 +122,7 @@ def run_queries(query_variants, parameter_csvs, sf, results_file, timings_file, 
 
 def run_precompute(args, timings_file, sf, batch_id, batch_type):
     t0 = time.time()
-    print(f"==================== Precompute for BI 19,4,6,20 ======================")
+    print(f"==================== Precompute for BI 4, 6, 19, 20 ======================")
     # compute values and print to files
     for q in [4,6,20]:
         t1 = time.time()
