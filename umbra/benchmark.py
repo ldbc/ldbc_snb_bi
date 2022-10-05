@@ -2,29 +2,22 @@ import csv
 import datetime
 from dateutil.relativedelta import relativedelta
 import os
-import re
 import psycopg2
 import time
-import sys
 from queries import run_script, run_queries, run_precomputations
 from pathlib import Path
 from itertools import cycle
+import argparse
 
-# Usage: benchmark.py [--test|--pgtuning]
 
 def execute(cur, query):
-    #start = time.time()
     cur.execute(query)
-    #end = time.time()
-    #if end - start >= 0.100:
-    #    print(f"Duration: {end - start}:\n{query}")
 
 
 query_variants = ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "15a", "15b", "16a", "16b", "17", "18", "19a", "19b", "20a", "20b"]
 
-def run_batch_updates(pg_con, data_dir, batch_start_date, timings_file):
-    # format date to yyyy-mm-dd
-    batch_id = batch_start_date.strftime('%Y-%m-%d')
+def run_batch_updates(pg_con, data_dir, batch_date, batch_type, timings_file):
+    batch_id = batch_date.strftime('%Y-%m-%d')
     batch_dir = f"batch_id={batch_id}"
     print(f"#################### {batch_dir} ####################")
 
@@ -73,34 +66,29 @@ def run_batch_updates(pg_con, data_dir, batch_start_date, timings_file):
     print()
 
     print("Apply precomp . . .")
-    run_precomputations(query_variants, pg_con, cur, batch_id, sf, timings_file)
+    run_precomputations(query_variants, pg_con, cur, batch_id, batch_type, sf, timings_file)
     print("Done.")
     print()
 
     end = time.time()
     duration = end - start
-    timings_file.write(f"Umbra|{sf}|{batch_id}|writes||{duration}\n")
+    timings_file.write(f"Umbra|{sf}|{batch_id}|{batch_type}|writes||{duration}\n")
 
 
-sf = os.environ.get("SF")
-if sf is None:
-    print("${SF} environment variable must be set")
-    exit(1)
-test = False
-pgtuning = False
-local = False
-for arg in sys.argv[1:]:
-    if arg == "--test":
-        test = True
-    if arg == "--pgtuning":
-        pgtuning = True
-    if arg == "--local":
-        local = True
-
-data_dir = os.environ.get("UMBRA_CSV_DIR")
-if data_dir is None:
-    print("${UMBRA_CSV_DIR} environment variable must be set")
-    exit(1)
+parser = argparse.ArgumentParser()
+parser.add_argument('--scale_factor', type=str, help='Scale factor', required=True)
+parser.add_argument('--test', action='store_true', help='Test execution: 1 query/batch', required=False)
+parser.add_argument('--pgtuning', action='store_true', help='Paramgen tuning execution: 100 queries/batch', required=False)
+parser.add_argument('--local', action='store_true', help='Local run (outside of a container)', required=False)
+parser.add_argument('--data_dir', type=str, help='Directory with the initial_snapshot, insert, and delete directories', required=True)
+parser.add_argument('--queries', action='store_true', help='Only run queries', required=False)
+args = parser.parse_args()
+sf = args.scale_factor
+test = args.test
+pgtuning = args.pgtuning
+local = args.local
+data_dir = args.data_dir
+queries_only = args.queries
 
 if local:
     dbs_data_dir = data_dir
@@ -123,21 +111,18 @@ delete_nodes = ["Comment", "Post", "Forum", "Person"]
 delete_edges = ["Forum_hasMember_Person", "Person_knows_Person", "Person_likes_Comment", "Person_likes_Post"]
 delete_entities = delete_nodes + delete_edges
 
-output = Path(f'output/output-sf{sf}')
+output = Path(f"output/output-sf{sf}")
 output.mkdir(parents=True, exist_ok=True)
 open(f"output/output-sf{sf}/results.csv", "w").close()
 open(f"output/output-sf{sf}/timings.csv", "w").close()
 
 timings_file = open(f"output/output-sf{sf}/timings.csv", "a")
-timings_file.write(f"tool|sf|day|q|parameters|time\n")
+timings_file.write(f"tool|sf|day|batch_type|q|parameters|time\n")
 results_file = open(f"output/output-sf{sf}/results.csv", "a")
 
 pg_con = psycopg2.connect(host="localhost", user="postgres", password="mysecretpassword", port=8000)
 pg_con.autocommit = True
 cur = pg_con.cursor()
-
-run_script(pg_con, cur, f"ddl/schema-delete-candidates.sql");
-
 
 network_start_date = datetime.date(2012, 11, 29)
 network_end_date = datetime.date(2013, 1, 1)
@@ -145,20 +130,51 @@ test_end_date = datetime.date(2012, 12, 2)
 batch_size = relativedelta(days=1)
 batch_date = network_start_date
 
-if pgtuning:
-    run_queries(query_variants, parameter_csvs, pg_con, sf, test, pgtuning, batch_date, timings_file, results_file)
+benchmark_start = time.time()
+
+run_script(pg_con, cur, f"ddl/schema-delete-candidates.sql")
+
+if queries_only:
+    run_queries(query_variants, parameter_csvs, pg_con, sf, test, pgtuning, batch_date, "power", timings_file, results_file)
 else:
     # Run alternating write-read blocks.
     # The first write-read block is the power batch, while the rest are the throughput batches.
+    current_batch = 1
     while batch_date < network_end_date and (not test or batch_date < test_end_date):
-        run_batch_updates(pg_con, data_dir, batch_date, timings_file)
-        reads_time = run_queries(query_variants, parameter_csvs, pg_con, sf, test, pgtuning, batch_date, timings_file, results_file)
-        timings_file.write(f"Umbra|{sf}|{batch_date}|reads||{reads_time:.6f}\n")
+        if current_batch == 1:
+            batch_type = "power"
+        else:
+            batch_type = "throughput"
+        print()
+        print(f"----------------> Batch date: {batch_date}, batch type: {batch_type} <---------------")
 
+        if current_batch == 2:
+            start = time.time()
+
+        run_batch_updates(pg_con, data_dir, batch_date, batch_type, timings_file)
+        reads_time = run_queries(query_variants, parameter_csvs, pg_con, sf, test, pgtuning, batch_date, batch_type, timings_file, results_file)
+        timings_file.write(f"Umbra|{sf}|{batch_date}|{batch_type}|reads||{reads_time:.6f}\n")
+
+        # checking if 1 hour (and a bit) has elapsed for the throughput batches
+        if current_batch >= 2:
+            end = time.time()
+            duration = end - start
+            if duration > 3605:
+                print("1h elapsed for the throughput batches, stopping the benchmark")
+                break
+
+        current_batch = current_batch + 1
         batch_date = batch_date + batch_size
-
-timings_file.close()
-results_file.close()
 
 cur.close()
 pg_con.close()
+
+benchmark_end = time.time()
+benchmark_duration = benchmark_end - benchmark_start
+benchmark_file = open(f"output/output-sf{sf}/benchmark.csv", "w")
+benchmark_file.write(f"time\n")
+benchmark_file.write(f"{benchmark_duration:.6f}\n")
+benchmark_file.close()
+
+timings_file.close()
+results_file.close()

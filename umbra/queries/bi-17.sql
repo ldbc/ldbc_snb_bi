@@ -15,7 +15,7 @@ FROM MyMessage Message1
 JOIN MyMessage Message2
  ON (Message1.creationDate + ':delta hour'::interval) < Message2.creationDate
 JOIN MyMessage Comment
- ON coalesce(Comment.ParentPostId, Comment.ParentCommentId) = Message2.MessageId
+ ON Comment.ParentMessageId = Message2.MessageId
 -- (forum1)-[:Has_MEMBER]->(person2)
 JOIN Forum_hasMember_Person Forum_hasMember_Person2
   ON Forum_hasMember_Person2.ForumId = Message1.ContainerForumId -- forum1

@@ -1,38 +1,11 @@
-import neo4j
 import datetime
 import time
-import csv
-import os
 import re
-import sys
 import json
-from pathlib import Path
-from itertools import cycle
+import sys
+sys.path.append('../common')
+from result_mapping import result_mapping
 
-# Usage: queries.py [--test]
-
-result_mapping = {
-     1: [{"name": "year", "type": "INT32"}, {"name": "isComment", "type": "BOOL"}, {"name": "lengthCategory", "type": "INT32"}, {"name": "messageCount", "type": "INT32"}, {"name": "averageMessageLength", "type": "FLOAT32"}, {"name": "sumMessageLength", "type": "INT32"}, {"name": "percentageOfMessages", "type": "FLOAT32"}],
-     2: [{"name": "tag.name", "type": "STRING"}, {"name": "countWindow1", "type": "INT32"}, {"name": "countWindow2", "type": "INT32"}, {"name": "diff", "type": "INT32"}],
-     3: [{"name": "forum.id", "type": "ID"}, {"name": "forum.title", "type": "STRING"}, {"name": "forum.creationDate", "type": "DATETIME"}, {"name": "person.id", "type": "ID"}, {"name": "messageCount", "type": "INT32"}],
-     4: [{"name": "person.id", "type": "ID"}, {"name": "person.firstName", "type": "STRING"}, {"name": "person.lastName", "type": "STRING"}, {"name": "person.creationDate", "type": "DATETIME"}, {"name": "messageCount", "type": "INT32"}],
-     5: [{"name": "person.id", "type": "ID"}, {"name": "replyCount", "type": "INT32"}, {"name": "likeCount", "type": "INT32"}, {"name": "messageCount", "type": "INT32"}, {"name": "score", "type": "INT32"}],
-     6: [{"name": "person1.id", "type": "ID"}, {"name": "authorityScore", "type": "INT32"}],
-     7: [{"name": "relatedTag.name", "type": "STRING"}, {"name": "count", "type": "INT32"}],
-     8: [{"name": "person.id", "type": "ID"}, {"name": "score", "type": "INT32"}, {"name": "friendsScore", "type": "INT32"}],
-     9: [{"name": "person.id", "type": "ID"}, {"name": "person.firstName", "type": "STRING"}, {"name": "person.lastName", "type": "STRING"}, {"name": "threadCount", "type": "INT32"}, {"name": "messageCount", "type": "INT32"}],
-    10: [{"name": "expertCandidatePerson.id", "type": "ID"}, {"name": "tag.name", "type": "STRING"}, {"name": "messageCount", "type": "INT32"}],
-    11: [{"name": "count", "type": "INT64"}],
-    12: [{"name": "messageCount", "type": "INT32"}, {"name": "personCount", "type": "INT32"}],
-    13: [{"name": "zombie.id", "type": "ID"}, {"name": "zombieLikeCount", "type": "INT32"}, {"name": "totalLikeCount", "type": "INT32"}, {"name": "zombieScore", "type": "FLOAT32"}],
-    14: [{"name": "person1.id", "type": "ID"}, {"name": "person2.id", "type": "ID"}, {"name": "city1.name", "type": "STRING"}, {"name": "score", "type": "INT32"}],
-    15: [{"name": "weight", "type": "FLOAT32"}],
-    16: [{"name": "person.id", "type": "ID"}, {"name": "messageCountA", "type": "INT32"}, {"name": "messageCountB", "type": "INT32"}],
-    17: [{"name": "person1.id", "type": "ID"}, {"name": "messageCount", "type": "INT32"}],
-    18: [{"name": "person1.id", "type": "ID"}, {"name": "person2.id", "type": "ID"}, {"name": "mutualFriendCount", "type": "INT32"}],
-    19: [{"name": "person1.id", "type": "ID"}, {"name": "person2.id", "type": "ID"}, {"name": "totalWeight", "type": "FLOAT32"}],
-    20: [{"name": "person1.id", "type": "ID"}, {"name": "totalWeight", "type": "INT64"}],
-}
 
 def convert_value_to_string(value, result_type, input):
     if result_type == "ID[]" or result_type == "INT[]" or result_type == "INT32[]" or result_type == "INT64[]":
@@ -110,7 +83,7 @@ def run_query(session, query_num, query_variant, query_spec, query_parameters, t
     return (results, duration)
 
 
-def run_queries(query_variants, parameter_csvs, session, sf, batch_id, test, pgtuning, timings_file, results_file):
+def run_queries(query_variants, parameter_csvs, session, sf, batch_id, batch_type, test, pgtuning, timings_file, results_file):
     start = time.time()
 
     for query_variant in query_variants:
@@ -135,21 +108,21 @@ def run_queries(query_variants, parameter_csvs, session, sf, batch_id, test, pgt
 
             (results, duration) = run_query(session, query_num, query_variant, query_spec, query_parameters_converted, test)
 
-            timings_file.write(f"Neo4j|{sf}|{batch_id}|{query_variant}|{query_parameters_in_order}|{duration}\n")
+            timings_file.write(f"Neo4j|{sf}|{batch_id}|{batch_type}|{query_variant}|{query_parameters_in_order}|{duration}\n")
             timings_file.flush()
             results_file.write(f"{query_num}|{query_variant}|{query_parameters_in_order}|{results}\n")
             results_file.flush()
 
             # - test run: 1 query
-            # - regular run: 10 queries
-            # - paramgen tuning: 50 queries
-            if (test) or (not pgtuning and i == 10) or (pgtuning and i == 100):
+            # - regular run: 30 queries
+            # - paramgen tuning: 100 queries
+            if (test) or (not pgtuning and i == 30) or (pgtuning and i == 100):
                 break
 
     return time.time() - start
 
 
-def run_precomputations(sf, query_variants, session, timings_file):
+def run_precomputations(sf, query_variants, session, batch_date, batch_type, timings_file):
     if "19a" in query_variants or "19b" in query_variants:
         start = time.time()
         print("Creating graph (precomputing weights) for Q19")
@@ -157,7 +130,7 @@ def run_precomputations(sf, query_variants, session, timings_file):
         session.write_transaction(write_query_fun, open(f'queries/bi-19-create-graph.cypher', 'r').read())
         end = time.time()
         duration = end - start
-        timings_file.write(f"Neo4j|{sf}||q19precomputation||{duration}\n")
+        timings_file.write(f"Neo4j|{sf}|{batch_date}|{batch_type}|q19precomputation||{duration}\n")
 
     if "20a" in query_variants or "20b" in query_variants:
         start = time.time()
@@ -166,48 +139,4 @@ def run_precomputations(sf, query_variants, session, timings_file):
         session.write_transaction(write_query_fun, open(f'queries/bi-20-create-graph.cypher', 'r').read())
         end = time.time()
         duration = end - start
-        timings_file.write(f"Neo4j|{sf}||q20precomputation||{duration}\n")
-
-
-if __name__ == '__main__':
-    sf = os.environ.get("SF")
-    if sf is None:
-        print("${SF} environment variable must be set")
-        exit(1)
-    test = False
-    pgtuning = False
-    if len(sys.argv) > 1:
-        if sys.argv[1] == "--test":
-            test = True
-        if sys.argv[1] == "--pgtuning":
-            pgtuning = True
-
-    query_variants = ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9", "10a", "10b", "11", "12", "13", "14a", "14b", "15a", "15b", "16a", "16b", "17", "18", "19a", "19b", "20a", "20b"]
-
-    parameter_csvs = {}
-    for query_variant in query_variants:
-        # wrap parameters into infinite loop iterator
-        parameter_csvs[query_variant] = cycle(csv.DictReader(open(f'../parameters/parameters-sf{sf}/bi-{query_variant}.csv'), delimiter='|'))
-
-    driver = neo4j.GraphDatabase.driver("bolt://localhost:7687")
-    session = driver.session()
-
-    output = Path(f'output/output-sf{sf}')
-    output.mkdir(parents=True, exist_ok=True)
-    open(f"output/output-sf{sf}/results.csv", "w").close()
-    open(f"output/output-sf{sf}/timings.csv", "w").close()
-
-    results_file = open(f"output/output-sf{sf}/results.csv", "a")
-    timings_file = open(f"output/output-sf{sf}/timings.csv", "a")
-    timings_file.write(f"tool|sf|day|q|parameters|time\n")
-
-    run_precomputations(sf, query_variants, session, timings_file)
-
-    reads_time = run_queries(query_variants, parameter_csvs, session, sf, "", test, pgtuning, timings_file, results_file)
-    timings_file.write(f"Neo4j|{sf}||reads||{reads_time:.6f}\n")
-
-    results_file.close()
-    timings_file.close()
-
-    session.close()
-    driver.close()
+        timings_file.write(f"Neo4j|{sf}|{batch_date}|{batch_type}|q20precomputation||{duration}\n")

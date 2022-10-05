@@ -23,8 +23,8 @@ WITH
 )
 SELECT messageYear, isComment, lengthCategory
      , count(*) AS messageCount
-     , avg(length) AS averageMessageLength
-     , sum(length) AS sumMessageLength
+     , avg(length::bigint) AS averageMessageLength
+     , sum(length::bigint) AS sumMessageLength
      , count(*) / mc.cnt AS percentageOfMessages
   FROM message_prep
      , message_count mc

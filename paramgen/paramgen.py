@@ -30,6 +30,13 @@ for entity in ["personDays", "personKnowsPersonDays", "personStudyAtUniversityDa
               AND deletionDay > TIMESTAMP '2013-01-01'
         """)
 
+# insert knows edges backwards
+con.execute(f"""
+    INSERT INTO personKnowsPersonDays_window
+        SELECT Person2Id, Person1Id
+        FROM personKnowsPersonDays_window
+    """)
+
 print()
 print("============ Creating materialized views ============")
 # d: drop

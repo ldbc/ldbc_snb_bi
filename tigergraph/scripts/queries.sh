@@ -13,4 +13,4 @@ if [ ! -d "${TG_PARAMETER}" ]; then
     exit 1
 fi
 
-python3 -u queries.py --para ${TG_PARAMETER} --endpoint ${TG_ENDPOINT} $@
+python3 -u benchmark.py --queries --scale_factor ${SF} --data_dir ${TG_DATA_DIR} --para ${TG_PARAMETER} --endpoint ${TG_ENDPOINT} $@

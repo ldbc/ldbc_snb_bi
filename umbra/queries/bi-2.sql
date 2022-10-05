@@ -12,8 +12,8 @@ SELECT Tag.id AS id, Tag.name AS name
 ),
 detail AS (
 SELECT t.id as TagId
-     , count(DISTINCT CASE WHEN Message.creationDate <  :date + INTERVAL '100 days' THEN Message.MessageId ELSE NULL END) AS countMonth1
-     , count(DISTINCT CASE WHEN Message.creationDate >= :date + INTERVAL '100 days' THEN Message.MessageId ELSE NULL END) AS countMonth2
+     , count(CASE WHEN Message.creationDate <  :date + INTERVAL '100 days' THEN Message.MessageId ELSE NULL END) AS countMonth1
+     , count(CASE WHEN Message.creationDate >= :date + INTERVAL '100 days' THEN Message.MessageId ELSE NULL END) AS countMonth2
   FROM MyTag t
   JOIN Message_hasTag_Tag
          ON Message_hasTag_tag.TagId = t.id

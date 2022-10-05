@@ -20,4 +20,4 @@ echo "UMBRA_DOCKER_IMAGE: ${UMBRA_DOCKER_IMAGE}"
 echo "UMBRA_CSV_DIR: ${UMBRA_CSV_DIR}"
 echo "==============================================================================="
 
-timeout 2h python3 benchmark.py $@
+python3 benchmark.py --scale_factor ${SF} --data_dir ${UMBRA_CSV_DIR} $@

@@ -13,4 +13,4 @@ fi
 
 . scripts/vars.sh
 
-timeout 2h python3 benchmark.py $@
+python3 benchmark.py --scale_factor ${SF} --data_dir ${NEO4J_CSV_DIR} $@

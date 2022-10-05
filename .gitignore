@@ -32,4 +32,4 @@ parameters-sf*/
 parameters-sf*.*
 
 __pycache__/
-*.duckdb
+*.bkp
