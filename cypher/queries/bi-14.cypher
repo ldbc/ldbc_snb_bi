@@ -41,3 +41,4 @@ ORDER BY
   top.score DESC,
   top.person1.id ASC,
   top.person2.id ASC
+LIMIT 100
