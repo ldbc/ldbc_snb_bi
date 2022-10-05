@@ -51,7 +51,7 @@ WITH PersonPairCandidates AS (
       LEFT JOIN pair_scoresX s
              ON s.Person1Id = PersonPairCandidates.Person1Id
             AND s.person2Id = PersonPairCandidates.Person2Id
-      ORDER BY cityId, s.score DESC
+      ORDER BY cityId, s.score DESC, PersonPairCandidates.Person1Id, PersonPairCandidates.Person2Id
 )
 SELECT score_ranks.Person1Id AS "person1.id"
      , score_ranks.Person2Id AS "person2.id"
