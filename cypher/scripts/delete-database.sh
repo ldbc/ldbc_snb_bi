@@ -8,4 +8,4 @@ cd ..
 
 . scripts/vars.sh
 
-rm -rf ${NEO4J_DATA_DIR}
+rm -rf scratch/{data,import,logs,plugins}
