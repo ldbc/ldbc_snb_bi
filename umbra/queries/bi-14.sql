@@ -58,4 +58,5 @@ SELECT score_ranks.Person1Id AS "person1.id"
      , score_ranks.score
   FROM score_ranks
  ORDER BY score_ranks.score DESC, score_ranks.Person1Id, score_ranks.Person2Id
+ LIMIT 100
 ;

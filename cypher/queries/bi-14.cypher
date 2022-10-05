@@ -38,3 +38,4 @@ ORDER BY
   top.score DESC,
   top.person1Id ASC,
   top.person2Id ASC
+LIMIT 100
