@@ -28,17 +28,14 @@ ORDER BY
   score DESC,
   person1.id ASC,
   person2.id ASC
-WITH
-  city1,
-  // using a list might be faster, but the browser query editor does not like it
-  collect({score: score, person1: person1, person2: person2})[0] AS top
+WITH city1, collect({score: score, person1Id: person1.id, person2Id: person2.id})[0] AS top
 RETURN
-  top.person1.id,
-  top.person2.id,
+  top.person1Id,
+  top.person2Id,
   city1.name,
   top.score
 ORDER BY
   top.score DESC,
-  top.person1.id ASC,
-  top.person2.id ASC
+  top.person1Id ASC,
+  top.person2Id ASC
 LIMIT 100

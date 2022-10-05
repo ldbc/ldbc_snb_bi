@@ -2,7 +2,6 @@
 \set country1 '\'Chile\''
 \set country2 '\'Argentina\''
  */
--- TODO: maybe LATERAL joins could work for top-1 selection
 WITH PersonPairCandidates AS (
     SELECT Person1.id AS Person1Id
          , Person2.id AS Person2Id
@@ -51,7 +50,7 @@ WITH PersonPairCandidates AS (
       LEFT JOIN pair_scoresX s
              ON s.Person1Id = PersonPairCandidates.Person1Id
             AND s.person2Id = PersonPairCandidates.Person2Id
-      ORDER BY cityId, s.score DESC
+      ORDER BY cityId, s.score DESC, PersonPairCandidates.Person1Id, PersonPairCandidates.Person2Id
 )
 SELECT score_ranks.Person1Id AS "person1.id"
      , score_ranks.Person2Id AS "person2.id"
