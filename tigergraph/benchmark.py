@@ -14,9 +14,10 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='LDBC TigerGraph BI workload Benchmark')
     parser.add_argument('--scale_factor', type=str, help='Scale factor', required=True)
     parser.add_argument('--data_dir', type=Path, help='The directory to load data from')
-    parser.add_argument('--cluster', action='store_true', help='load concurrently on cluster')
+    parser.add_argument('--cluster', action='store_true', help='Load concurrently on cluster')
     parser.add_argument('--para', type=Path, default=Path('../parameters'), help='parameter folder')
-    parser.add_argument('--test', action='store_true', help='test mode only run one time')
+    parser.add_argument('--test', action='store_true', help='Test mode only run one time')
+    parser.add_argument('--validate', action='store_true', help='Validation mode', required=False)
     parser.add_argument('--nruns', '-n', type=int, default=30, help='number of runs')
     parser.add_argument('--endpoint', type=str, default = 'http://127.0.0.1:9000', help='tigergraph rest port')
     parser.add_argument('--queries', action='store_true', help='Only run queries', required=False)
@@ -38,12 +39,12 @@ if __name__ == '__main__':
         parameter_csvs[query_variant] = cycle(csv.DictReader(open(f'../parameters/parameters-sf{sf}/bi-{query_variant}.csv'), delimiter='|'))
 
     query_nums = [int(re.sub("[^0-9]", "", query_variant)) for query_variant in query_variants]
-    start_date = date(2012, 11, 29)
-    end_date = date(2013, 1, 1)
+    network_start_date = date(2012, 11, 29)
+    network_end_date = date(2013, 1, 1)
     test_end_date = date(2012, 12, 2)
     batch_size = timedelta(days=1)
     needClean = False
-    batch_date = start_date
+    batch_date = network_start_date
 
     benchmark_start = time.time()
     if queries_only:
@@ -52,7 +53,9 @@ if __name__ == '__main__':
         run_queries(query_variants, parameter_csvs, sf, results_file, timings_file, batch_date, batch_type, args)
     else:
         current_batch = 1
-        while batch_date < end_date and (not args.test or batch_date < test_end_date):
+        while batch_date < network_end_date and \
+          (not args.test or batch_date < test_end_date) and\
+          (not args.validate or batch_date == network_start_date):
             if current_batch == 1:
                 batch_type = "power"
             else:

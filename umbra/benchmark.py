@@ -78,6 +78,7 @@ def run_batch_updates(pg_con, data_dir, batch_date, batch_type, timings_file):
 parser = argparse.ArgumentParser()
 parser.add_argument('--scale_factor', type=str, help='Scale factor', required=True)
 parser.add_argument('--test', action='store_true', help='Test execution: 1 query/batch', required=False)
+parser.add_argument('--validate', action='store_true', help='Validation mode', required=False)
 parser.add_argument('--pgtuning', action='store_true', help='Paramgen tuning execution: 100 queries/batch', required=False)
 parser.add_argument('--local', action='store_true', help='Local run (outside of a container)', required=False)
 parser.add_argument('--data_dir', type=str, help='Directory with the initial_snapshot, insert, and delete directories', required=True)
@@ -89,6 +90,7 @@ pgtuning = args.pgtuning
 local = args.local
 data_dir = args.data_dir
 queries_only = args.queries
+validate = args.validate
 
 if local:
     dbs_data_dir = data_dir
@@ -140,7 +142,9 @@ else:
     # Run alternating write-read blocks.
     # The first write-read block is the power batch, while the rest are the throughput batches.
     current_batch = 1
-    while batch_date < network_end_date and (not test or batch_date < test_end_date):
+    while batch_date < network_end_date and \
+          (not test or batch_date < test_end_date) and\
+          (not validate or batch_date == network_start_date):
         if current_batch == 1:
             batch_type = "power"
         else:
