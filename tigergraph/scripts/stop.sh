@@ -8,7 +8,7 @@ cd ..
 
 . scripts/vars.sh
 
-echo "Stopping TG container ${TG_CONTAINER_NAME} ..."
+echo -n "Stopping TG container ${TG_CONTAINER_NAME} ..."
 (docker ps -a --format {{.Names}} | grep --quiet --word-regexp ${TG_CONTAINER_NAME}) && docker stop ${TG_CONTAINER_NAME} >/dev/null
 echo " Stopped."
 
