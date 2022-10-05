@@ -9,7 +9,7 @@ WITH MyMessage as (
     WHERE MessageId in (SELECT MessageId FROM Message_hasTag_Tag WHERE TagId IN (SELECT id FROM Tag WHERE Tag.name = :tag))
 )
 -- (message1)-[:HAS_CREATOR]->(person1)
-SELECT Message1.CreatorPersonId AS "person1.id", count(Message2.MessageId) AS messageCount
+SELECT Message1.CreatorPersonId AS "person1.id", count(DISTINCT Message2.MessageId) AS messageCount
 FROM MyMessage Message1
 -- (message2 <date filtering>})
 JOIN MyMessage Message2
