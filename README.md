@@ -4,7 +4,7 @@
 
 [![Build Status](https://circleci.com/gh/ldbc/ldbc_snb_bi.svg?style=svg)](https://circleci.com/gh/ldbc/ldbc_snb_bi)
 
-Implementations for the BI workload of the [LDBC Social Network Benchmark](https://ldbcouncil.org/ldbc_snb_docs/).
+Implementations for the BI workload of the [LDBC Social Network Benchmark](https://ldbcouncil.org/ldbc_snb_docs/ldbc-snb-specification.pdf).
 
 To get started with the LDBC SNB benchmarks, check out our introductory presentation: [The LDBC Social Network Benchmark](https://docs.google.com/presentation/d/1p-nuHarSOKCldZ9iEz__6_V3sJ5kbGWlzZHusudW_Cc/) ([PDF](https://ldbcouncil.org/docs/presentations/ldbc-snb-2021-12.pdf)).
 
@@ -14,9 +14,9 @@ To get started with the LDBC SNB benchmarks, check out our introductory presenta
 
 The repository contains the following implementations:
 
-* [`cypher`](cypher/): queries are expressed in the [Cypher language](https://neo4j.com/developer/cypher/) and run in the [Neo4j graph database management system](https://dbdb.io/db/neo4j)
-* [`umbra`](umbra/): queries are expressed in SQL and run in [Umbra JIT-compiled columnar relational database management system](https://dbdb.io/db/umbra).
-* [`tigergraph`](tigergraph/): queries are expressed in the [GSQL language](https://www.tigergraph.com/gsql/) and run in the [TigerGraph graph database management system](https://tigergraph.com/)
+* [`cypher`](cypher/): an implementation using the [Neo4j graph database management system](https://dbdb.io/db/neo4j) with queries expressed in the [Cypher language](https://neo4j.com/developer/cypher/)
+* [`umbra`](umbra/): an implementation using the [Umbra JIT-compiled columnar relational database management system](https://dbdb.io/db/umbra) with expressed in SQL queries written in the PostgreSQL dialect
+* [`tigergraph`](tigergraph/): an implementation using the [TigerGraph graph database management system](https://dbdb.io/db/tigergraph) with queries expressed in the [GSQL language](https://www.tigergraph.com/gsql/)
 
 All implementations use Docker containers for ease of setup and execution. However, the setups can be adjusted to use a non-containerized DBMS.
 
@@ -24,9 +24,9 @@ All implementations use Docker containers for ease of setup and execution. Howev
 
 Running an SNB BI experiment requires the following steps.
 
-1. Pick a tool, e.g. [Umbra](umbra/). Make sure you have the required binaries and licenses available.
+1. Pick a system, e.g. [Umbra](umbra/). Make sure you have the required binaries and licenses available.
 
-1. Generate the data sets using the [SNB Datagen](https://github.com/ldbc/ldbc_snb_datagen_spark/) according to the format described in the tool's README.
+1. Generate the data sets using the [SNB Datagen](https://github.com/ldbc/ldbc_snb_datagen_spark/) according to the format described in the system's README.
 
 1. Generate the substitution parameters using the [`paramgen`](paramgen/) tool.
 
@@ -37,19 +37,30 @@ Running an SNB BI experiment requires the following steps.
 1. Collect the results in the [`output`](output/) directory of the tool.
 
 :warning:
-Note that deriving official LDBC results requires commissioning an _audited benchmark_, which is a more complex process as it entails code review, ACID tests, etc.
+Note that deriving official LDBC results requires commissioning an _audited benchmark_, which is a more complex process as it entails code review, cross-validation, etc.
 See [the specification's Auditing chapter](https://ldbcouncil.org/ldbc_snb_docs/ldbc-snb-specification.pdf#chapter.7) for details.
 
 ## Cross-validation
 
-To cross-validate the results of two implementations, run the power test for both tools, e.g. [Cypher](cypher/) and [Umbra](umbra/) results.
+To cross-validate the results of two implementations, use two systems.
+Load the data into both, then run the benchmark in validation mode, e.g. [Cypher](cypher/) and [Umbra](umbra/) results.
 Then, run:
 
 ```bash
+export SF=10
+
+cd cypher
+scripts/benchmark.sh --validate
+cd ..
+
+cd umbra
+scripts/benchmark.sh --validate
+cd ..
+
 scripts/cross-validate.sh cypher umbra
 ```
 
-Note that the cross-validation uses the [numdiff](scripts/numdiff.md) tool.
+Note that the cross-validation uses the [numdiff](scripts/numdiff.md) CLI tool.
 
 ## Usage
 
