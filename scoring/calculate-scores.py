@@ -207,11 +207,11 @@ else:
     con.execute(f"""
         COPY
             (SELECT
-                (SELECT printf('\\numprint{{%.3f}} minutes', time/60      ) FROM benchmark_time        ),
-                (SELECT printf('\\numprint{{%.3f}}', power                ) FROM power_score           ),
-                (SELECT printf('\\numprint{{%.3f}}', power_at_sf          ) FROM power_at_sf_score     ),
-                (SELECT printf('\\numprint{{%.3f}}', throughput           ) FROM throughput_score      ),
-                (SELECT printf('\\numprint{{%.3f}} \\\\', throughput_at_sf) FROM throughput_at_sf_score),
+                (SELECT printf('\\numprint{{%.2f}} minutes', time/60      ) FROM benchmark_time        ),
+                (SELECT printf('\\numprint{{%.2f}}', power                ) FROM power_score           ),
+                (SELECT printf('\\numprint{{%.2f}}', power_at_sf          ) FROM power_at_sf_score     ),
+                (SELECT printf('\\numprint{{%.2f}}', throughput           ) FROM throughput_score      ),
+                (SELECT printf('\\numprint{{%.2f}} \\\\', throughput_at_sf) FROM throughput_at_sf_score),
             )
         TO 'summary-{tool}-sf{sf_string}.tex' (HEADER false, QUOTE '', DELIMITER ' & ');
         """)
