@@ -20,4 +20,4 @@ docker exec --user tigergraph ${TG_CONTAINER_NAME} bash -c \
   export GSQL_USERNAME=tigergraph; \
   export GSQL_PASSWORD=tigergraph; \
   export tag=\$(gbar list | grep snb-backup | cut -d' ' -f1);
-  gbar restore \$tag -y"
+  if [ -n $tag ]; gbar restore \$tag -y; else echo 'No existing backup archive is found'; fi"
