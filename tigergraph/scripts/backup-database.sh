@@ -20,4 +20,4 @@ docker exec --user tigergraph ${TG_CONTAINER_NAME} bash -c \
   gadmin config set System.Backup.Local.Enable true; \
   gadmin config set System.Backup.Local.Path /home/tigergraph/backup; \
   gadmin config apply -y; 
-  GSQL_USERNAME=tigergraph GSQL_PASSWORD=tigergraph  gbar backup -t snb-backup"
+  gadmin backup create snb-backup"

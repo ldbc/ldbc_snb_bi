@@ -47,7 +47,7 @@ docker run \
   --volume=${TG_QUERIES_DIR}:/queries:z \
   --volume=${TG_DML_DIR}:/dml:z \
   --name ${TG_CONTAINER_NAME} \
-  docker.tigergraph.com/tigergraph:${TG_VERSION}
+  tigergraph/tigergraph:${TG_VERSION}
 
 echo -e "Waiting for the container to start.\n"
 echo
