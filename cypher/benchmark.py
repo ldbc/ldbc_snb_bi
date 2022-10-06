@@ -125,7 +125,7 @@ if __name__ == '__main__':
 
         current_batch = 1
         while batch_date < network_end_date and \
-            (not test or batch_date < test_end_date) and\
+            (not test or batch_date < test_end_date) and \
             (not validate or batch_date == network_start_date):
             if current_batch == 1:
                 batch_type = "power"
