@@ -12,7 +12,5 @@ wget -q https://ldbcouncil.org/ldbc_snb_datagen_spark/${SAMPLE_DATA_SET_NAME}.zi
 rm -rf ${SAMPLE_DATA_SET_NAME}/
 unzip -q ${SAMPLE_DATA_SET_NAME}.zip
 
-export SF=0.003
 . scripts/use-sample-data-set.sh
-
 scripts/decompress-data-set.sh
