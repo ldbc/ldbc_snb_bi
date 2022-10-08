@@ -12,6 +12,7 @@ The Umbra container is currently available upon request.
 
 The Umbra implementation expects the data to be in `composite-merged-fk` CSV layout, with headers and without quoted fields.
 To generate data that confirms this requirement, run Datagen without any layout or formatting arguments (`--explode-*` or `--format-options`).
+The data set should consist of uncompressed CSVs. If you retrieved a compressed data set (`.csv.gz` files), set the `${SF}` environment variable and run the `scripts/decompress-data-set.sh` script to uncompress the files (note that doing so deletes the original compressed files).
 
 In Datagen's directory (`ldbc_snb_datagen_spark`), issue the following commands. We assume that the Datagen project is built and the `${PLATFORM_VERSION}`, `${DATAGEN_VERSION}` environment variables are set correctly.
 
