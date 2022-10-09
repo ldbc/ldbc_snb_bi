@@ -2,31 +2,31 @@
 
 CREATE TABLE Organisation (
     id bigint PRIMARY KEY,
-    type varchar(12) NOT NULL,
-    name varchar(256) NOT NULL,
-    url varchar(256) NOT NULL,
+    type text NOT NULL,
+    name text NOT NULL,
+    url text NOT NULL,
     LocationPlaceId bigint NOT NULL
 ) WITH (storage = paged);
 
 CREATE TABLE Place (
     id bigint PRIMARY KEY,
-    name varchar(256) NOT NULL,
-    url varchar(256) NOT NULL,
-    type varchar(12) NOT NULL,
+    name text NOT NULL,
+    url text NOT NULL,
+    type text NOT NULL,
     PartOfPlaceId bigint -- null for continents
 ) WITH (storage = paged);
 
 CREATE TABLE Tag (
     id bigint PRIMARY KEY,
-    name varchar(256) NOT NULL,
-    url varchar(256) NOT NULL,
+    name text NOT NULL,
+    url text NOT NULL,
     TypeTagClassId bigint NOT NULL
 ) WITH (storage = paged);
 
 CREATE TABLE TagClass (
     id bigint PRIMARY KEY,
-    name varchar(256) NOT NULL,
-    url varchar(256) NOT NULL,
+    name text NOT NULL,
+    url text NOT NULL,
     SubclassOfTagClassId bigint -- null for the root TagClass (Thing)
 ) WITH (storage = paged);
 
@@ -34,29 +34,29 @@ CREATE TABLE TagClass (
 
 CREATE TABLE Country (
     id bigint primary key,
-    name varchar(256) not null,
-    url varchar(256) not null,
+    name text not null,
+    url text not null,
     PartOfContinentId bigint
 ) WITH (storage = paged);
 
 CREATE TABLE City (
     id bigint primary key,
-    name varchar(256) not null,
-    url varchar(256) not null,
+    name text not null,
+    url text not null,
     PartOfCountryId bigint
 ) WITH (storage = paged);
 
 CREATE TABLE Company (
     id bigint primary key,
-    name varchar(256) not null,
-    url varchar(256) not null,
+    name text not null,
+    url text not null,
     LocationPlaceId bigint not null
 ) WITH (storage = paged);
 
 CREATE TABLE University (
     id bigint primary key,
-    name varchar(256) not null,
-    url varchar(256) not null,
+    name text not null,
+    url text not null,
     LocationPlaceId bigint not null
 ) WITH (storage = paged);
 
@@ -64,10 +64,10 @@ CREATE TABLE University (
 
 CREATE TABLE Comment (
     creationDate timestamp with time zone NOT NULL,
-    id bigint NOT NULL,
-    locationIP varchar(40) NOT NULL,
-    browserUsed varchar(40) NOT NULL,
-    content varchar(2000) NOT NULL,
+    id bigint NOT NULL, --PRIMARY KEY,
+    locationIP text NOT NULL,
+    browserUsed text NOT NULL,
+    content text NOT NULL,
     length int NOT NULL,
     CreatorPersonId bigint NOT NULL,
     LocationCountryId bigint NOT NULL,
@@ -78,18 +78,18 @@ CREATE TABLE Comment (
 CREATE TABLE Forum (
     creationDate timestamp with time zone NOT NULL,
     id bigint PRIMARY KEY,
-    title varchar(256) NOT NULL,
+    title text NOT NULL,
     ModeratorPersonId bigint -- can be null as its cardinality is 0..1
 ) WITH (storage = paged);
 
 CREATE TABLE Post (
     creationDate timestamp with time zone NOT NULL,
-    id bigint NOT NULL,
-    imageFile varchar(40),
-    locationIP varchar(40) NOT NULL,
-    browserUsed varchar(40) NOT NULL,
-    language varchar(40),
-    content varchar(2000),
+    id bigint NOT NULL, --PRIMARY KEY,
+    imageFile text,
+    locationIP text NOT NULL,
+    browserUsed text NOT NULL,
+    language text,
+    content text,
     length int NOT NULL,
     CreatorPersonId bigint NOT NULL,
     ContainerForumId bigint NOT NULL,
@@ -99,15 +99,15 @@ CREATE TABLE Post (
 CREATE TABLE Person (
     creationDate timestamp with time zone NOT NULL,
     id bigint PRIMARY KEY,
-    firstName varchar(40) NOT NULL,
-    lastName varchar(40) NOT NULL,
-    gender varchar(40) NOT NULL,
+    firstName text NOT NULL,
+    lastName text NOT NULL,
+    gender text NOT NULL,
     birthday date NOT NULL,
-    locationIP varchar(40) NOT NULL,
-    browserUsed varchar(40) NOT NULL,
+    locationIP text NOT NULL,
+    browserUsed text NOT NULL,
     LocationCityId bigint NOT NULL,
-    speaks varchar(640) NOT NULL,
-    email varchar(8192) NOT NULL
+    speaks text NOT NULL,
+    email text NOT NULL
 ) WITH (storage = paged);
 
 
@@ -182,11 +182,11 @@ CREATE TABLE Message (
     creationDate timestamp with time zone not null,
     MessageId bigint primary key,
     RootPostId bigint not null,
-    RootPostLanguage varchar(40),
-    content varchar(2000),
-    imageFile varchar(40),
-    locationIP varchar(40) not null,
-    browserUsed varchar(40) not null,
+    RootPostLanguage text,
+    content text,
+    imageFile text,
+    locationIP text not null,
+    browserUsed text not null,
     length int not null,
     CreatorPersonId bigint not null,
     ContainerForumId bigint,
@@ -194,7 +194,7 @@ CREATE TABLE Message (
     ParentMessageId bigint,
     ParentPostId bigint,
     ParentCommentId bigint,
-    type varchar(7)
+    type text
 ) WITH (storage = paged);
 
 CREATE TABLE Person_likes_Message (
