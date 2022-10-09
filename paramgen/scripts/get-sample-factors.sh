@@ -8,9 +8,10 @@ cd ..
 
 export FACTOR_DIRNAME=social-network-sf0.003-bi-factors
 
-rm -rf factors/*
+rm -rf scratch/factors/
+mkdir -p scratch/factors
 rm -f ${FACTOR_DIRNAME}.zip
 wget -q https://ldbcouncil.org/ldbc_snb_datagen_spark/${FACTOR_DIRNAME}.zip
 rm -rf ${FACTOR_DIRNAME}
 unzip -q ${FACTOR_DIRNAME}.zip
-cp -r ${FACTOR_DIRNAME}/factors/parquet/raw/composite-merged-fk/* factors/
+cp -r ${FACTOR_DIRNAME}/factors/parquet/raw/composite-merged-fk/* scratch/factors/

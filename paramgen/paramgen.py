@@ -8,8 +8,8 @@ if sf is None:
 
 con = duckdb.connect(database='scratch/factors.duckdb')
  
-factor_parquet_path = "factors/"
-temporal_parquet_path = "factors/"
+factor_parquet_path = "scratch/factors/"
+temporal_parquet_path = "scratch/factors/"
 
 print("============ Loading the factor tables ============")
 for entity in ["cityNumPersons", "cityPairsNumFriends", "companyNumEmployees", "countryNumMessages", "countryNumPersons", "countryPairsNumFriends", "creationDayAndLengthCategoryNumMessages", "creationDayAndTagNumMessages", "creationDayAndTagClassNumMessages", "creationDayNumMessages", "languageNumPosts", "lengthNumMessages", "people2Hops", "people4Hops", "personDisjointEmployerPairs", "personNumFriends", "tagClassNumMessages", "tagClassNumTags", "tagNumMessages", "tagNumPersons", "sameUniversityConnected"]:

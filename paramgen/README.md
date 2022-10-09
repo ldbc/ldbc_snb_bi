@@ -10,7 +10,8 @@ The paramgen implements [parameter curation](https://research.vu.nl/en/publicati
     scripts/install-dependencies.sh
     ```
 
-1. **Generating the factors entities with the Datagen:** In Datagen's directory (`ldbc_snb_datagen_spark`), issue the following commands. We assume that the Datagen project is built and the `${LDBC_SNB_DATAGEN_MAX_MEM}`, `${LDBC_SNB_DATAGEN_JAR}` environment variables are set correctly.
+1. **Generating the factors entities with the Datagen:** In Datagen's directory (`ldbc_snb_datagen_spark`), issue the following commands.
+We assume that the Datagen project is built and the `${LDBC_SNB_DATAGEN_MAX_MEM}`, `${LDBC_SNB_DATAGEN_JAR}` environment variables are set correctly.
 
     ```bash
     export SF=desired_scale_factor
@@ -31,7 +32,8 @@ The paramgen implements [parameter curation](https://research.vu.nl/en/publicati
         --generate-factors
     ```
 
-1. **Obtaining the factors:** Cleanup the `factors/` directory and move the factor directories from `out-sf${SF}/factors/csv/raw/composite-merged-fk/` (`cityPairsNumFriends/`, `personDisjointEmployerPairs/`, etc.) to the `factors/` directory. Assuming that your `${LDBC_SNB_DATAGEN_DIR}` and `${SF}` environment variables are set, run:
+1. **Obtaining the factors:** Cleanup the `scratch/factors/` directory and move the factor directories from `out-sf${SF}/factors/csv/raw/composite-merged-fk/` (`cityPairsNumFriends/`, `personDisjointEmployerPairs/`, etc.) into it.
+Assuming that your `${LDBC_SNB_DATAGEN_DIR}` and `${SF}` environment variables are set, run:
 
     ```bash
     scripts/get-factors.sh
@@ -54,7 +56,4 @@ The paramgen implements [parameter curation](https://research.vu.nl/en/publicati
 
 ## Memory consumption
 
-Note that the parameter generator uses a significant amount of memory.
-
-* SF3000: 56GiB
-* SF10000: 195GiB
+Note that the parameter generator uses a significant amount of memory. E.g. SF10000 uses 503.7GiB and took about 22 minutes to run.
