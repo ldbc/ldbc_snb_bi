@@ -33,3 +33,4 @@ parameters-sf*.*
 
 __pycache__/
 *.bkp
+*.zip
