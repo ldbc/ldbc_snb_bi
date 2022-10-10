@@ -27,8 +27,7 @@ tools/run.py \
     --explode-edges \
     --mode bi \
     --output-dir out-sf${SF} \
-    --format-options compression=gzip \
-    --generate-factors
+    --format-options compression=gzip
 ```
 
 ## Load data

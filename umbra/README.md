@@ -30,8 +30,7 @@ tools/run.py \
     --format csv \
     --scale-factor ${SF} \
     --mode bi \
-    --output-dir out-sf${SF} \
-    --generate-factors
+    --output-dir out-sf${SF}
 ```
 
 ## Loading the data set
