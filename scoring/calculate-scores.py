@@ -27,8 +27,7 @@ con.execute(f"""
     INSERT INTO power_test_individual
         SELECT regexp_replace('0' || q, '\D','','g')::int AS qid, q, time
         FROM timings
-        WHERE batch_type = 'power'
-          AND q != 'reads';
+        WHERE batch_type = 'power';
 
     CREATE OR REPLACE TABLE power_test_stats AS
         SELECT
@@ -81,28 +80,32 @@ con.execute(f"""
               AS throughput
         FROM throughput_batches;
 
-    -- order as t_load, w, followed by q_1, ..., q_20
+    -- order as t_load, w, r, followed by q_1, ..., q_20
     CREATE OR REPLACE TABLE results_table_sorted AS
         SELECT *
         FROM (
-            SELECT -1 AS qid, NULL AS q, (SELECT printf('%.1f', time) FROM load_time) AS t
+          -- -100..-98
+            SELECT -100 AS qid, NULL AS q, (SELECT printf('\\numprint{{%.1f}}', time) FROM load_time) AS t
           UNION ALL
-            SELECT 0 AS qid, NULL AS q, printf('%.1f', total_time) AS t
+            SELECT  -99 AS qid, NULL AS q, printf('\\numprint{{%.1f}}', total_time) AS t
             FROM power_test_stats
-            WHERE q = 'write'
+            WHERE q = 'writes'
           UNION ALL
-            SELECT regexp_replace('0' || q, '\D','','g')::int AS qid, q, printf('%.1f', total_time) AS t
+            SELECT  -98 AS qid, NULL AS q, printf('\\numprint{{%.1f}}', total_time) AS t
             FROM power_test_stats
-            WHERE q != 'write'
+            WHERE q = 'reads'
+          -- 1..20
           UNION ALL
-            SELECT 21 AS qid, NULL AS q, CASE WHEN n_batches = 0 THEN 'n/a' ELSE n_batches END AS t
+            SELECT regexp_replace('0' || q, '\D','','g')::int AS qid, q, printf('\\numprint{{%.1f}}', total_time) AS t
+            FROM power_test_stats
+            WHERE regexp_matches(q, '^[0-9]+[ab]?')
+          -- 48..inf
+          UNION ALL
+            SELECT 48 AS qid, NULL AS q, CASE WHEN n_batches = 0 THEN 'n/a' ELSE n_batches END AS t
             FROM throughput_batches
           UNION ALL
-            SELECT 22 AS qid, NULL AS q, CASE WHEN t_batches IS NULL THEN 'n/a' ELSE printf('%.1f', t_batches) END AS t
+            SELECT 49 AS qid, NULL AS q, CASE WHEN t_batches IS NULL THEN 'n/a' ELSE printf('\\numprint{{%.1f}}', t_batches) END AS t
             FROM throughput_batches
-          UNION ALL
-            SELECT 23 AS qid, NULL AS q, CASE WHEN throughput IS NULL THEN 'n/a' ELSE printf('%.2f', throughput) END
-            FROM throughput_score
         )
         ORDER BY qid, q;
     """)
@@ -150,6 +153,7 @@ con.execute(f"""
     TO 'runtimes-{tool}-sf{sf_string}.tex' (HEADER false, QUOTE '');
     """)
 
+# power test statistics
 con.execute(f"""
     COPY
         (SELECT
