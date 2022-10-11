@@ -36,7 +36,7 @@ if __name__ == '__main__':
     parameter_csvs = {}
     for query_variant in query_variants:
         # wrap parameters into infinite loop iterator
-        parameter_csvs[query_variant] = cycle(csv.DictReader(open(f'../parameters/parameters-sf{sf}/bi-{query_variant}.csv'), delimiter='|'))
+        parameter_csvs[query_variant] = cycle(csv.DictReader(open(f'{args.para}/bi-{query_variant}.csv'), delimiter='|'))
 
     query_nums = [int(re.sub("[^0-9]", "", query_variant)) for query_variant in query_variants]
     network_start_date = date(2012, 11, 29)
