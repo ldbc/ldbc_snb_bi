@@ -20,7 +20,7 @@ This command works on both standalone files (`.tar.zst`) and chunked ones (`.tar
 
 ## Data sets links
 
-Umbra:
+### Compressed CSVs in the composite-merged-fk format
 
 * https://pub-383410a98aef4cb686f0c7601eddd25f.r2.dev/bi-pre-audit/bi-sf1-composite-merged-fk.tar.zst
 * https://pub-383410a98aef4cb686f0c7601eddd25f.r2.dev/bi-pre-audit/bi-sf3-composite-merged-fk.tar.zst
@@ -31,7 +31,7 @@ Umbra:
 * https://pub-383410a98aef4cb686f0c7601eddd25f.r2.dev/bi-pre-audit/bi-sf1000-composite-merged-fk.tar.zst.000
 * https://pub-383410a98aef4cb686f0c7601eddd25f.r2.dev/bi-pre-audit/bi-sf1000-composite-merged-fk.tar.zst.001
 
-TigerGraph:
+### Compressed CSVs in the composite-projected-fk format
 
 * https://pub-383410a98aef4cb686f0c7601eddd25f.r2.dev/bi-pre-audit/bi-sf1-composite-projected-fk.tar.zst
 * https://pub-383410a98aef4cb686f0c7601eddd25f.r2.dev/bi-pre-audit/bi-sf3-composite-projected-fk.tar.zst
@@ -72,7 +72,7 @@ TigerGraph:
 * https://pub-383410a98aef4cb686f0c7601eddd25f.r2.dev/bi-pre-audit/bi-sf10000-composite-projected-fk.tar.zst.020
 * https://pub-383410a98aef4cb686f0c7601eddd25f.r2.dev/bi-pre-audit/bi-sf10000-composite-projected-fk.tar.zst.021
 
-Factors:
+### Factor tables
 
 * https://pub-383410a98aef4cb686f0c7601eddd25f.r2.dev/bi-pre-audit/factors/factors-sf1.tar.zst
 * https://pub-383410a98aef4cb686f0c7601eddd25f.r2.dev/bi-pre-audit/factors/factors-sf3.tar.zst
@@ -84,6 +84,6 @@ Factors:
 * https://pub-383410a98aef4cb686f0c7601eddd25f.r2.dev/bi-pre-audit/factors/factors-sf3000.tar.zst
 * https://pub-383410a98aef4cb686f0c7601eddd25f.r2.dev/bi-pre-audit/factors/factors-sf10000.tar.zst
 
-Parameters:
+### Parameters
 
 * https://pub-383410a98aef4cb686f0c7601eddd25f.r2.dev/bi-pre-audit/parameters-2022-10-01.zip
