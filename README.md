@@ -68,5 +68,10 @@ See [`.circleci/config.yml`](.circleci/config.yml) for an up-to-date example on 
 
 ## Data sets
 
-BI sets are being uploaded to the [SURF CWI repository](https://repository.surfsara.nl/datasets/cwi/snb).
 (See [download instructions](https://github.com/ldbc/data-sets-surf-repository/).)
+
+[Pre-generated data sets and parameters](snb-bi-pre-generated-data-sets.md) are now available for
+SF1-SF10,000 (projected FK variant) and
+SF1-SF1,000 (merged FK variant).
+
+Data sets are also being uploaded to the [SURF CWI repository](https://repository.surfsara.nl/datasets/cwi/snb).
