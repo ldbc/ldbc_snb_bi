@@ -1,5 +1,5 @@
 SELECT
-    startDate AS 'startDate:DATE',
+    date_trunc('day', startDate) AS 'startDate:DATE',
     150 - salt*5 AS 'lengthThreshold:INT',
     string_agg(lng, ';') AS 'languages:STRING[]'
 FROM (SELECT
