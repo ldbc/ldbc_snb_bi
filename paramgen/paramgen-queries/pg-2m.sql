@@ -1,5 +1,5 @@
 -- materialize table
-CREATE TABLE tagClassAndWindowNumMessages AS
+CREATE OR REPLACE TABLE tagClassAndWindowNumMessages AS
     SELECT
         d.anchorDate + INTERVAL (-10 + s.salt) DAY AS date,
         name AS tagClassName,

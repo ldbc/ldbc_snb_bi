@@ -22,7 +22,7 @@ for entity in ["cityNumPersons", "cityPairsNumFriends", "companyNumEmployees", "
 
 print()
 print("============ Creating materialized views ============")
-for query_variant in ["2d", "2m", "8d", "8m"]:
+for query_variant in ["2m", "8m"]:
     print(f"- Q{query_variant}")
     with open(f"paramgen-queries/pg-{query_variant}.sql", "r") as parameter_query_file:
         parameter_query = parameter_query_file.read()

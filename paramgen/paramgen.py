@@ -36,9 +36,7 @@ con.execute(f"""
 
 print()
 print("============ Creating materialized views ============")
-# d: drop
-# m: materialize
-for query_variant in ["2d", "2m", "8d", "8m", "20d", "20m"]:
+for query_variant in ["2m", "8m", "20m"]:
     print(f"- Q{query_variant}")
     with open(f"paramgen-queries/pg-{query_variant}.sql", "r") as parameter_query_file:
         parameter_query = parameter_query_file.read()
