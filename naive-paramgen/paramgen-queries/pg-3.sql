@@ -1,7 +1,7 @@
 SELECT
-    tagClassName AS 'tagClass:STRING',
-    countryName AS 'country:STRING'
+    tagClassNumMessages.name AS 'tagClass:STRING',
+    countryNumPersons.name AS 'country:STRING'
 FROM
     tagClassNumMessages,
     countryNumPersons
-ORDER BY md5(concat(tagClassName, countryName))
+ORDER BY md5(concat(tagClassNumMessages.name, countryNumPersons.name))

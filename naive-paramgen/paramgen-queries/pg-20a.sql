@@ -1,8 +1,8 @@
 SELECT
-    companyName AS 'company:STRING',
-    personId AS 'person2Id:ID'
+    companyNumEmployees.name AS 'company:STRING',
+    personNumFriends_sample.id AS 'person2Id:ID'
 FROM
     companyNumEmployees,
-    (SELECT personId FROM personNumFriends ORDER BY personId LIMIT 100)
-ORDER BY md5(3532569367*companyId + 211*personId)
+    (SELECT id FROM personNumFriends ORDER BY md5(id) LIMIT 100) personNumFriends_sample
+ORDER BY md5(3532569367*companyNumEmployees.id + 211*personNumFriends_sample.id)
 LIMIT 400

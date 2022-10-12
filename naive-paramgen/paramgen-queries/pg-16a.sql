@@ -6,19 +6,19 @@ SELECT
     3 + (extract('dayofyear' FROM dateA)+extract('dayofyear' FROM dateB)) % 4 AS 'maxKnowsLimit:INT'
 FROM (
     SELECT
-        tagDatesA.tagName AS tagA,
+        tagDatesA.name AS tagA,
         tagDatesA.creationDay AS dateA,
-        tagDatesB.tagName AS tagB,
+        tagDatesB.name AS tagB,
         tagDatesB.creationDay AS dateB
     FROM
-        (SELECT creationDay, tagName
+        (SELECT creationDay, name
          FROM creationDayAndTagNumMessages
-         ORDER BY md5(concat(creationDay, tagName))
+         ORDER BY md5(concat(creationDay, name))
          LIMIT 100
         ) tagDatesA,
-        (SELECT creationDay, tagName
+        (SELECT creationDay, name
          FROM creationDayAndTagNumMessages
-         ORDER BY md5(concat(creationDay, tagName)) DESC
+         ORDER BY md5(concat(creationDay, name)) DESC
          LIMIT 100
         ) tagDatesB
 )

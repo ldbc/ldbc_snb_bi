@@ -1,6 +1,6 @@
 SELECT
     date AS 'date:DATE',
-    tagClassName AS 'tagClass:STRING'
+    name AS 'tagClass:STRING'
 FROM tagClassAndWindowNumMessages
-ORDER BY md5(concat(date, tagClassName))
+ORDER BY md5(concat(date, name))
 LIMIT 400

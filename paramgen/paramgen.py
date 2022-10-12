@@ -9,23 +9,20 @@ if sf is None:
 con = duckdb.connect(database='scratch/factors.duckdb')
  
 factor_parquet_path = "scratch/factors/"
-temporal_parquet_path = "scratch/factors/"
 
 print("============ Loading the factor tables ============")
 for entity in ["cityNumPersons", "cityPairsNumFriends", "companyNumEmployees", "countryNumMessages", "countryNumPersons", "countryPairsNumFriends", "creationDayAndLengthCategoryNumMessages", "creationDayAndTagNumMessages", "creationDayAndTagClassNumMessages", "creationDayNumMessages", "languageNumPosts", "lengthNumMessages", "people2Hops", "people4Hops", "personDisjointEmployerPairs", "personNumFriends", "tagClassNumMessages", "tagClassNumTags", "tagNumMessages", "tagNumPersons", "sameUniversityConnected"]:
     print(f"{entity}")
-    con.execute(f"DROP TABLE IF EXISTS {entity}")
-    con.execute(f"CREATE TABLE {entity} AS SELECT * FROM read_parquet('{factor_parquet_path}{entity}/*.parquet')")
+    con.execute(f"CREATE OR REPLACE TABLE {entity} AS SELECT * FROM read_parquet('{factor_parquet_path}{entity}/*.parquet')")
 
 print()
 print("============ Loading the temporal tables ============")
 for entity in ["personDays", "personKnowsPersonDays", "personStudyAtUniversityDays", "personWorkAtCompanyDays"]:
     print(f"{entity}")
-    con.execute(f"DROP TABLE IF EXISTS {entity}_window")
     con.execute(f"""
-        CREATE TABLE {entity}_window AS
+        CREATE OR REPLACE TABLE {entity}_window AS
             SELECT * EXCLUDE (creationDay, deletionDay)
-            FROM read_parquet('{temporal_parquet_path}{entity}/*.parquet')
+            FROM read_parquet('{factor_parquet_path}{entity}/*.parquet')
             WHERE creationDay < TIMESTAMP '2012-11-29'
               AND deletionDay > TIMESTAMP '2013-01-01'
         """)
