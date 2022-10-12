@@ -6,7 +6,7 @@ if sf is None:
     print("${SF} environment variable must be set")
     exit(1)
 
-csv_path = "factors/"
+csv_path = "scratch/factors/"
 con = duckdb.connect(database='factors.duckdb')
 
 print("============ Initializing database ============")

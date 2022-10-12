@@ -50,11 +50,20 @@ jobs:
             scripts/get-sample-data-set.sh
             cd ..
       - run:
+          name: Test naive parameter generator
+          command: |
+            cd naive-paramgen
+            scripts/get-sample-factors.sh
+            . scripts/use-sample-factors.sh
+            scripts/paramgen.sh
+            cd ..
+            head -n 3 parameters/parameters-sf${SF}/*.csv
+      - run:
           name: Generate parameters for sample data set
           command: |
             cd paramgen
             scripts/get-sample-factors.sh
-            export SF=0.003
+            . scripts/use-sample-factors.sh
             scripts/paramgen.sh
             cd ..
             head -n 3 parameters/parameters-sf${SF}/*.csv
