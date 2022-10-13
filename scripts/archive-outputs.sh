@@ -12,4 +12,4 @@ for SYSTEM in cypher tigergraph umbra; do
     zip -r output-${SYSTEM}.zip output/
     cd ..
 done
-scripts/reset-gitignores-in-outputs.sh
+scripts/restore-gitignores-in-outputs.sh
