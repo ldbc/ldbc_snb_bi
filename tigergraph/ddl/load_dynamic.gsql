@@ -26,156 +26,101 @@ CREATE LOADING JOB load_dynamic FOR GRAPH ldbc_snb {
   //load schema group 1
   // load dynamic vertex
   LOAD file_Comment 
-    TO VERTEX Comment1 VALUES ($1, ToMiliSeconds($0), $2, $3, $4, $5) USING header="true", separator="|";
-  LOAD file_Post
-    TO VERTEX Post1 VALUES ($1, $2, ToMiliSeconds($0), $3, $4, $5, $6, $7) USING header="true", separator="|";
-  LOAD file_Forum
-    TO VERTEX Forum1 VALUES ($1, $2, ToMiliSeconds($0), _) USING header="true", separator="|";
-  LOAD file_Person
-    TO VERTEX Person1 VALUES ($1, $2, $3, $4, ToMiliSeconds($5), ToMiliSeconds($0), $6, $7, SPLIT($8,";"), SPLIT($9,";"), _) USING header="true", separator="|";
-
-  // load dynamic edge
-  LOAD file_Forum_containerOf_Post
-    TO EDGE CONTAINER_OF1 VALUES ($1, $2) USING header="true", separator="|";
-  LOAD file_Comment_hasCreator_Person
-    TO EDGE HAS_CREATOR1 VALUES ($1 Comment, $2) USING header="true", separator="|";
-  LOAD file_Post_hasCreator_Person
-    TO EDGE HAS_CREATOR1 VALUES ($1 Post, $2) USING header="true", separator="|";
-  LOAD file_Person_hasInterest_Tag
-    TO EDGE HAS_INTEREST1 VALUES ($1, $2) USING header="true", separator="|";
-  LOAD file_Forum_hasMember_Person
-    TO EDGE HAS_MEMBER1 VALUES ($1, $2, ToMiliSeconds($0)) USING header="true", separator="|";
-  LOAD file_Forum_hasModerator_Person
-    TO EDGE HAS_MODERATOR1 VALUES ($1, $2) USING header="true", separator="|";
-  LOAD file_Comment_hasTag_Tag
-    TO EDGE HAS_TAG1 VALUES ($1 Comment, $2) USING header="true", separator="|";
-  LOAD file_Post_hasTag_Tag
-    TO EDGE HAS_TAG1 VALUES ($1 Post, $2) USING header="true", separator="|";
-  LOAD file_Forum_hasTag_Tag
-    TO EDGE HAS_TAG1 VALUES ($1 Forum, $2) USING header="true", separator="|";
-  LOAD file_Comment_isLocatedIn_Country
-    TO EDGE MESG_LOCATED_IN1 VALUES ($1 Comment, $2 Country) USING header="true", separator="|";
-  LOAD file_Post_isLocatedIn_Country
-    TO EDGE MESG_LOCATED_IN1 VALUES ($1 Post, $2 Country) USING header="true", separator="|";
-  LOAD file_Person_isLocatedIn_City
-    TO EDGE IS_LOCATED_IN1 VALUES ($1 Person, $2 City) USING header="true", separator="|";
-  LOAD file_Person_knows_Person
-    TO EDGE KNOWS1 VALUES ($1, $2, ToMiliSeconds($0), _, _) USING header="true", separator="|";
-  LOAD file_Person_likes_Comment
-    TO EDGE LIKES1 VALUES ($1, $2 Comment, ToMiliSeconds($0)) USING header="true", separator="|";
-  LOAD file_Person_likes_Post
-    TO EDGE LIKES1 VALUES ($1, $2 Post, ToMiliSeconds($0)) USING header="true", separator="|";
-  LOAD file_Comment_replyOf_Comment
-    TO EDGE REPLY_OF1 VALUES ($1, $2 Comment) USING header="true", separator="|";
-  LOAD file_Comment_replyOf_Post
-    TO EDGE REPLY_OF1 VALUES ($1, $2 Post),
-    TO EDGE ROOT_POST1 VALUES ($1, $2) USING header="true", separator="|";
-  LOAD file_Person_studyAt_University
-    TO EDGE STUDY_AT1 VALUES ($1, $2, $3) USING header="true", separator="|";
-  LOAD file_Person_workAt_Company
-    TO EDGE WORK_AT1 VALUES ($1, $2, $3) USING header="true", separator="|";
-
-     //load schema group 2
-  // load dynamic vertex
-  LOAD file_Comment 
-    TO VERTEX Comment2 VALUES ($1, ToMiliSeconds($0), $2, $3, $4, $5) USING header="true", separator="|";
-  LOAD file_Post
-    TO VERTEX Post2 VALUES ($1, $2, ToMiliSeconds($0), $3, $4, $5, $6, $7) USING header="true", separator="|";
-  LOAD file_Forum
-    TO VERTEX Forum2 VALUES ($1, $2, ToMiliSeconds($0), _) USING header="true", separator="|";
-  LOAD file_Person
-    TO VERTEX Person2 VALUES ($1, $2, $3, $4, ToMiliSeconds($5), ToMiliSeconds($0), $6, $7, SPLIT($8,";"), SPLIT($9,";"), _) USING header="true", separator="|";
-
-  // load dynamic edge
-  LOAD file_Forum_containerOf_Post
-    TO EDGE CONTAINER_OF2 VALUES ($1, $2) USING header="true", separator="|";
-  LOAD file_Comment_hasCreator_Person
-    TO EDGE HAS_CREATOR2 VALUES ($1 Comment, $2) USING header="true", separator="|";
-  LOAD file_Post_hasCreator_Person
-    TO EDGE HAS_CREATOR2 VALUES ($1 Post, $2) USING header="true", separator="|";
-  LOAD file_Person_hasInterest_Tag
-    TO EDGE HAS_INTEREST2 VALUES ($1, $2) USING header="true", separator="|";
-  LOAD file_Forum_hasMember_Person
-    TO EDGE HAS_MEMBER2 VALUES ($1, $2, ToMiliSeconds($0)) USING header="true", separator="|";
-  LOAD file_Forum_hasModerator_Person
-    TO EDGE HAS_MODERATOR2 VALUES ($1, $2) USING header="true", separator="|";
-  LOAD file_Comment_hasTag_Tag
-    TO EDGE HAS_TAG2 VALUES ($1 Comment, $2) USING header="true", separator="|";
-  LOAD file_Post_hasTag_Tag
-    TO EDGE HAS_TAG2 VALUES ($1 Post, $2) USING header="true", separator="|";
-  LOAD file_Forum_hasTag_Tag
-    TO EDGE HAS_TAG2 VALUES ($1 Forum, $2) USING header="true", separator="|";
-  LOAD file_Comment_isLocatedIn_Country
-    TO EDGE MESG_LOCATED_IN2 VALUES ($1 Comment, $2 Country) USING header="true", separator="|";
-  LOAD file_Post_isLocatedIn_Country
-    TO EDGE MESG_LOCATED_IN2 VALUES ($1 Post, $2 Country) USING header="true", separator="|";
-  LOAD file_Person_isLocatedIn_City
-    TO EDGE IS_LOCATED_IN2 VALUES ($1 Person, $2 City) USING header="true", separator="|";
-  LOAD file_Person_knows_Person
-    TO EDGE KNOWS2 VALUES ($1, $2, ToMiliSeconds($0), _, _) USING header="true", separator="|";
-  LOAD file_Person_likes_Comment
-    TO EDGE LIKES2 VALUES ($1, $2 Comment, ToMiliSeconds($0)) USING header="true", separator="|";
-  LOAD file_Person_likes_Post
-    TO EDGE LIKES2 VALUES ($1, $2 Post, ToMiliSeconds($0)) USING header="true", separator="|";
-  LOAD file_Comment_replyOf_Comment
-    TO EDGE REPLY_OF2 VALUES ($1, $2 Comment) USING header="true", separator="|";
-  LOAD file_Comment_replyOf_Post
-    TO EDGE REPLY_OF2 VALUES ($1, $2 Post),
-    TO EDGE ROOT_POST2 VALUES ($1, $2) USING header="true", separator="|";
-  LOAD file_Person_studyAt_University
-    TO EDGE STUDY_AT2 VALUES ($1, $2, $3) USING header="true", separator="|";
-  LOAD file_Person_workAt_Company
-    TO EDGE WORK_AT2 VALUES ($1, $2, $3) USING header="true", separator="|";
-
-     //load schema group 3
-  // load dynamic vertex
-  LOAD file_Comment 
+    TO VERTEX Comment1 VALUES ($1, ToMiliSeconds($0), $2, $3, $4, $5) USING header="true", separator="|"
+    TO VERTEX Comment2 VALUES ($1, ToMiliSeconds($0), $2, $3, $4, $5) USING header="true", separator="|"
     TO VERTEX Comment3 VALUES ($1, ToMiliSeconds($0), $2, $3, $4, $5) USING header="true", separator="|";
   LOAD file_Post
+    TO VERTEX Post1 VALUES ($1, $2, ToMiliSeconds($0), $3, $4, $5, $6, $7) USING header="true", separator="|"
+    TO VERTEX Post2 VALUES ($1, $2, ToMiliSeconds($0), $3, $4, $5, $6, $7) USING header="true", separator="|"
     TO VERTEX Post3 VALUES ($1, $2, ToMiliSeconds($0), $3, $4, $5, $6, $7) USING header="true", separator="|";
   LOAD file_Forum
+    TO VERTEX Forum1 VALUES ($1, $2, ToMiliSeconds($0), _) USING header="true", separator="|"
+    TO VERTEX Forum2 VALUES ($1, $2, ToMiliSeconds($0), _) USING header="true", separator="|"
     TO VERTEX Forum3 VALUES ($1, $2, ToMiliSeconds($0), _) USING header="true", separator="|";
   LOAD file_Person
+    TO VERTEX Person1 VALUES ($1, $2, $3, $4, ToMiliSeconds($5), ToMiliSeconds($0), $6, $7, SPLIT($8,";"), SPLIT($9,";"), _) USING header="true", separator="|"
+    TO VERTEX Person2 VALUES ($1, $2, $3, $4, ToMiliSeconds($5), ToMiliSeconds($0), $6, $7, SPLIT($8,";"), SPLIT($9,";"), _) USING header="true", separator="|"
     TO VERTEX Person3 VALUES ($1, $2, $3, $4, ToMiliSeconds($5), ToMiliSeconds($0), $6, $7, SPLIT($8,";"), SPLIT($9,";"), _) USING header="true", separator="|";
 
   // load dynamic edge
   LOAD file_Forum_containerOf_Post
-    TO EDGE CONTAINER_OF3 VALUES ($1, $2) USING header="true", separator="|";
+    TO EDGE CONTAINER_OF VALUES ($1 Forum1, $2 Post1) USING header="true", separator="|"
+    TO EDGE CONTAINER_OF VALUES ($1 Forum2, $2 Post2) USING header="true", separator="|"
+    TO EDGE CONTAINER_OF VALUES ($1 Forum3, $2 Post3) USING header="true", separator="|";
   LOAD file_Comment_hasCreator_Person
-    TO EDGE HAS_CREATOR3 VALUES ($1 Comment, $2) USING header="true", separator="|";
+    TO EDGE HAS_CREATOR VALUES ($1 Comment1, $2 Person1) USING header="true", separator="|"
+    TO EDGE HAS_CREATOR VALUES ($1 Comment2, $2 Person2) USING header="true", separator="|"
+    TO EDGE HAS_CREATOR VALUES ($1 Comment3, $2 Person3) USING header="true", separator="|";
   LOAD file_Post_hasCreator_Person
-    TO EDGE HAS_CREATOR3 VALUES ($1 Post, $2) USING header="true", separator="|";
+    TO EDGE HAS_CREATOR VALUES ($1 Post1 $2 Person1) USING header="true", separator="|"
+    TO EDGE HAS_CREATOR VALUES ($1 Post2 $2 Person2) USING header="true", separator="|"
+    TO EDGE HAS_CREATOR VALUES ($1 Post3 $2 Person3) USING header="true", separator="|";
   LOAD file_Person_hasInterest_Tag
-    TO EDGE HAS_INTEREST3 VALUES ($1, $2) USING header="true", separator="|";
+    TO EDGE HAS_INTEREST VALUES ($1 Person1, $2) USING header="true", separator="|"
+    TO EDGE HAS_INTEREST VALUES ($1 Person2, $2) USING header="true", separator="|"
+    TO EDGE HAS_INTEREST VALUES ($1 Person3, $2) USING header="true", separator="|";
   LOAD file_Forum_hasMember_Person
-    TO EDGE HAS_MEMBER3 VALUES ($1, $2, ToMiliSeconds($0)) USING header="true", separator="|";
+    TO EDGE HAS_MEMBER VALUES ($1 Forum1, $2 Person1, ToMiliSeconds($0)) USING header="true", separator="|"
+    TO EDGE HAS_MEMBER VALUES ($1 Forum2, $2 Person2, ToMiliSeconds($0)) USING header="true", separator="|"
+    TO EDGE HAS_MEMBER VALUES ($1 Forum3, $2 Person3, ToMiliSeconds($0)) USING header="true", separator="|";
   LOAD file_Forum_hasModerator_Person
-    TO EDGE HAS_MODERATOR3 VALUES ($1, $2) USING header="true", separator="|";
+    TO EDGE HAS_MODERATOR VALUES ($1 Forum1, $2 Person1) USING header="true", separator="|"
+    TO EDGE HAS_MODERATOR VALUES ($1 Forum2, $2 Person2) USING header="true", separator="|"
+    TO EDGE HAS_MODERATOR VALUES ($1 Forum3, $2 Person3) USING header="true", separator="|";
   LOAD file_Comment_hasTag_Tag
-    TO EDGE HAS_TAG3 VALUES ($1 Comment, $2) USING header="true", separator="|";
+    TO EDGE HAS_TAG VALUES ($1 Comment1, $2) USING header="true", separator="|"
+    TO EDGE HAS_TAG VALUES ($1 Comment2, $2) USING header="true", separator="|"
+    TO EDGE HAS_TAG VALUES ($1 Comment3, $2) USING header="true", separator="|";
   LOAD file_Post_hasTag_Tag
-    TO EDGE HAS_TAG3 VALUES ($1 Post, $2) USING header="true", separator="|";
+    TO EDGE HAS_TAG VALUES ($1 Post1, $2) USING header="true", separator="|"
+    TO EDGE HAS_TAG VALUES ($1 Post2, $2) USING header="true", separator="|"
+    TO EDGE HAS_TAG VALUES ($1 Post3, $2) USING header="true", separator="|";
   LOAD file_Forum_hasTag_Tag
-    TO EDGE HAS_TAG3 VALUES ($1 Forum, $2) USING header="true", separator="|";
+    TO EDGE HAS_TAG VALUES ($1 Forum1, $2) USING header="true", separator="|"
+    TO EDGE HAS_TAG VALUES ($1 Forum2, $2) USING header="true", separator="|"
+    TO EDGE HAS_TAG VALUES ($1 Forum3, $2) USING header="true", separator="|";
   LOAD file_Comment_isLocatedIn_Country
-    TO EDGE MESG_LOCATED_IN3 VALUES ($1 Comment, $2 Country) USING header="true", separator="|";
+    TO EDGE MESG_LOCATED_IN VALUES ($1 Comment1, $2 Country) USING header="true", separator="|"
+    TO EDGE MESG_LOCATED_IN VALUES ($1 Comment2, $2 Country) USING header="true", separator="|"
+    TO EDGE MESG_LOCATED_IN VALUES ($1 Comment3, $2 Country) USING header="true", separator="|";
   LOAD file_Post_isLocatedIn_Country
-    TO EDGE MESG_LOCATED_IN3 VALUES ($1 Post, $2 Country) USING header="true", separator="|";
+    TO EDGE MESG_LOCATED_IN VALUES ($1 Post1, $2 Country) USING header="true", separator="|"
+    TO EDGE MESG_LOCATED_IN VALUES ($1 Post2, $2 Country) USING header="true", separator="|"
+    TO EDGE MESG_LOCATED_IN VALUES ($1 Post3, $2 Country) USING header="true", separator="|";
   LOAD file_Person_isLocatedIn_City
-    TO EDGE IS_LOCATED_IN3 VALUES ($1 Person, $2 City) USING header="true", separator="|";
+    TO EDGE IS_LOCATED_IN VALUES ($1 Person1, $2 City) USING header="true", separator="|"
+    TO EDGE IS_LOCATED_IN VALUES ($1 Person2, $2 City) USING header="true", separator="|"
+    TO EDGE IS_LOCATED_IN VALUES ($1 Person3, $2 City) USING header="true", separator="|";
   LOAD file_Person_knows_Person
-    TO EDGE KNOWS3 VALUES ($1, $2, ToMiliSeconds($0), _, _) USING header="true", separator="|";
+    TO EDGE KNOWS VALUES ($1 Person1, $2 Person1, ToMiliSeconds($0), _, _) USING header="true", separator="|"
+    TO EDGE KNOWS VALUES ($1 Person2, $2 Person2, ToMiliSeconds($0), _, _) USING header="true", separator="|"
+    TO EDGE KNOWS VALUES ($1 Person3, $2 Person3, ToMiliSeconds($0), _, _) USING header="true", separator="|";
   LOAD file_Person_likes_Comment
-    TO EDGE LIKES3 VALUES ($1, $2 Comment, ToMiliSeconds($0)) USING header="true", separator="|";
+    TO EDGE LIKES VALUES ($1 Person1, $2 Comment1, ToMiliSeconds($0)) USING header="true", separator="|"
+    TO EDGE LIKES VALUES ($1 Person2, $2 Comment2, ToMiliSeconds($0)) USING header="true", separator="|"
+    TO EDGE LIKES VALUES ($1 Person3, $2 Comment3, ToMiliSeconds($0)) USING header="true", separator="|";
   LOAD file_Person_likes_Post
-    TO EDGE LIKES3 VALUES ($1, $2 Post, ToMiliSeconds($0)) USING header="true", separator="|";
+    TO EDGE LIKES VALUES ($1 Person1, $2 Post1, ToMiliSeconds($0)) USING header="true", separator="|"
+    TO EDGE LIKES VALUES ($1 Person2, $2 Post2, ToMiliSeconds($0)) USING header="true", separator="|"
+    TO EDGE LIKES VALUES ($1 Person3, $2 Post3, ToMiliSeconds($0)) USING header="true", separator="|";
   LOAD file_Comment_replyOf_Comment
-    TO EDGE REPLY_OF3 VALUES ($1, $2 Comment) USING header="true", separator="|";
+    TO EDGE REPLY_OF VALUES ($1 Comment1, $2 Comment1) USING header="true", separator="|"
+    TO EDGE REPLY_OF VALUES ($1 Comment2, $2 Comment2) USING header="true", separator="|"
+    TO EDGE REPLY_OF VALUES ($1 Comment3, $2 Comment3) USING header="true", separator="|";
   LOAD file_Comment_replyOf_Post
-    TO EDGE REPLY_OF3 VALUES ($1, $2 Post),
-    TO EDGE ROOT_POST3 VALUES ($1, $2) USING header="true", separator="|";
+    TO EDGE REPLY_OF VALUES ($1 Comment1, $2 Post1),
+    TO EDGE ROOT_POST VALUES ($1 Comment1, $2 Post1) USING header="true", separator="|"
+    TO EDGE REPLY_OF VALUES ($1 Comment2, $2 Post2),
+    TO EDGE ROOT_POST VALUES ($1 Comment2, $2 Post2) USING header="true", separator="|"
+    TO EDGE REPLY_OF VALUES ($1 Comment3, $2 Post3),
+    TO EDGE ROOT_POST VALUES ($1 Comment3, $2 Post3) USING header="true", separator="|";
   LOAD file_Person_studyAt_University
-    TO EDGE STUDY_AT3 VALUES ($1, $2, $3) USING header="true", separator="|";
+    TO EDGE STUDY_AT VALUES ($1 Person1, $2, $3) USING header="true", separator="|"
+    TO EDGE STUDY_AT VALUES ($1 Person2, $2, $3) USING header="true", separator="|"
+    TO EDGE STUDY_AT VALUES ($1 Person3, $2, $3) USING header="true", separator="|";
   LOAD file_Person_workAt_Company
-    TO EDGE WORK_AT3 VALUES ($1, $2, $3) USING header="true", separator="|";
+    TO EDGE WORK_AT VALUES ($1 Person1, $2, $3) USING header="true", separator="|"
+    TO EDGE WORK_AT VALUES ($1 Person2, $2, $3) USING header="true", separator="|"
+    TO EDGE WORK_AT VALUES ($1 Person3, $2, $3) USING header="true", separator="|";
+
 }
