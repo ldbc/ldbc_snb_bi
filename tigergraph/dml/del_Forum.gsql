@@ -1,10 +1,10 @@
 CREATE OR REPLACE QUERY del_Forum(STRING file, BOOL header=TRUE) syntax v2 {
-  SetAccum<VERTEX<Forum>> @@forum;
+  SetAccum<VERTEX<Forum1|Forum2|Forum3>> @@forum;
   @@forum = { LoadAccum(file, $1, "|", header)};
   forum = {@@forum};
   # del 6
-  P = SELECT p FROM forum -(CONTAINER_OF>)- Post:p;
-  C = SELECT c FROM P -(<ROOT_POST)- Comment:c;
+  P = SELECT p FROM forum -(CONTAINER_OF>)- Post1|Post2|Post3:p;
+  C = SELECT c FROM P -(<ROOT_POST)- Comment1|Comment2|Comment3:c;
   allv = forum UNION P UNION C; 
   DELETE v FROM allv:v;
   PRINT allv.size() as result;

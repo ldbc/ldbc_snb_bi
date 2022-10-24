@@ -1,7 +1,7 @@
 CREATE OR REPLACE DISTRIBUTED QUERY precompute_root_post() SYNTAX v2 {
   MinAccum<UINT> @postId;
   FILE file1 ("/home/tigergraph/root_post.csv"); // a temporaty file to store the root post ids
-  M = SELECT t FROM Post:s -(<REPLY_OF)- Comment:t ACCUM t.@postId += s.id;
+  M = SELECT t FROM Post1|Post2|Post3:s -(<REPLY_OF)- Comment1|Comment2|Comment3:t ACCUM t.@postId += s.id;
   WHILE M.size() > 0 DO
     M = SELECT t FROM M:s -(<REPLY_OF)- Comment:t
     ACCUM t.@postId += s.@postId,
@@ -16,12 +16,12 @@ CREATE OR REPLACE DISTRIBUTED QUERY delta_root_post(DATETIME startDate, DATETIME
   FILE file1 ("/home/tigergraph/root_post.csv"); // a temporaty file to store the root post ids
   INT startEpoch = datetime_to_epoch(startDate) * 1000;
   INT endEpoch = datetime_to_epoch(endDate) * 1000;
-  S0 = SELECT m FROM Comment:m 
+  S0 = SELECT m FROM Comment1|Comment2|Comment3:m 
     WHERE m.creationDate BETWEEN startEpoch AND endEpoch 
       AND m.outdegree("ROOT_POST") == 0;
   S = SELECT s FROM S0:s ACCUM s.@sources += s;
   WHILE S.size() > 0 DO
-    S = SELECT t FROM S:s -(REPLY_OF>|ROOT_POST>)- (Comment|Post):t
+    S = SELECT t FROM S:s -(REPLY_OF>|ROOT_POST>)- (Comment1|Comment2|Comment3|Post1|Post2|Post3):t
       ACCUM
         CASE WHEN t.type == "Post" THEN
           FOREACH ss IN s.@sources DO ss.@postId += t.id END
