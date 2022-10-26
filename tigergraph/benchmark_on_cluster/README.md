@@ -12,13 +12,13 @@
 1. Reserve IP and create instances
 
     ```sh
-    for i in $(seq 0 48)
+    for i in $(seq 0 47)
     do
     let "ip = $i + 10"
     gcloud compute addresses create ip${i} --region us-central1 --subnet default  --addresses  10.128.0.${ip}
     done
 
-    for i in $(seq 0 48)
+    for i in $(seq 0 47)
     do
     let "m = $i + 1"
     let "ip = $i + 10"

@@ -1,4 +1,4 @@
-CALL gds.graph.create.cypher(
+CALL gds.graph.project.cypher(
     'bi20',
     'MATCH (p:Person) RETURN id(p) AS id',
     'MATCH

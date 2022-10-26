@@ -32,7 +32,7 @@ We assume that the Datagen project is built and the `${LDBC_SNB_DATAGEN_MAX_MEM}
         --generate-factors
     ```
 
-1. **Obtaining the factors:** Cleanup the `scratch/factors/` directory and move the factor directories from `out-sf${SF}/factors/csv/raw/composite-merged-fk/` (`cityPairsNumFriends/`, `personDisjointEmployerPairs/`, etc.) into it.
+1. **Obtaining the factors:** Create the `scratch/factors/` directory and move the factor directories from `out-sf${SF}/factors/csv/raw/composite-merged-fk/` (`cityPairsNumFriends/`, `personDisjointEmployerPairs/`, etc.) into it.
 Assuming that your `${LDBC_SNB_DATAGEN_DIR}` and `${SF}` environment variables are set, run:
 
     ```bash
