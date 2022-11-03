@@ -54,7 +54,7 @@ con.execute(f"""
     CREATE OR REPLACE TABLE throughput_batches AS
         SELECT count(day)/2 AS n_batches, sum(time) AS t_batches -- /2 is needed because writes+reads are counted separately 
         FROM throughput_test
-        -- we drops the days executed after the minimum throughput time passed
+        -- we drop the days executed after the minimum throughput time passed
         WHERE day <= (
             SELECT day
             FROM
