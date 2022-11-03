@@ -119,10 +119,13 @@ print(f"SF: {sf_string}")
 for f in glob.glob(f'./*-{tool}-sf{sf_string}.tex'):
     os.remove(f)
 
+# calculate the geometric mean of runtimes for the power score
+# only include writes (w) and queries (q1, q2a, ...)
 con.execute("""
     CREATE OR REPLACE TABLE power_score AS
         SELECT 3600 / ( exp(sum(ln(total_time::real)) * (1.0/count(total_time))) ) AS power
-        FROM power_test_stats;
+        FROM power_test_stats
+        WHERE q IN ('writes', '1', '2a', '2b', '3', '4', '5', '6', '7', '8a', '8b', '9', '10a', '10b', '11', '12', '13', '14a', '14b', '15a', '15b', '16a', '16b', '17', '18', '19a', '19b', '20a', '20b');
     """)
 con.execute("""SELECT power FROM power_score""")
 p = con.fetchone()[0]
