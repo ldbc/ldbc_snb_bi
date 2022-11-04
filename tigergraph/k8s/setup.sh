@@ -18,6 +18,7 @@ start_time=$(${DATE_COMMAND} +%s.%3N)
 
 . $DDL_PATH/setup.sh $TG_DATA_DIR $QUERY_PATH $DML_PATH
 
+end_time=$(${DATE_COMMAND} +%s.%3N)
 elapsed=$(echo "scale=3; $end_time - $start_time" | bc)
 
 echo -e "time\n${elapsed}" > output/output-sf${SF}/load.csv
