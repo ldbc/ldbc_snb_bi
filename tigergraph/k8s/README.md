@@ -20,7 +20,7 @@ gcloud container clusters create snb-bi-tg --machine-type n2-highmem-32 --num-no
 Or create [EKS cluster](https://docs.aws.amazon.com/eks/latest/userguide/create-cluster.html),
 
 ```bash
-eksctl create cluster --name test --region us-east-2 --nodegroup-name tgtest --node-type r5.xlarge --nodes 2 --instance-prefix tg --instance-name eks-test 
+eksctl create cluster --name sf1000 --region us-east-2 --nodegroup-name tgtest --node-type r6a.8xlarge --nodes 4 --instance-prefix tg --instance-name eks-test
 ```
 
 ## Deploy TG containers
@@ -55,7 +55,7 @@ ebs-csi-node-x2t22                    3/3     Running   0               3d4h
 ...
 ```
 
-If the ebs csi driver is running, then run (here use "tigergraph" as namespace for an example)
+If the ebs csi driver is installed, then run (here use "tigergraph" as namespace for an example)
 ```bash
 kubectl create ns tigergraph
 git clone https://github.com/tigergraph/ecosys.git
