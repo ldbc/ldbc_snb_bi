@@ -25,12 +25,13 @@ eksctl create cluster --name sf1000 --region us-east-2 --nodegroup-name tgtest -
 
 ## Deploy TG containers
 Deploy the containers using the script `k8s/tg` from [tigergraph/ecosys](https://github.com/tigergraph/ecosys.git). The recommended value for persistent volume, cpu and memory are ~20% smaller than those of a single machine. Thus, each machine has exactly one pod.
+
 On GKE
 ```
 git clone https://github.com/tigergraph/ecosys.git
 cd ecosys/k8s
-./tg gke kustomize -s 2 --pv 280 --cpu 30 --mem 200 -l [license string]
-kubectl apply -f ./deploy/tigergraph-gke.yaml
+./tg gke kustomize -v 3.7.0 -n tigergraph -s 4 --pv 700 --cpu 30 --mem 200 -l [license string]
+kubectl apply -f ./deploy/tigergraph-eks-tigergraph.yaml
 ```
 
 Or on EKS 
@@ -60,7 +61,7 @@ If the ebs csi driver is installed, then run (here use "tigergraph" as namespace
 kubectl create ns tigergraph
 git clone https://github.com/tigergraph/ecosys.git
 cd ecosys/k8s
-./tg gke kustomize -v 3.7.0 -n tigergraph -s 4 --pv 700 --cpu 30 --mem 200 -l [license string]
+./tg eks kustomize -v 3.7.0 -n tigergraph -s 4 --pv 700 --cpu 30 --mem 200 -l [license string]
 kubectl apply -f ./deploy/tigergraph-eks-tigergraph.yaml
 ```
 
@@ -94,9 +95,10 @@ To download the data, service key json file must be located in ```k8s/``` . The 
 
 
          
-1. Make sure to put your own service key file in ```tigergraph/``` folder
-
-    Service key file with view only permission can be provided to auditor upon request.
+1. Put your own service key file in ```tigergraph/``` folder.
+    
+    Our bucket is public, and any google cloud service key is able to access the data. To create service key, refer to Google Cloud documentation.
+    
 
 1. Run:
 
