@@ -14,7 +14,7 @@ Pre-requisites are
 Create [GKE container cluster](https://cloud.google.com/sdk/gcloud/reference/container/clusters/create) specifying machine type, number of nodes, disk size and disk type. For example,
 
 ```bash
-gcloud container clusters create snb-bi-tg --machine-type n2-highmem-32 --num-nodes=2 --disk-size 300 --disk-type=pd-ssd
+gcloud container clusters create snb-bi-tg --machine-type n2-highmem-32 --num-nodes=4 --disk-size 700 --disk-type=pd-ssd
 ```
 
 Or create [EKS cluster](https://docs.aws.amazon.com/eks/latest/userguide/create-cluster.html),
