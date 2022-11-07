@@ -27,13 +27,21 @@ eksctl create cluster --name test --region us-east-2 --nodegroup-name tgtest --n
 Deploy the containers using the script `k8s/tg` from [tigergraph/ecosys](https://github.com/tigergraph/ecosys.git). The recommended value for persistent volume, cpu and memory are ~20% smaller than those of a single machine. Thus, each machine has exactly one pod.
 
 ```bash
+//create kubectl namespace (here use "tigergraph" as namespace for an example)
+kubectl create ns tigergraph
 git clone https://github.com/tigergraph/ecosys.git
 cd ecosys/k8s
-./tg gke kustomize -s 2 --pv 280 --cpu 30 --mem 200 -l [license string]
+./tg gke kustomize -v 3.7.0 -n tigergraph -s 4 --pv 700 --cpu 30 --mem 200 -l [license string]
 kubectl apply -f ./deploy/tigergraph-gke.yaml
 ```
 
 Or on EKS 
+
+Important: If you have a 1.22 or earlier cluster that you currently run pods on that use Amazon EBS volumes, and you don't currently have this driver installed on your cluster, then be sure to install this driver to your cluster before updating the cluster to 1.23.
+
+Following the instructions on AWS documentation to add EBS CSI add-on before proceed.
+https://docs.aws.amazon.com/eks/latest/userguide/managing-ebs-csi.html
+
 
 ```bash
 ./tg eks kustomize -s 2 --pv 280 --cpu 30 --mem 200 -l [license string]
@@ -42,7 +50,7 @@ kubectl apply -f ./deploy/tigergraph-eks.yaml
 
 ## Verify deployment
 
-Deployment can take several minutes. Use `kubectl get pod` to verify the deployment. An example output is
+Deployment can take several minutes. Use `kubectl get pod -n tigergraph` to verify the deployment. An example output is
 
 ```
 NAME              READY   STATUS    RESTARTS   AGE
@@ -50,8 +58,18 @@ installer-cztjf   1/1     Running   0          5m23s
 tigergraph-0      1/1     Running   0          5m24s
 tigergraph-1      1/1     Running   0          3m11s
 ``` 
-## Download data
+Alternative verification commands include:
+```
+kubectl get all -n tigergraph
+kubectl describe pod/tigergraph-0 -n tigergraph
+kubectl describe pvc -n tigergraph
+#check if the ebs csi driver pods are running successfully
+kubectl get pods -n kube-system
+```
 
+
+## Download data
+To download the data, service key json file must be located in ```k8s/```. The bucket is public now and any service key should work.
 1. Fill in the parameters in `vars.sh`.
     * `NUM_NODES` - number of nodes.
     * `SF` - data source, choices are 100, 300, 1000, 3000, 10000.
