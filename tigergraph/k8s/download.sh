@@ -6,7 +6,8 @@ set -o pipefail
 cd "$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 . vars.sh
 cd ..
-tar -cf tmp.tar queries ddl dml k8s *.py key.json
+cp ../common/result_mapping.py .
+tar -cf tmp.tar queries ddl dml k8s *.py key.json result_mapping.py
 for i in $( seq 0 $((NUM_NODES-1)) ); do
   echo "tigergraph-$i: Upload scripts"
   kubectl cp tmp.tar tigergraph-${i}:tmp.tar -n tigergraph
