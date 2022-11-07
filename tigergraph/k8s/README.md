@@ -25,13 +25,11 @@ eksctl create cluster --name test --region us-east-2 --nodegroup-name tgtest --n
 
 ## Deploy TG containers
 Deploy the containers using the script `k8s/tg` from [tigergraph/ecosys](https://github.com/tigergraph/ecosys.git). The recommended value for persistent volume, cpu and memory are ~20% smaller than those of a single machine. Thus, each machine has exactly one pod.
-
-```bash
-//create kubectl namespace (here use "tigergraph" as namespace for an example)
-kubectl create ns tigergraph
+On GKE
+```
 git clone https://github.com/tigergraph/ecosys.git
 cd ecosys/k8s
-./tg gke kustomize -v 3.7.0 -n tigergraph -s 4 --pv 700 --cpu 30 --mem 200 -l [license string]
+./tg gke kustomize -s 2 --pv 280 --cpu 30 --mem 200 -l [license string]
 kubectl apply -f ./deploy/tigergraph-gke.yaml
 ```
 
@@ -42,11 +40,30 @@ Important: If you have a 1.22 or earlier cluster that you currently run pods on 
 Following the instructions on AWS documentation to add EBS CSI add-on before proceed.
 https://docs.aws.amazon.com/eks/latest/userguide/managing-ebs-csi.html
 
-
-```bash
-./tg eks kustomize -s 2 --pv 280 --cpu 30 --mem 200 -l [license string]
-kubectl apply -f ./deploy/tigergraph-eks.yaml
+Use ```kubectl get pods -n kube-system``` to check if EBS CSI driver is running. An example output is
 ```
+NAME                                  READY   STATUS    RESTARTS        AGE
+...
+coredns-5948f55769-kcnvx              1/1     Running   0               3d6h
+coredns-5948f55769-z7mbr              1/1     Running   0               3d6h
+ebs-csi-controller-75598cd6f4-48dp8   6/6     Running   0               3d4h
+ebs-csi-controller-75598cd6f4-sqbhw   6/6     Running   4 (2d11h ago)   3d4h
+ebs-csi-node-9cmbj                    3/3     Running   0               3d4h
+ebs-csi-node-g65ns                    3/3     Running   0               3d4h
+ebs-csi-node-qzflk                    3/3     Running   0               3d4h
+ebs-csi-node-x2t22                    3/3     Running   0               3d4h
+...
+```
+
+If the ebs csi driver is running, then run (here use "tigergraph" as namespace for an example)
+```bash
+kubectl create ns tigergraph
+git clone https://github.com/tigergraph/ecosys.git
+cd ecosys/k8s
+./tg gke kustomize -v 3.7.0 -n tigergraph -s 4 --pv 700 --cpu 30 --mem 200 -l [license string]
+kubectl apply -f ./deploy/tigergraph-eks-tigergraph.yaml
+```
+
 
 ## Verify deployment
 
@@ -63,17 +80,23 @@ Alternative verification commands include:
 kubectl get all -n tigergraph
 kubectl describe pod/tigergraph-0 -n tigergraph
 kubectl describe pvc -n tigergraph
-#check if the ebs csi driver pods are running successfully
-kubectl get pods -n kube-system
+
 ```
 
 
 ## Download data
-To download the data, service key json file must be located in ```k8s/```. The bucket is public now and any service key should work.
+To download the data, service key json file must be located in ```k8s/``` . The bucket is public now and any service key should work.
 1. Fill in the parameters in `vars.sh`.
     * `NUM_NODES` - number of nodes.
     * `SF` - data source, choices are 100, 300, 1000, 3000, 10000.
-    * `DOWNLOAD_THREAD` - number of download threads
+    * `DOWNLOAD_THREAD` - number of download threads    
+         
+
+
+         
+1. Make sure to put your own service key file in ```tigergraph/``` folder
+
+    Service key file with view only permission can be provided to auditor upon request.
 
 1. Run:
 
@@ -127,6 +150,9 @@ To download the data, service key json file must be located in ```k8s/```. The b
 kubectl delete all -l app=tigergraph
 kubectl delete pvc -l app=tigergraph
 kubectl delete namespace -n default
+# to delete EKS cluster
+kubectl delete svc [service-name]
+eksctl delete cluster --name [yourclustername]
 # to delete GKE cluster
 gcloud container clusters delete snb-bi-tg
 ```
