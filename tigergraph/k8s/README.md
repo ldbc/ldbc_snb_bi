@@ -11,13 +11,14 @@ Pre-requisites are
 
 ## Create the cluster
 
-Create [GKE container cluster](https://cloud.google.com/sdk/gcloud/reference/container/clusters/create) specifying machine type, number of nodes, disk size and disk type. For example,
+Create [GKE container cluster](https://cloud.google.com/sdk/gcloud/reference/container/clusters/create) specifying machine type, number of nodes, disk size and disk type. 
+Use SF1000 benchmark as an example:
 
 ```bash
 gcloud container clusters create snb-bi-tg --machine-type n2-highmem-32 --num-nodes=4 --disk-size 700 --disk-type=pd-ssd
 ```
 
-Or create [EKS cluster](https://docs.aws.amazon.com/eks/latest/userguide/create-cluster.html),
+Or create [EKS cluster](https://docs.aws.amazon.com/eks/latest/userguide/create-cluster.html), (the cluster creation takes long time)
 
 ```bash
 eksctl create cluster --name sf1000 --region us-east-2 --nodegroup-name tgtest --node-type r6a.8xlarge --nodes 4 --instance-prefix tg --instance-name eks-test
@@ -38,8 +39,8 @@ Or on EKS
 
 Important: If you have a 1.22 or earlier cluster that you currently run pods on that use Amazon EBS volumes, and you don't currently have this driver installed on your cluster, then be sure to install this driver to your cluster before updating the cluster to 1.23.
 
-Following the instructions on AWS documentation to add EBS CSI add-on before proceed.
-https://docs.aws.amazon.com/eks/latest/userguide/managing-ebs-csi.html
+Following the instructions on [AWS documentation](https://docs.aws.amazon.com/eks/latest/userguide/managing-ebs-csi.html) to add EBS CSI add-on before proceed.
+
 
 Use ```kubectl get pods -n kube-system``` to check if EBS CSI driver is running. An example output is
 ```
@@ -75,6 +76,7 @@ NAME              READY   STATUS    RESTARTS   AGE
 installer-cztjf   1/1     Running   0          5m23s
 tigergraph-0      1/1     Running   0          5m24s
 tigergraph-1      1/1     Running   0          3m11s
+...
 ``` 
 Alternative verification commands include:
 ```
