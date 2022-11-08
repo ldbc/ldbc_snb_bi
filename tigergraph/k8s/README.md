@@ -9,17 +9,17 @@ Pre-requisites are
 
 > Benchmark can also be performed on local clusters without k8s. But the setup is susceptible to errors and safety issues. Brief instructions are in [Section: Benchmark without k8s](../benchmark_on_cluster).
 
+The below instruciton is for the setup of SF-1000 benchmark on a 4-node k8s cluster.
+
 ## Create the cluster
 
-Create [GKE container cluster](https://cloud.google.com/sdk/gcloud/reference/container/clusters/create) specifying machine type, number of nodes, disk size and disk type. 
-Use SF1000 benchmark as an example:
+Create [GKE container cluster](https://cloud.google.com/sdk/gcloud/reference/container/clusters/create) specifying machine type, number of nodes, disk size and disk type. This step can take long time.
 
 ```bash
-gcloud container clusters create snb-bi-tg --machine-type n2-highmem-32 --num-nodes=4 --disk-size 700 --disk-type=pd-ssd
+gcloud container clusters create snb-bi-tg --machine-type n2d-highmem-32 --num-nodes=4 --disk-size 700 --disk-type=pd-ssd
 ```
 
-Or create [EKS cluster](https://docs.aws.amazon.com/eks/latest/userguide/create-cluster.html), (the cluster creation takes long time)
-
+Or create [EKS cluster](https://docs.aws.amazon.com/eks/latest/userguide/create-cluster.html),
 ```bash
 eksctl create cluster --name sf1000 --region us-east-2 --nodegroup-name tgtest --node-type r6a.8xlarge --nodes 4 --instance-prefix tg --instance-name eks-test
 ```
