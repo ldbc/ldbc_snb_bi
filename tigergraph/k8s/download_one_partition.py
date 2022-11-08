@@ -129,7 +129,7 @@ if args.thread > 1:
 print("download parameters")
 client = storage.Client()  
 gcs_bucket = client.bucket('ldbc_bi')
-blobs = gcs_bucket.list_blobs(prefix=f'parameters-sf{args.data}')  # Get list of files
+blobs = gcs_bucket.list_blobs(prefix=f'parameters-sf{args.data}/')  # Get list of files
 for blob in blobs:
     if blob.name.endswith("/"):
       continue

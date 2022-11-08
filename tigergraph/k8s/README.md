@@ -9,53 +9,98 @@ Pre-requisites are
 
 > Benchmark can also be performed on local clusters without k8s. But the setup is susceptible to errors and safety issues. Brief instructions are in [Section: Benchmark without k8s](../benchmark_on_cluster).
 
+The below instruciton is for the setup of SF-1000 benchmark on a 4-node k8s cluster.
+
 ## Create the cluster
 
-Create [GKE container cluster](https://cloud.google.com/sdk/gcloud/reference/container/clusters/create) specifying machine type, number of nodes, disk size and disk type. For example,
+Create [GKE container cluster](https://cloud.google.com/sdk/gcloud/reference/container/clusters/create) specifying machine type, number of nodes, disk size and disk type. This step can take long time.
 
 ```bash
-gcloud container clusters create snb-bi-tg --machine-type n2-highmem-32 --num-nodes=2 --disk-size 300 --disk-type=pd-ssd
+gcloud container clusters create snb-bi-tg --machine-type n2d-highmem-32 --num-nodes=4 --disk-size 700 --disk-type=pd-ssd
 ```
 
 Or create [EKS cluster](https://docs.aws.amazon.com/eks/latest/userguide/create-cluster.html),
-
 ```bash
-eksctl create cluster --name test --region us-east-2 --nodegroup-name tgtest --node-type r5.xlarge --nodes 2 --instance-prefix tg --instance-name eks-test 
+eksctl create cluster --name sf1000 --region us-east-2 --nodegroup-name tgtest --node-type r6a.8xlarge --nodes 4 --instance-prefix tg --instance-name eks-test
 ```
 
 ## Deploy TG containers
 Deploy the containers using the script `k8s/tg` from [tigergraph/ecosys](https://github.com/tigergraph/ecosys.git). The recommended value for persistent volume, cpu and memory are ~20% smaller than those of a single machine. Thus, each machine has exactly one pod.
 
-```bash
+On GKE
+```
 git clone https://github.com/tigergraph/ecosys.git
 cd ecosys/k8s
-./tg gke kustomize -s 2 --pv 280 --cpu 30 --mem 200 -l [license string]
-kubectl apply -f ./deploy/tigergraph-gke.yaml
+./tg gke kustomize -v 3.7.0 -n tigergraph -s 4 --pv 700 --cpu 30 --mem 200 -l [license string]
+kubectl apply -f ./deploy/tigergraph-eks-tigergraph.yaml
 ```
 
 Or on EKS 
 
-```bash
-./tg eks kustomize -s 2 --pv 280 --cpu 30 --mem 200 -l [license string]
-kubectl apply -f ./deploy/tigergraph-eks.yaml
+Important: If you have a 1.22 or earlier cluster that you currently run pods on that use Amazon EBS volumes, and you don't currently have this driver installed on your cluster, then be sure to install this driver to your cluster before updating the cluster to 1.23.
+
+Following the instructions on [AWS documentation](https://docs.aws.amazon.com/eks/latest/userguide/managing-ebs-csi.html) to add EBS CSI add-on before proceed.
+
+
+Use ```kubectl get pods -n kube-system``` to check if EBS CSI driver is running. An example output is
 ```
+NAME                                  READY   STATUS    RESTARTS        AGE
+...
+coredns-5948f55769-kcnvx              1/1     Running   0               3d6h
+coredns-5948f55769-z7mbr              1/1     Running   0               3d6h
+ebs-csi-controller-75598cd6f4-48dp8   6/6     Running   0               3d4h
+ebs-csi-controller-75598cd6f4-sqbhw   6/6     Running   4 (2d11h ago)   3d4h
+ebs-csi-node-9cmbj                    3/3     Running   0               3d4h
+ebs-csi-node-g65ns                    3/3     Running   0               3d4h
+ebs-csi-node-qzflk                    3/3     Running   0               3d4h
+ebs-csi-node-x2t22                    3/3     Running   0               3d4h
+...
+```
+
+If the ebs csi driver is installed, then run (here use "tigergraph" as namespace for an example)
+```bash
+kubectl create ns tigergraph
+git clone https://github.com/tigergraph/ecosys.git
+cd ecosys/k8s
+./tg eks kustomize -v 3.7.0 -n tigergraph -s 4 --pv 700 --cpu 30 --mem 200 -l [license string]
+kubectl apply -f ./deploy/tigergraph-eks-tigergraph.yaml
+```
+
 
 ## Verify deployment
 
-Deployment can take several minutes. Use `kubectl get pod` to verify the deployment. An example output is
+Deployment can take several minutes. Use `kubectl get pod -n tigergraph` to verify the deployment. An example output is
 
 ```
 NAME              READY   STATUS    RESTARTS   AGE
 installer-cztjf   1/1     Running   0          5m23s
 tigergraph-0      1/1     Running   0          5m24s
 tigergraph-1      1/1     Running   0          3m11s
+...
 ``` 
-## Download data
+Alternative verification commands include:
+```
+kubectl get all -n tigergraph
+kubectl describe pod/tigergraph-0 -n tigergraph
+kubectl describe pvc -n tigergraph
 
+```
+
+
+## Download data
+To download the data, service key json file must be located in ```k8s/``` . The bucket is public now and any service key should work.
 1. Fill in the parameters in `vars.sh`.
     * `NUM_NODES` - number of nodes.
     * `SF` - data source, choices are 100, 300, 1000, 3000, 10000.
-    * `DOWNLOAD_THREAD` - number of download threads
+    * `DOWNLOAD_THREAD` - number of download threads    
+         
+
+
+         
+1. Put your own service key file in ```tigergraph/``` folder.
+    
+    Our bucket is public, and any google cloud service key is able to access the data. To create service key, refer to Google Cloud documentation.
+    
 
 1. Run:
 
@@ -109,6 +154,9 @@ tigergraph-1      1/1     Running   0          3m11s
 kubectl delete all -l app=tigergraph
 kubectl delete pvc -l app=tigergraph
 kubectl delete namespace -n default
+# to delete EKS cluster
+kubectl delete svc [service-name]
+eksctl delete cluster --name [yourclustername]
 # to delete GKE cluster
 gcloud container clusters delete snb-bi-tg
 ```
