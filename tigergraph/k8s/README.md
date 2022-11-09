@@ -121,7 +121,7 @@ To download the data, service key json file must be located in ```k8s/``` . The 
 1. Log into the k8s cluster 
 
     ```bash
-    kubectl exec -it tigergraph-0 -- bash
+    kubectl exec -it tigergraph-0 -n tigergraph -- bash
     ```
 
 1. In the container, run the following command. (It is recommended to run scripts in the background because it usualy takes long time for large scale factors.)
@@ -151,9 +151,9 @@ To download the data, service key json file must be located in ```k8s/``` . The 
 
 ```bash
 # to delete the K8S pods and volumes
-kubectl delete all -l app=tigergraph
-kubectl delete pvc -l app=tigergraph
-kubectl delete namespace -n default
+kubectl delete all -l app=tigergraph -n tigergraph
+kubectl delete pvc -l app=tigergraph -n tigergraph
+kubectl delete namespace -n default -n tigergraph
 # to delete EKS cluster
 kubectl delete svc [service-name]
 eksctl delete cluster --name [yourclustername]
