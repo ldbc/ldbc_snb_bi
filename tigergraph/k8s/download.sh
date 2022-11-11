@@ -14,7 +14,7 @@ for i in $( seq 0 $((NUM_NODES-1)) ); do
   echo "tigergraph-$i: Start download"
   kubectl exec tigergraph-${i} -n tigergraph -- bash -c \
       "tar -xf tmp.tar; 
-      ./k8s/vars.sh; 
+      . k8s/vars.sh; 
       export SERVICE_KEY=-k\ key.json;
       bash ./k8s/download_decompress.sh $i > log.download 2>&1 &"  
 done

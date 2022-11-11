@@ -16,7 +16,7 @@ The below instruciton is for the setup of SF-1000 benchmark on a 4-node k8s clus
 Create [GKE container cluster](https://cloud.google.com/sdk/gcloud/reference/container/clusters/create) specifying machine type, number of nodes, disk size and disk type. This step can take long time.
 
 ```bash
-gcloud container clusters create snb-bi-tg --machine-type n2d-highmem-32 --num-nodes=4 --disk-size 700 --disk-type=pd-ssd
+gcloud container clusters create sf1000 --machine-type n2d-highmem-32 --num-nodes=4 --disk-size 700 --disk-type=pd-ssd
 ```
 
 Or create [EKS cluster](https://docs.aws.amazon.com/eks/latest/userguide/create-cluster.html),
@@ -109,7 +109,7 @@ To download the data, service key json file must be located in ```k8s/``` . The 
     ```
     It will start background processes on each pods to download and decompress the data.
 
-1. To check if the data is downloaded successfully, log into the cluster using `kubectl exec -it tigergraph-0 -- bash` and then run
+1. To check if the data is downloaded successfully, log into the cluster using `kubectl exec -it tigergraph-0 -n tigergraph -- bash` and then run
 
     ```bash
     grun all 'tail ~/log.download' # last line should be 'download and decompress finished'
