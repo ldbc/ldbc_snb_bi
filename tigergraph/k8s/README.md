@@ -109,7 +109,7 @@ To download the data, service key json file must be located in ```k8s/``` . The 
     ```
     It will start background processes on each pods to download and decompress the data.
 
-1. To check if the data is downloaded successfully, log into the cluster using `kubectl exec -it tigergraph-0 -- bash` and then run
+1. To check if the data is downloaded successfully, log into the cluster using `kubectl exec -it tigergraph-0 -n tigergraph -- bash` and then run
 
     ```bash
     grun all 'tail ~/log.download' # last line should be 'download and decompress finished'
