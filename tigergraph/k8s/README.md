@@ -153,7 +153,7 @@ To download the data, service key json file must be located in ```k8s/``` . The 
 # to delete the K8S pods and volumes
 kubectl delete all -l app=tigergraph -n tigergraph
 kubectl delete pvc -l app=tigergraph -n tigergraph
-kubectl delete namespace -n default -n tigergraph
+kubectl delete namespace -n tigergraph
 # to delete EKS cluster
 kubectl delete svc [service-name]
 eksctl delete cluster --name [yourclustername]
