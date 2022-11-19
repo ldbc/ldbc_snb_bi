@@ -13,7 +13,13 @@ The below instruciton is for the setup of SF-1000 benchmark on a 4-node k8s clus
 
 ## Create the cluster
 
-create [EKS cluster](https://docs.aws.amazon.com/eks/latest/userguide/create-cluster.html),
+Create [GKE container cluster](https://cloud.google.com/sdk/gcloud/reference/container/clusters/create) specifying machine type, number of nodes, disk size and disk type. This step can take long time.
+
+```bash
+gcloud container clusters create sf1000 --machine-type n2d-highmem-32 --num-nodes=4 --disk-size 700 --disk-type=pd-ssd
+```
+
+Or create [EKS cluster](https://docs.aws.amazon.com/eks/latest/userguide/create-cluster.html),
 ```bash
 eksctl create cluster --name sf1000 --region us-east-2 --nodegroup-name tgtest --node-type r6a.8xlarge --nodes 4 --instance-prefix tg --instance-name eks-test
 ```
@@ -21,7 +27,15 @@ eksctl create cluster --name sf1000 --region us-east-2 --nodegroup-name tgtest -
 ## Deploy TG containers
 Deploy the containers using the script `k8s/tg` from [tigergraph/ecosys](https://github.com/tigergraph/ecosys.git). The recommended value for persistent volume, cpu and memory are ~20% smaller than those of a single machine. Thus, each machine has exactly one pod.
 
-on EKS 
+On GKE
+```
+git clone https://github.com/tigergraph/ecosys.git
+cd ecosys/k8s
+./tg gke kustomize -v 3.7.0 -n tigergraph -s 4 --pv 700 --cpu 30 --mem 200 -l [license string]
+kubectl apply -f ./deploy/tigergraph-eks-tigergraph.yaml
+```
+
+Or on EKS 
 
 Important: If you have a 1.22 or earlier cluster that you currently run pods on that use Amazon EBS volumes, and you don't currently have this driver installed on your cluster, then be sure to install this driver to your cluster before updating the cluster to 1.23.
 
@@ -43,56 +57,19 @@ ebs-csi-node-x2t22                    3/3     Running   0               3d4h
 ...
 ```
 
-If the ebs csi driver is installed, then install k8s operator
-
-### 1. Prerequisite: install Helm
-curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
-chmod 700 get_helm.sh
-./get_helm.sh
-### 2. Install Cert-manager for K8S for every cluster
-kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.8.0/cert-manager.yaml 
-
-#Verify installation of cert-manager
-kubectl wait deployment -n cert-manager cert-manager --for condition=Available=True --timeout=90s
-kubectl wait deployment -n cert-manager cert-manager-cainjector --for condition=Available=True --timeout=90s
-kubectl wait deployment -n cert-manager cert-manager-webhook --for condition=Available=True --timeout=90s
-### 3. Create a secret
-cat <<EOF | kubectl apply -f -
-apiVersion: v1
-data:
-  .dockerconfigjson: eyJhdXRocyI6eyJodHRwczovL2luZGV4LmRvY2tlci5pby92MS8iOnsiYXV0aCI6ImFtVnljbmxtWVc1NVlXNW5PbFJwWjJWeVozSmhjR2hBTWpBeU1nPT0ifX19
-kind: Secret
-metadata:
-  name: tigergraph-image-pull-secret
-type: kubernetes.io/dockerconfigjson
-EOF
-### 4. Install Tigergraph kubectl Plugin
-curl https://dl.tigergraph.com/k8s/0.0.1/kubectl-tg -o kubectl-tg
-sudo install kubectl-tg /usr/local/bin/
-kubectl tg help
-### 5. Install Tigergrap Operator 
-Install Tigergraph Operator with Helm
-export VERSION=0.0.4
-export DOCKER_REGISTRY=docker.io
-export DOCKER_IMAGE_REPO=tginternal
-export HELM_REPO=http://docker.tigergraph.com
-export TG_CLUSTER_VERSION_DEFAULT=3.7.0
-kubectl tg init --helm-repo ${HELM_REPO} --docker-registry ${DOCKER_REGISTRY} --docker-image-repo ${DOCKER_IMAGE_REPO} --image-pull-policy Always --operator-version ${VERSION}
-
-### 6. Create TG cluster -- install PODS
-#please make sure the value of --storage-class
-#if you're not sure about the value of --storage-class, 
-#you can execute kubectl get storageclass to query it.
-``` 
-kubectl tg create --cluster-name tigergraph --size 4 --ha 1 --docker-registry ${DOCKER_REGISTRY} --docker-image-repo ${DOCKER_IMAGE_REPO} \
-    --version ${TG_CLUSTER_VERSION_DEFAULT} --storage-class gp2 --storage-size 100G --cpu 6000m --memory 50Gi 
+If the ebs csi driver is installed, then run (here use "tigergraph" as namespace for an example)
+```bash
+kubectl create ns tigergraph
+git clone https://github.com/tigergraph/ecosys.git
+cd ecosys/k8s
+./tg eks kustomize -v 3.7.0 -n tigergraph -s 4 --pv 700 --cpu 30 --mem 200 -l [license string]
+kubectl apply -f ./deploy/tigergraph-eks-tigergraph.yaml
 ```
-
 
 
 ## Verify deployment
 
-Deployment can take several minutes. Use `kubectl get pod` to verify the deployment. An example output is
+Deployment can take several minutes. Use `kubectl get pod -n tigergraph` to verify the deployment. An example output is
 
 ```
 NAME              READY   STATUS    RESTARTS   AGE
@@ -103,9 +80,9 @@ tigergraph-1      1/1     Running   0          3m11s
 ``` 
 Alternative verification commands include:
 ```
-kubectl get all 
-kubectl describe pod/tigergraph-0
-kubectl describe pvc 
+kubectl get all -n tigergraph
+kubectl describe pod/tigergraph-0 -n tigergraph
+kubectl describe pvc -n tigergraph
 
 ```
 
@@ -132,7 +109,7 @@ To download the data, service key json file must be located in ```k8s/``` . The 
     ```
     It will start background processes on each pods to download and decompress the data.
 
-1. To check if the data is downloaded successfully, log into the cluster using `kubectl exec -it tigergraph-0 -- bash` and then run
+1. To check if the data is downloaded successfully, log into the cluster using `kubectl exec -it tigergraph-0 -n tigergraph -- bash` and then run
 
     ```bash
     grun all 'tail ~/log.download' # last line should be 'download and decompress finished'
@@ -144,7 +121,7 @@ To download the data, service key json file must be located in ```k8s/``` . The 
 1. Log into the k8s cluster 
 
     ```bash
-    kubectl exec -it tigergraph-0 -- bash
+    kubectl exec -it tigergraph-0 -n tigergraph -- bash
     ```
 
 1. In the container, run the following command. (It is recommended to run scripts in the background because it usualy takes long time for large scale factors.)
@@ -174,8 +151,12 @@ To download the data, service key json file must be located in ```k8s/``` . The 
 
 ```bash
 # to delete the K8S pods and volumes
-kubectl delete all -l app=tigergraph 
-kubectl delete pvc -l app=tigergraph 
-kubectl delete namespace 
+kubectl delete all -l app=tigergraph -n tigergraph
+kubectl delete pvc -l app=tigergraph -n tigergraph
+kubectl delete namespace -n tigergraph
 # to delete EKS cluster
+kubectl delete svc [service-name]
 eksctl delete cluster --name [yourclustername]
+# to delete GKE cluster
+gcloud container clusters delete snb-bi-tg
+```
