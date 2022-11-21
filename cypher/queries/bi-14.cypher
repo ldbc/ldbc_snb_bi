@@ -12,16 +12,16 @@ MATCH
 WITH person1, person2, city1, 0 AS score
 // case 1
 OPTIONAL MATCH (person1)<-[:HAS_CREATOR]-(c:Comment)-[:REPLY_OF]->(:Message)-[:HAS_CREATOR]->(person2)
-WITH DISTINCT person1, person2, city1, score + (CASE WHEN c IS NUL THEN 0 ELSE  4 END) AS score
+WITH DISTINCT person1, person2, city1, score + (CASE WHEN c IS NULL THEN 0 ELSE  4 END) AS score
 // case 2
 OPTIONAL MATCH (person1)<-[:HAS_CREATOR]-(m:Message)<-[:REPLY_OF]-(:Comment)-[:HAS_CREATOR]->(person2)
 WITH DISTINCT person1, person2, city1, score + (CASE WHEN m IS NULL THEN 0 ELSE  1 END) AS score
 // case 3
 OPTIONAL MATCH (person1)-[:LIKES]->(m:Message)-[:HAS_CREATOR]->(person2)
-WITH DISTINCT person1, person2, city1, score + (CASE WHEN m IS null THEN 0 ELSE 10 END) AS score
+WITH DISTINCT person1, person2, city1, score + (CASE WHEN m IS NULL THEN 0 ELSE 10 END) AS score
 // case 4
 OPTIONAL MATCH (person1)<-[:HAS_CREATOR]-(m:Message)<-[:LIKES]-(person2)
-WITH DISTINCT person1, person2, city1, score + (CASE WHEN m IS null THEN 0 ELSE  1 END) AS score
+WITH DISTINCT person1, person2, city1, score + (CASE WHEN m IS NULL THEN 0 ELSE  1 END) AS score
 // preorder
 ORDER BY
   city1.name ASC,
