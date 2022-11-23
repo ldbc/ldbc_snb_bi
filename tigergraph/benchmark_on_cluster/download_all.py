@@ -10,8 +10,7 @@ import os
 
 parser = argparse.ArgumentParser(description='Download and uncompress the data on all the nodes.')
 parser.add_argument('data',  type=int, choices=[100, 300, 1000, 3000, 10000, 30000], help='data scale factor.')
-parser.add_argument('ip', type=str, help='starting ip address')
-parser.add_argument('nodes', type=int, help='the number of nodes')
+parser.add_argument('ip', type=str, help='either an starting ip with number of nodes "ip_start:nodes" or a file of IP list')
 parser.add_argument('--key','-k', type=str, default=None, help='location of the service key json file')
 parser.add_argument('--thread','-t', type=int, default=1, help='number of threads for each node')
 parser.add_argument('--parts','-p', type=int, default=0, help='number of parts to split the data (0 means the same as node number)')
@@ -42,12 +41,23 @@ def main():
   stats = storage.Blob(bucket=bucket, name=root).exists(storage_client)
   print("The bucket can be accessed")
   
-  
-  start_ip = args.ip.split('.')
-  for i in range(args.nodes):
-    ip4 = int(start_ip[-1]) + i
-    ip = start_ip[:-1] + [str(ip4)]
-    ip = '.'.join(ip)
+  ip_list = []
+  if ":" in args.ip:
+    # args.ip is "start_ip:nodes" 
+    start, nodes = args.ip.split(":")
+    start_ip = start.split('.')
+    for i in range(nodes):
+      ip4 = int(start_ip[-1]) + i
+      ip = start_ip[:-1] + [str(ip4)]
+      ip_list.append('.'.join(ip))
+  else:
+    # args.ip is a file of ips
+    with f as open(args.ip,'r'):
+      for ip_str in f:
+        if len(ip_str.split('.')) != 4: continue
+        ip_list.append(args.ip)
+    
+  for ip in ip_list:
     ssh = createSSHClient(ip, 22, user, pin)
     scp = SCPClient(ssh.get_transport())
     print(f'logging to {ip}')
