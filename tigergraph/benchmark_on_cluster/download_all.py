@@ -52,12 +52,12 @@ def main():
       ip_list.append('.'.join(ip))
   else:
     # args.ip is a file of ips
-    with f as open(args.ip,'r'):
+    with open(args.ip,'r') as f:
       for ip_str in f:
         if len(ip_str.split('.')) != 4: continue
-        ip_list.append(args.ip)
+        ip_list.append(ip_str.strip())
     
-  for ip in ip_list:
+  for i,ip in enumerate(ip_list):
     ssh = createSSHClient(ip, 22, user, pin)
     scp = SCPClient(ssh.get_transport())
     print(f'logging to {ip}')
@@ -72,7 +72,7 @@ def main():
       pip3 install google-cloud-storage 
       export SF={args.data}
       export i={i + args.start}
-      export NUM_NODES={args.parts if args.parts else args.nodes}
+      export NUM_NODES={args.parts if args.parts else len(ip_list)}
       export target=~
       export DOWNLOAD_THREAD={args.thread}
       export SERVICE_KEY="{key}"
