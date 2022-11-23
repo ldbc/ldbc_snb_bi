@@ -22,6 +22,17 @@ fi
 
 sudo $installer -y update
 sudo $installer -y install net-tools sshpass parallel git gzip python3-pip
+
+# if parallel package is not available
+if ! command -v parallel > /dev/null; then
+  sudo $installer -y install bzip2 
+  wget http://ftp.gnu.org/gnu/parallel/parallel-latest.tar.bz2
+  tar xjf parallel-latest.tar.bz2
+  cd parallel-20*
+  ./configure && make
+  sudo make install
+fi
+
 sudo python3 -m pip install --upgrade pip
 sudo pip3 install google-cloud-storage
 echo 'done setup'

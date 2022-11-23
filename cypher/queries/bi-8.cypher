@@ -14,7 +14,7 @@ WITH tag, collect(person) AS interestedPersons
 OPTIONAL MATCH (tag)<-[:HAS_TAG]-(message:Message)-[:HAS_CREATOR]->(person:Person)
          WHERE $startDate < message.creationDate
            AND message.creationDate < $endDate
-WITH tag, interestedPersons + collect(person) AS persons
+WITH tag, interestedPersons, interestedPersons + collect(person) AS persons
 UNWIND persons AS person
 WITH DISTINCT tag, person
 WITH
