@@ -15,7 +15,10 @@ CREATE INDEX FOR (n:Person)    ON n.firstName;
 CREATE INDEX FOR (n:Tag)       ON n.name;
 CREATE INDEX FOR (n:TagClass)  ON n.name;
 
-// creationDate
+// creationDate of nodes
 CREATE INDEX FOR (n:Message)   ON n.creationDate;
 CREATE INDEX FOR (n:Post)      ON n.creationDate;
 CREATE INDEX FOR (n:Forum)     ON n.creationDate;
+
+// creationDate of edges
+CREATE INDEX FOR ()-[e:KNOWS]-() ON e.creationDate;
