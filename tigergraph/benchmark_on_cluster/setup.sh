@@ -22,7 +22,7 @@ fi
 
 sudo $installer -y update
 sudo $installer -y install net-tools sshpass parallel git gzip python3-pip
-
+sudo $installer -y install wget git
 # if parallel package is not available
 if ! command -v parallel > /dev/null; then
   sudo $installer -y install bzip2 wget
