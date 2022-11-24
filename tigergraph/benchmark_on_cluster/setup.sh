@@ -25,7 +25,7 @@ sudo $installer -y install net-tools sshpass parallel git gzip python3-pip
 
 # if parallel package is not available
 if ! command -v parallel > /dev/null; then
-  sudo $installer -y install bzip2 
+  sudo $installer -y install bzip2 wget
   wget http://ftp.gnu.org/gnu/parallel/parallel-latest.tar.bz2
   tar xjf parallel-latest.tar.bz2
   cd parallel-20*
