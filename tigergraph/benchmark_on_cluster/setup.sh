@@ -22,9 +22,14 @@ fi
 sudo $installer -y update
 sudo $installer -y install wget git
 sudo $installer -y install net-tools sshpass parallel git gzip python3-pip
+# if sshpass package is not available for the current OS, then the following code block can install it.
+if command -v sshpass >/dev/null; then
+echo "sshpass installed"
+else
 wget https://archives.fedoraproject.org/pub/archive/epel/6/x86_64/epel-release-6-8.noarch.rpm
 sudo rpm -ivh epel-release-6-8.noarch.rpm
 sudo yum --enablerepo=epel -y install sshpass
+fi
 # if parallel package is not available
 if ! command -v parallel > /dev/null; then
   sudo $installer -y install bzip2 
