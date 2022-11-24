@@ -19,13 +19,24 @@ else
   echo "Require apt or yum"
   exit 0
 fi
-
 sudo $installer -y update
-sudo $installer -y install net-tools sshpass parallel git gzip python3-pip
 sudo $installer -y install wget git
+sudo $installer -y install net-tools sshpass parallel git gzip python3-pip
+# if sshpass package is not available.
+if command -v sshpass >/dev/null; then
+echo "sshpass installed"
+elif command -v rpm >/dev/null; then
+# install sshpass on rpm-based system
+wget https://archives.fedoraproject.org/pub/archive/epel/6/x86_64/epel-release-6-8.noarch.rpm
+sudo rpm -ivh epel-release-6-8.noarch.rpm
+sudo yum --enablerepo=epel -y install sshpass
+else
+# install sshpass on deb-based system
+sudo apt install sshpass
+fi
 # if parallel package is not available
 if ! command -v parallel > /dev/null; then
-  sudo $installer -y install bzip2 wget
+  sudo $installer -y install bzip2 
   wget http://ftp.gnu.org/gnu/parallel/parallel-latest.tar.bz2
   tar xjf parallel-latest.tar.bz2
   cd parallel-20*
@@ -35,4 +46,5 @@ fi
 
 sudo python3 -m pip install --upgrade pip
 sudo pip3 install google-cloud-storage
+sudo pip3 install paramiko scp
 echo 'done setup'
