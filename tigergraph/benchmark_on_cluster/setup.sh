@@ -22,7 +22,7 @@ fi
 sudo $installer -y update
 sudo $installer -y install wget git
 sudo $installer -y install net-tools sshpass parallel git gzip python3-pip
-# if sshpass is not available, then install sshpass on rpm-ased system .
+# if sshpass package is not available.
 if command -v sshpass >/dev/null; then
 echo "sshpass installed"
 elif command -v rpm >/dev/null; then
