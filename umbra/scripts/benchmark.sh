@@ -9,7 +9,7 @@ cd ..
 . scripts/vars.sh
 
 echo "==============================================================================="
-echo "Loading Umbra benchmark"
+echo "Running Umbra benchmark"
 echo "-------------------------------------------------------------------------------"
 echo "SF: ${SF}"
 echo "UMBRA_DATABASE_DIR: ${UMBRA_DATABASE_DIR}"
