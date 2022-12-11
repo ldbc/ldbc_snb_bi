@@ -25,7 +25,7 @@ def run_script(pg_con, cur, filename):
         queries_file = re.sub(r"\n--.*", "", queries_file)
         queries = queries_file.split(";")
         for query in queries:
-            if query.isspace():
+            if query == "" or query.isspace():
                 continue
 
             sql_statement = re.findall(r"^((CREATE|INSERT|DROP|DELETE|SELECT|COPY|UPDATE|ALTER) [A-Za-z0-9_ ]*)", query, re.MULTILINE)

@@ -8,17 +8,15 @@ CREATE TABLE Top100PopularForumsQ04(
 INSERT INTO Top100PopularForumsQ04(id, creationDate, maxNumberOfMembers)
 SELECT ForumId AS id, ForumCreationDate as creationDate, max(numberOfMembers) AS maxNumberOfMembers
 FROM (
-SELECT Forum.id AS ForumId, Forum.creationDate as ForumCreationDate, count(Person.id) AS numberOfMembers, Country.id AS CountryId
+SELECT Forum.id AS ForumId, Forum.creationDate as ForumCreationDate, count(Person.id) AS numberOfMembers, City.PartOfCountryId AS CountryId
     FROM Forum_hasMember_Person
     JOIN Person
     ON Person.id = Forum_hasMember_Person.PersonId
     JOIN City
     ON City.id = Person.LocationCityId
-    JOIN Country
-    ON Country.id = City.PartOfCountryId
     JOIN Forum
     ON Forum_hasMember_Person.ForumId = Forum.id
-    GROUP BY Country.Id, Forum.Id, Forum.creationDate
+    GROUP BY City.PartOfCountryId, Forum.Id, Forum.creationDate
 ) ForumMembershipPerCountry
 GROUP BY ForumId, ForumCreationDate;
 ALTER TABLE Top100PopularForumsQ04 ADD PRIMARY KEY (id);
