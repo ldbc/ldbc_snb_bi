@@ -162,7 +162,7 @@ INSERT INTO Comment_Delete_candidates
 SELECT Post_Delete_candidates.deletionDate AS deletionDate, Comment_View.id AS id
 FROM Comment_View
 JOIN Post_Delete_candidates
-  ON Post_Delete_candidates.id = Comment_View.ParentPostId
+  ON Post_Delete_candidates.id = Comment_View.ParentMessageId
 ;
 
 ----------------------------------------------------------------------------------------------------

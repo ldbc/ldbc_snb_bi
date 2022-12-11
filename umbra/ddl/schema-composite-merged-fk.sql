@@ -191,10 +191,7 @@ CREATE TABLE Message (
     CreatorPersonId bigint not null,
     ContainerForumId bigint,
     LocationCountryId bigint not null,
-    ParentMessageId bigint,
-    ParentPostId bigint,
-    ParentCommentId bigint,
-    type text
+    ParentMessageId bigint
 ) WITH (storage = paged);
 
 CREATE TABLE Person_likes_Message (
@@ -212,7 +209,7 @@ CREATE TABLE Message_hasTag_Tag (
 -- views
 
 CREATE VIEW Comment_View AS
-    SELECT creationDate, MessageId AS id, locationIP, browserUsed, content, length, CreatorPersonId, LocationCountryId, ParentPostId, ParentCommentId
+    SELECT creationDate, MessageId AS id, locationIP, browserUsed, content, length, CreatorPersonId, LocationCountryId, ParentMessageId
     FROM Message
     WHERE ParentMessageId IS NOT NULL;
 

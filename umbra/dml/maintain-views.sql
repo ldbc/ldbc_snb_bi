@@ -15,10 +15,7 @@ SELECT
     CreatorPersonId,
     ContainerForumId,
     LocationCountryId,
-    NULL::bigint AS ParentMessageId,
-    NULL::bigint AS ParentPostId,
-    NULL::bigint AS ParentCommentId,
-    'Post' AS type
+    NULL::bigint AS ParentMessageId
 FROM Post;
 
 DROP TABLE IF EXISTS Post;
@@ -61,10 +58,7 @@ INSERT INTO Message
         Comment.CreatorPersonId AS CreatorPersonId,
         Message_CTE.ContainerForumId AS ContainerForumId,
         Comment.LocationCountryId AS LocationCityId,
-        coalesce(Comment.ParentPostId, Comment.ParentCommentId) AS ParentMessageId,
-        Comment.ParentPostId,
-        Comment.ParentCommentId,
-        'Comment' AS type
+        coalesce(Comment.ParentPostId, Comment.ParentCommentId) AS ParentMessageId
     FROM Message_CTE
     JOIN Comment
       ON FORCEORDER(Message_CTE.MessageId = Comment.id)
