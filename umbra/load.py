@@ -4,6 +4,7 @@ import os
 import re
 import time
 import argparse
+from queries import run_script
 
 
 parser = argparse.ArgumentParser()
@@ -17,25 +18,6 @@ local = args.local
 pg_con = psycopg2.connect(host="localhost", user="postgres", password="mysecretpassword", port=8000)
 pg_con.autocommit = True
 cur = pg_con.cursor()
-
-def run_script(pg_con, cur, filename):
-    with open(filename, "r") as f:
-        queries_file = f.read()
-        # strip comments
-        queries_file = re.sub(r"\n--.*", "", queries_file)
-        queries = queries_file.split(";")
-        for query in queries:
-            if query == "" or query.isspace():
-                continue
-
-            sql_statement = re.findall(r"^((CREATE|INSERT|DROP|DELETE|SELECT|COPY|UPDATE|ALTER) [A-Za-z0-9_ ]*)", query, re.MULTILINE)
-            print(f"{sql_statement[0][0].strip()} ...")
-            start = time.time()
-            cur.execute(query)
-            pg_con.commit()
-            end = time.time()
-            duration = end - start
-            print(f"-> {duration:.4f} seconds")
 
 run_script(pg_con, cur, "ddl/drop-tables.sql")
 run_script(pg_con, cur, "ddl/schema-composite-merged-fk.sql")

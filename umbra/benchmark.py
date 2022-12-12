@@ -32,17 +32,23 @@ def run_batch_updates(pg_con, data_dir, batch_date, batch_type, timings_file):
         for csv_file in [f for f in os.listdir(batch_path) if f.endswith(".csv")]:
             csv_path = f"{batch_path}/{csv_file}"
             print(f"- {csv_path}")
+            execute(cur, "BEGIN BULK WRITE;")
             execute(cur, f"COPY {entity} FROM '{dbs_data_dir}/inserts/dynamic/{entity}/{batch_dir}/{csv_file}' (DELIMITER '|', HEADER, NULL '', FORMAT text)")
+            execute(cur, "COMMIT;")
             if entity == "Person_knows_Person":
+                execute(cur, "BEGIN BULK WRITE;")
                 execute(cur, f"COPY {entity} (creationDate, Person2id, Person1id) FROM '{dbs_data_dir}/inserts/dynamic/{entity}/{batch_dir}/{csv_file}' (DELIMITER '|', HEADER, NULL '', FORMAT text)")
-            pg_con.commit()
+                execute(cur, "COMMIT;")
+            
 
     print("## Deletes")
     # Deletes are implemented using a SQL script which use auxiliary tables.
     # Entities to be deleted are first put into {entity}_Delete_candidate tables.
     # These are cleaned up before running the delete script.
     for entity in delete_entities:
+        execute(cur, "BEGIN BULK WRITE;")
         execute(cur, f"DELETE FROM {entity}_Delete_candidates")
+        execute(cur, "COMMIT;")
 
         batch_path = f"{data_dir}/deletes/dynamic/{entity}/{batch_dir}"
         if not os.path.exists(batch_path):
@@ -51,8 +57,9 @@ def run_batch_updates(pg_con, data_dir, batch_date, batch_type, timings_file):
         for csv_file in [f for f in os.listdir(batch_path) if f.endswith(".csv")]:
             csv_path = f"{batch_path}/{csv_file}"
             print(f"- {csv_path}")
+            execute(cur, "BEGIN BULK WRITE;")
             execute(cur, f"COPY {entity}_Delete_candidates FROM '{dbs_data_dir}/deletes/dynamic/{entity}/{batch_dir}/{csv_file}' (DELIMITER '|', HEADER, NULL '', FORMAT text)")
-            pg_con.commit()
+            execute(cur, "COMMIT;")
 
     print("Maintain materialized views . . .")
     run_script(pg_con, cur, "dml/maintain-views.sql")
@@ -82,6 +89,7 @@ parser.add_argument('--validate', action='store_true', help='Validation mode', r
 parser.add_argument('--pgtuning', action='store_true', help='Paramgen tuning execution: 100 queries/batch', required=False)
 parser.add_argument('--local', action='store_true', help='Local run (outside of a container)', required=False)
 parser.add_argument('--data_dir', type=str, help='Directory with the initial_snapshot, insert, and delete directories', required=True)
+parser.add_argument('--param_dir', type=str, help='Directory with the initial_snapshot, insert, and delete directories')
 parser.add_argument('--queries', action='store_true', help='Only run queries', required=False)
 args = parser.parse_args()
 sf = args.scale_factor
@@ -91,6 +99,11 @@ local = args.local
 data_dir = args.data_dir
 queries_only = args.queries
 validate = args.validate
+if args.param_dir is not None:
+    param_dir = args.param_dir
+else:
+    param_dir = f'../parameters/parameters-sf{sf}'
+
 
 if local:
     dbs_data_dir = data_dir
@@ -100,7 +113,7 @@ else:
 parameter_csvs = {}
 for query_variant in query_variants:
     # wrap parameters into infinite loop iterator
-    parameter_csvs[query_variant] = cycle(csv.DictReader(open(f'../parameters/parameters-sf{sf}/bi-{query_variant}.csv'), delimiter='|'))
+    parameter_csvs[query_variant] = cycle(csv.DictReader(open(f'{param_dir}/bi-{query_variant}.csv'), delimiter='|'))
 
 print(f"- Input data directory, ${{UMBRA_CSV_DIR}}: {data_dir}")
 

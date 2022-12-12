@@ -67,14 +67,18 @@ def run_script(pg_con, cur, filename):
         queries_file = re.sub(r"\n--.*", "", queries_file)
         queries = queries_file.split(";")
         for query in queries:
-            if query.isspace():
+            if query == "" or query.isspace():
                 continue
 
             sql_statement = re.findall(r"^((CREATE|INSERT|DROP|DELETE|SELECT|COPY|UPDATE|ALTER) [A-Za-z0-9_ ]*)", query, re.MULTILINE)
+            is_update = True if re.match(r"^((CREATE|INSERT|DROP|DELETE|COPY|UPDATE|ALTER) [A-Za-z0-9_ ]*)", sql_statement[0][0], re.MULTILINE) else False
+
             print(f"{sql_statement[0][0].strip()} ...")
             start = time.time()
+            if is_update:
+                cur.execute("BEGIN BULK WRITE;")
             cur.execute(query)
-            pg_con.commit()
+            cur.execute("COMMIT;")
             end = time.time()
             duration = end - start
             print(f"-> {duration:.4f} seconds")
@@ -90,6 +94,7 @@ def run_query(pg_con, query_num, query_variant, query_spec, query_parameters, te
     start = time.time()
     cur.execute(query_spec)
     results = cur.fetchall()
+    cur.execute("COMMIT;")
     end = time.time()
     duration = end - start
 
