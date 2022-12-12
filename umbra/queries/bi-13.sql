@@ -21,15 +21,16 @@ WITH Zombies AS (
                             + 1
 )
 SELECT Z.zombieid AS "zombie.id"
-     , count(zl.zombieid) AS zombieLikeCount
-     , count(Person_likes_Message.PersonId) AS totalLikeCount
-     , CASE WHEN count(Person_likes_Message.PersonId) = 0 THEN 0 ELSE count(zl.zombieid)::float/count(Person_likes_Message.PersonId) END AS zombieScore
-  FROM Message
-       LEFT  JOIN Person_likes_Message ON (Message.MessageId = Person_likes_Message.MessageId)
-       INNER JOIN Person ON (Person_likes_Message.PersonId = Person.id AND Person.creationDate < :endDate)
-       LEFT  JOIN Zombies ZL ON (Person.id = ZL.zombieid) -- see if the like was given by a zombie
-       RIGHT JOIN Zombies Z ON (Z.zombieid = Message.CreatorPersonId)
- GROUP BY Z.zombieid
+     , coalesce(t.zombieLikeCount, 0) AS zombieLikeCount
+     , coalesce(t.totalLikeCount, 0) AS totalLikeCount
+     , CASE WHEN t.totalLikeCount > 0 THEN t.zombieLikeCount::float/t.totalLikeCount ELSE 0 END AS zombieScore
+  FROM Zombies Z LEFT JOIN (
+    SELECT Z.zombieid, count(*) as totalLikeCount, sum(case when exists (SELECT 1 FROM Zombies ZL WHERE ZL.zombieid = p.id) then 1 else 0 end) AS zombieLikeCount
+    FROM Person p, Person_likes_Message plm, Message m, Zombies Z
+    WHERE Z.zombieid = m.CreatorPersonId AND p.creationDate < :endDate
+        AND p.id = plm.PersonId AND m.MessageId = plm.MessageId
+    GROUP BY Z.zombieid
+  ) t ON (Z.zombieid = t.zombieid)
  ORDER BY zombieScore DESC, Z.zombieid
  LIMIT 100
 ;
