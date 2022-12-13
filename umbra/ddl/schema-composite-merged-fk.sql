@@ -171,7 +171,8 @@ CREATE TABLE Person_workAt_Company (
 CREATE TABLE Person_knows_Person (
     creationDate timestamp with time zone NOT NULL,
     Person1id bigint NOT NULL,
-    Person2id bigint NOT NULL
+    Person2id bigint NOT NULL,
+    PRIMARY KEY (Person1id, Person2id)
 ) WITH (storage = paged);
 
 
