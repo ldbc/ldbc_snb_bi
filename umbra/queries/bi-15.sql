@@ -25,11 +25,42 @@ path(src, dst, w) as (
     select pp.person1id, pp.person2id, 10::double precision / (coalesce(w, 0) + 10)
     from Person_knows_Person pp left join mm on least(pp.person1id, pp.person2id) = mm.src and greatest(pp.person1id, pp.person2id) = mm.dst
 ),
+-- bidirectional bfs for nonexistant paths
+pexists(src, dir) as (
+    (
+        select f, true from srcs
+        union all
+        select t, false from dsts
+    )
+    union
+    (
+        with
+        ss(src, dir) as (select src, dir from pexists),
+        ns(src, dir) as (select p.dst, ss.dir from ss, path p where ss.src = p.src),
+        bb(src, dir) as (select src, dir from ns union all select src, dir from ss),
+        found as (
+            select 1
+            from bb b1, bb b2
+            where b1.dir and (not b2.dir) and b1.src = b2.src
+        )
+        select src, dir
+        from ns
+        where not exists (select 1 from found)
+        union all
+        select -1, true
+        where exists (select 1 from found)
+    )
+),
+pathfound(c) as (
+    select 1
+    from pexists
+    where src = -1 and dir
+),
 shorts(dir, gsrc, dst, w, dead, iter) as (
     (
-        select false, f, f, 0::double precision, false, 0 from srcs
+        select false, f, f, 0::double precision, false, 0 from srcs where exists (select 1 from pathfound)
         union all
-        select true, t, t, 0::double precision, false, 0 from dsts
+        select true, t, t, 0::double precision, false, 0 from dsts where exists (select 1 from pathfound)
     )
     union all
     (
