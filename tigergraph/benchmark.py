@@ -79,7 +79,9 @@ if __name__ == '__main__':
                 end = time.time()
                 duration = end - start
                 if duration > 3605:
-                    print("1h elapsed for the throughput batches, stopping the benchmark")
+                    print("""Throughput batches finished successfully. Termination criteria met:
+                        - At least 1 throughput batch was executed
+                        - The total execution time of the throughput batch(es) was at least 1h""")
                     break
 
             current_batch = current_batch + 1
