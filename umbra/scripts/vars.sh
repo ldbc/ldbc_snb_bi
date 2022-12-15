@@ -14,7 +14,7 @@ export UMBRA_DOCKER_IMAGE=umbra-release:${UMBRA_VERSION}
 if [ -z "${UMBRA_BUFFER_SIZE+x}" ]; then
     export UMBRA_DOCKER_BUFFER_SIZE_ENV_VAR=
 else
-    export UMBRA_DOCKER_BUFFER_SIZE_ENV_VAR="--env BUFFER_SIZE=${UMBRA_BUFFER_SIZE}}"
+    export UMBRA_DOCKER_BUFFER_SIZE_ENV_VAR="--env BUFFERSIZE=${UMBRA_BUFFER_SIZE}}"
 fi
 
 cd scripts
