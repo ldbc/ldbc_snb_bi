@@ -68,7 +68,15 @@ jobs:
             cd ..
             head -n 3 parameters/parameters-sf${SF}/*.csv
       - run:
-          name: Test Umbra toolchain
+          name: Test Umbra toolchain (queries only) with buffersize option
+          command: |
+            cd umbra
+            . scripts/use-sample-data-set.sh
+            export UMBRA_BUFFER_SIZE=1G
+            scripts/load-in-one-step.sh
+            scripts/queries.sh --test
+      - run:
+          name: Test Umbra toolchain without buffersize
           command: |
             cd umbra
             . scripts/use-sample-data-set.sh
