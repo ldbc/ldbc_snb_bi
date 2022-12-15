@@ -19,7 +19,7 @@ echo "UMBRA_DDL_DIR: ${UMBRA_DDL_DIR}"
 echo "UMBRA_CONTAINER_NAME: ${UMBRA_CONTAINER_NAME}"
 echo "UMBRA_DOCKER_IMAGE: ${UMBRA_DOCKER_IMAGE}"
 echo "UMBRA_CSV_DIR: ${UMBRA_CSV_DIR}"
-echo "UMBRA_DOCKER_BUFFER_SIZE_ENV_VAR: ${UMBRA_DOCKER_BUFFER_SIZE_ENV_VAR}"
+echo "UMBRA_DOCKER_BUFFERSIZE_ENV_VAR: ${UMBRA_DOCKER_BUFFERSIZE_ENV_VAR}"
 echo "==============================================================================="
 
 if [ ! -d "${UMBRA_CSV_DIR}" ]; then

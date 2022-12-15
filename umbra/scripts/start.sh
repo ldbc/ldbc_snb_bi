@@ -20,7 +20,7 @@ docker run \
     --volume=${UMBRA_LOG_DIR}:/var/log/:z \
     --publish=8000:5432 \
     --env USEDIRECTIO=1 \
-    ${UMBRA_DOCKER_BUFFER_SIZE_ENV_VAR} \
+    ${UMBRA_DOCKER_BUFFERSIZE_ENV_VAR} \
     ${UMBRA_DOCKER_IMAGE} \
     umbra_server \
         --address 0.0.0.0 \
