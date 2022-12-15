@@ -11,6 +11,12 @@ export UMBRA_CONTAINER_NAME=snb-bi-umbra
 export UMBRA_VERSION=f87f59ea2
 export UMBRA_DOCKER_IMAGE=umbra-release:${UMBRA_VERSION}
 
+if [ -z "${UMBRA_BUFFER_SIZE+x}" ]; then
+    export UMBRA_DOCKER_BUFFER_SIZE_ENV_VAR=
+else
+    export UMBRA_DOCKER_BUFFER_SIZE_ENV_VAR="--env BUFFER_SIZE=${UMBRA_BUFFER_SIZE}}"
+fi
+
 cd scripts
 
 popd > /dev/null
