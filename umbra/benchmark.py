@@ -4,7 +4,7 @@ from dateutil.relativedelta import relativedelta
 import os
 import psycopg2
 import time
-from queries import run_script, run_queries, run_precomputations, load_mht, load_plm, load_post, load_comment
+from queries import run_script, run_queries, run_precomputations, load_mht, load_plm, load_post
 from pathlib import Path
 from itertools import cycle
 import argparse
@@ -63,15 +63,6 @@ def run_batch_updates(pg_con, data_dir, batch_date, batch_type, timings_file):
         for csv_file in [f for f in os.listdir(batch_path) if f.endswith(".csv")]:
             csvpath = f"{dbs_data_dir}/inserts/dynamic/{entity}/{batch_dir}/{csv_file}"
             load_post(cur, csvpath)
-
-
-    for entity in ["Comment"]:
-        batch_path = f"{data_dir}/inserts/dynamic/{entity}/{batch_dir}"
-        if not os.path.exists(batch_path):
-            continue
-        for csv_file in [f for f in os.listdir(batch_path) if f.endswith(".csv")]:
-            csvpath = f"{dbs_data_dir}/inserts/dynamic/{entity}/{batch_dir}/{csv_file}"
-            load_comment(cur, csvpath)
             
 
     print("## Deletes")
@@ -150,7 +141,7 @@ for query_variant in query_variants:
 
 print(f"- Input data directory, ${{UMBRA_CSV_DIR}}: {data_dir}")
 
-insert_nodes = ["Forum", "Person"]
+insert_nodes = ["Forum", "Person", "Comment"]
 insert_edges = ["Forum_hasMember_Person", "Forum_hasTag_Tag", "Person_hasInterest_Tag", "Person_knows_Person", "Person_studyAt_University", "Person_workAt_Company"]
 insert_entities = insert_nodes + insert_edges
 
