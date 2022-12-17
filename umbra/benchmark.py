@@ -4,7 +4,7 @@ from dateutil.relativedelta import relativedelta
 import os
 import psycopg2
 import time
-from queries import run_script, run_queries, run_precomputations
+from queries import run_script, run_queries, run_precomputations, load_mht, load_plm, load_post, load_comment
 from pathlib import Path
 from itertools import cycle
 import argparse
@@ -39,6 +39,39 @@ def run_batch_updates(pg_con, data_dir, batch_date, batch_type, timings_file):
                 execute(cur, "BEGIN BULK WRITE;")
                 execute(cur, f"COPY {entity} (creationDate, Person2id, Person1id) FROM '{dbs_data_dir}/inserts/dynamic/{entity}/{batch_dir}/{csv_file}' (DELIMITER '|', HEADER, NULL '', FORMAT text)")
                 execute(cur, "COMMIT;")
+
+    for entity in ["Comment_hasTag_Tag", "Post_hasTag_Tag"]:
+        batch_path = f"{data_dir}/inserts/dynamic/{entity}/{batch_dir}"
+        if not os.path.exists(batch_path):
+            continue
+        for csv_file in [f for f in os.listdir(batch_path) if f.endswith(".csv")]:
+            csvpath = f"{dbs_data_dir}/inserts/dynamic/{entity}/{batch_dir}/{csv_file}"
+            load_mht(cur, csvpath)
+
+    for entity in ["Person_likes_Comment", "Person_likes_Post"]:
+        batch_path = f"{data_dir}/inserts/dynamic/{entity}/{batch_dir}"
+        if not os.path.exists(batch_path):
+            continue
+        for csv_file in [f for f in os.listdir(batch_path) if f.endswith(".csv")]:
+            csvpath = f"{dbs_data_dir}/inserts/dynamic/{entity}/{batch_dir}/{csv_file}"
+            load_plm(cur, csvpath)
+
+    for entity in ["Post"]:
+        batch_path = f"{data_dir}/inserts/dynamic/{entity}/{batch_dir}"
+        if not os.path.exists(batch_path):
+            continue
+        for csv_file in [f for f in os.listdir(batch_path) if f.endswith(".csv")]:
+            csvpath = f"{dbs_data_dir}/inserts/dynamic/{entity}/{batch_dir}/{csv_file}"
+            load_post(cur, csvpath)
+
+
+    for entity in ["Comment"]:
+        batch_path = f"{data_dir}/inserts/dynamic/{entity}/{batch_dir}"
+        if not os.path.exists(batch_path):
+            continue
+        for csv_file in [f for f in os.listdir(batch_path) if f.endswith(".csv")]:
+            csvpath = f"{dbs_data_dir}/inserts/dynamic/{entity}/{batch_dir}/{csv_file}"
+            load_comment(cur, csvpath)
             
 
     print("## Deletes")
@@ -117,8 +150,8 @@ for query_variant in query_variants:
 
 print(f"- Input data directory, ${{UMBRA_CSV_DIR}}: {data_dir}")
 
-insert_nodes = ["Comment", "Forum", "Person", "Post"]
-insert_edges = ["Comment_hasTag_Tag", "Forum_hasMember_Person", "Forum_hasTag_Tag", "Person_hasInterest_Tag", "Person_knows_Person", "Person_likes_Comment", "Person_likes_Post", "Person_studyAt_University", "Person_workAt_Company",  "Post_hasTag_Tag"]
+insert_nodes = ["Forum", "Person"]
+insert_edges = ["Forum_hasMember_Person", "Forum_hasTag_Tag", "Person_hasInterest_Tag", "Person_knows_Person", "Person_studyAt_University", "Person_workAt_Company"]
 insert_entities = insert_nodes + insert_edges
 
 # set the order of deletions to reflect the dependencies between node labels (:Comment)-[:REPLY_OF]->(:Post)<-[:CONTAINER_OF]-(:Forum)-[:HAS_MODERATOR]->(:Person)
