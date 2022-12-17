@@ -7,6 +7,64 @@ import sys
 sys.path.append('../common')
 from result_mapping import result_mapping
 
+def load_mht(cur, csvpath):
+    cur.execute("BEGIN BULK WRITE;")
+    cur.execute(f"INSERT INTO Message_hasTag_Tag SELECT a, b, c FROM UMBRA.CSVVIEW('{csvpath}', 'DELIMITER \"|\", HEADER, NULL \"\", FORMAT text', 'a timestamp with time zone NOT NULL, b bigint NOT NULL, c bigint NOT NULL')")
+    cur.execute("COMMIT;")
+
+def load_plm(cur, csvpath):
+    cur.execute("BEGIN BULK WRITE;")
+    cur.execute(f"INSERT INTO Person_likes_Message SELECT a, b, c FROM UMBRA.CSVVIEW('{csvpath}', 'DELIMITER \"|\", HEADER, NULL \"\", FORMAT text', 'a timestamp with time zone NOT NULL, b bigint NOT NULL, c bigint NOT NULL')")
+    cur.execute("COMMIT;")
+
+def load_post(cur, csvpath):
+    cur.execute("BEGIN BULK WRITE;")
+    cur.execute(f"""
+INSERT INTO Message
+SELECT
+    creationDate,
+    id AS MessageId,
+    id AS RootPostId,
+    language AS RootPostLanguage,
+    content,
+    imageFile,
+    locationIP,
+    browserUsed,
+    length,
+    CreatorPersonId,
+    ContainerForumId,
+    LocationCountryId,
+    NULL::bigint AS ParentMessageId
+FROM UMBRA.CSVVIEW(
+    '{csvpath}',
+    'DELIMITER "|", HEADER, NULL "", FORMAT text',
+    'creationDate timestamp with time zone NOT NULL, id bigint NOT NULL, imageFile text, locationIP text NOT NULL, browserUsed text NOT NULL, language text, content text, length int NOT NULL, CreatorPersonId bigint NOT NULL, ContainerForumId bigint NOT NULL, LocationCountryId bigint NOT NULL'
+    )
+""")
+    cur.execute("COMMIT;")
+
+def load_comment(cur, csvpath):
+    cur.execute("BEGIN BULK WRITE;")
+    ccsv = f"UMBRA.CSVVIEW('{csvpath}','DELIMITER \"|\", HEADER, NULL \"\", FORMAT text','creationDate timestamp with time zone NOT NULL, id bigint NOT NULL, locationIP text NOT NULL, browserUsed text NOT NULL, content text NOT NULL, length int NOT NULL, CreatorPersonId bigint NOT NULL, LocationCountryId bigint NOT NULL, ParentPostId bigint, ParentCommentId bigint')"
+    cur.execute(f"""
+INSERT INTO Message
+SELECT
+    creationDate AS creationDate,
+    id AS MessageId,
+    -1 AS RootPostId,
+    NULL::text AS RootPostLanguage,
+    content AS content,
+    NULL::text AS imageFile,
+    locationIP AS locationIP,
+    browserUsed AS browserUsed,
+    length AS length,
+    CreatorPersonId AS CreatorPersonId,
+    -1 AS ContainerForumId,
+    LocationCountryId AS LocationCityId,
+    coalesce(ParentPostId, ParentCommentId) AS ParentMessageId
+FROM {ccsv}
+""")
+    cur.execute("COMMIT;")
 
 def convert_value_to_string(value, result_type):
     if result_type == "ID[]" or result_type == "INT[]" or result_type == "INT32[]" or result_type == "INT64[]":

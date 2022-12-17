@@ -4,7 +4,7 @@ import os
 import re
 import time
 import argparse
-from queries import run_script
+from queries import run_script, load_mht, load_plm, load_post, load_comment
 
 
 parser = argparse.ArgumentParser()
@@ -29,7 +29,8 @@ print("Load initial snapshot")
 static_path = f"{data_dir}/initial_snapshot/static"
 dynamic_path = f"{data_dir}/initial_snapshot/dynamic"
 static_entities = ["Organisation", "Place", "Tag", "TagClass"]
-dynamic_entities = ["Comment", "Comment_hasTag_Tag", "Forum", "Forum_hasMember_Person", "Forum_hasTag_Tag", "Person", "Person_hasInterest_Tag", "Person_knows_Person", "Person_likes_Comment", "Person_likes_Post", "Person_studyAt_University", "Person_workAt_Company", "Post", "Post_hasTag_Tag"]
+csv_entities =  ["Comment", "Post", "Comment_hasTag_Tag", "Post_hasTag_Tag", "Person_likes_Comment", "Person_likes_Post"]
+dynamic_entities = ["Forum", "Forum_hasMember_Person", "Forum_hasTag_Tag", "Person", "Person_hasInterest_Tag", "Person_knows_Person", "Person_studyAt_University", "Person_workAt_Company"]
 
 if local:
     dbs_data_dir = data_dir
@@ -42,7 +43,9 @@ for entity in static_entities:
         csv_path = f"{entity}/{csv_file}"
         print(f"- {csv_path}")
         #print(f"- {csv_path}", end='\r')
+        cur.execute("BEGIN BULK WRITE;")
         cur.execute(f"COPY {entity} FROM '{dbs_data_dir}/initial_snapshot/static/{entity}/{csv_file}' (DELIMITER '|', HEADER, NULL '', FORMAT text)")
+        cur.execute("COMMIT;")
         #print(" " * 120, end='\r')
         pg_con.commit()
 print("Loaded static entities.")
@@ -53,11 +56,39 @@ for entity in dynamic_entities:
         csv_path = f"{entity}/{csv_file}"
         print(f"- {csv_path}")
         #print(f"- {csv_path}", end='\r')
+        cur.execute("BEGIN BULK WRITE;")
         cur.execute(f"COPY {entity} FROM '{dbs_data_dir}/initial_snapshot/dynamic/{entity}/{csv_file}' (DELIMITER '|', HEADER, NULL '', FORMAT text)")
+        cur.execute("COMMIT;")
         if entity == "Person_knows_Person":
+            cur.execute("BEGIN BULK WRITE;")
             cur.execute(f"COPY {entity} (creationDate, Person2id, Person1id) FROM '{dbs_data_dir}/initial_snapshot/dynamic/{entity}/{csv_file}' (DELIMITER '|', HEADER, NULL '', FORMAT text)")
+            cur.execute("COMMIT;")
         #print(" " * 120, end='\r')
         pg_con.commit()
+
+
+
+for entity in ["Comment_hasTag_Tag", "Post_hasTag_Tag"]:
+    for csv_file in [f for f in os.listdir(f"{dynamic_path}/{entity}") if f.startswith("part-") and f.endswith(".csv")]:
+        csvpath = f"{dbs_data_dir}/initial_snapshot/dynamic/{entity}/{csv_file}"
+        load_mht(cur, csvpath)
+
+for entity in ["Person_likes_Comment", "Person_likes_Post"]:
+    for csv_file in [f for f in os.listdir(f"{dynamic_path}/{entity}") if f.startswith("part-") and f.endswith(".csv")]:
+        csvpath = f"{dbs_data_dir}/initial_snapshot/dynamic/{entity}/{csv_file}"
+        load_plm(cur, csvpath)
+
+for entity in ["Post"]:
+    for csv_file in [f for f in os.listdir(f"{dynamic_path}/{entity}") if f.startswith("part-") and f.endswith(".csv")]:
+        csvpath = f"{dbs_data_dir}/initial_snapshot/dynamic/{entity}/{csv_file}"
+        load_post(cur, csvpath)
+
+
+for entity in ["Comment"]:
+    for csv_file in [f for f in os.listdir(f"{dynamic_path}/{entity}") if f.startswith("part-") and f.endswith(".csv")]:
+        csvpath = f"{dbs_data_dir}/initial_snapshot/dynamic/{entity}/{csv_file}"
+        load_comment(cur, csvpath)
+
 print("Loaded dynamic entities.")
 
 print("Maintain materialized views . . . ")
