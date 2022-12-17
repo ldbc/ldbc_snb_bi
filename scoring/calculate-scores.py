@@ -84,28 +84,52 @@ con.execute(f"""
     CREATE OR REPLACE TABLE results_table_sorted AS
         SELECT *
         FROM (
-          -- -100..-98
+          -- -200: power@SF
+            SELECT -200 AS qid, NULL AS q, printf('\\numprint{{%.2f}}', power_at_sf) AS t
+            FROM power_at_sf_score
+          UNION ALL
+          -- -199: throughput@SF
+            SELECT -199 AS qid, NULL AS q, CASE WHEN n_batches = 0 THEN 'n/a' ELSE (SELECT printf('\\numprint{{%.2f}}', throughput_at_sf) AS t FROM throughput_at_sf_score) END AS t
+            FROM throughput_batches
+          UNION ALL
+          -- -100...
             SELECT -100 AS qid, NULL AS q, (SELECT printf('\\numprint{{%.2f}}', time) FROM load_time) AS t
           UNION ALL
-            SELECT  -99 AS qid, NULL AS q, printf('\\numprint{{%.2f}}', avg_time) AS t
+            SELECT -99 AS qid, NULL AS q, printf('\\numprint{{%.2f}}', avg_time) AS t
             FROM power_test_stats
             WHERE q = 'writes'
           UNION ALL
-            SELECT  -98 AS qid, NULL AS q, printf('\\numprint{{%.2f}}', avg_time) AS t
+            -- time to apply writes: write time minus the sum of precomputation times
+            SELECT -98 AS qid, NULL AS q, printf('\\numprint{{%.2f}}', (SELECT min_time FROM power_test_stats WHERE q = 'writes') - (SELECT sum(min_time) FROM power_test_stats WHERE q LIKE '%precomp%')) AS t
+          UNION ALL
+          -- -75 (group for precomputations)
+            SELECT -75 + regexp_replace('q|precomp' || q, '\D','','g')::int AS qid, q, printf('\\numprint{{%.2f}}', min_time) AS t
+            FROM power_test_stats
+            WHERE q LIKE '%precomp%'
+          UNION ALL
+          -- -50 (total precomputation time)
+            SELECT -50 AS qid, NULL, printf('\\numprint{{%.2f}}', sum(min_time)) AS t
+            FROM power_test_stats
+            WHERE q LIKE '%precomp%'
+          UNION ALL
+            SELECT  -25 AS qid, NULL AS q, printf('\\numprint{{%.2f}}', avg_time) AS t
             FROM power_test_stats
             WHERE q = 'reads'
-          -- 1..20
           UNION ALL
+          -- 1..20
             SELECT regexp_replace('0' || q, '\D','','g')::int AS qid, q, printf('\\numprint{{%.2f}}', avg_time) AS t
             FROM power_test_stats
             WHERE regexp_matches(q, '^[0-9]+[ab]?')
-          -- 48..inf
           UNION ALL
-            SELECT 48 AS qid, NULL AS q, CASE WHEN n_batches = 0 THEN 'n/a' ELSE printf('%d batches', n_batches) END AS t
+          -- 50..inf
+            SELECT 50 AS qid, NULL AS q, CASE WHEN n_batches = 0 THEN 'n/a' ELSE printf('%d batch(es)', n_batches) END AS t
             FROM throughput_batches
           UNION ALL
-            SELECT 49 AS qid, NULL AS q, CASE WHEN t_batches IS NULL THEN 'n/a' ELSE printf('\\numprint{{%.2f}}', t_batches) END AS t
+            SELECT 51 AS qid, NULL AS q, CASE WHEN t_batches IS NULL THEN 'n/a' ELSE printf('\\numprint{{%.2f}}', t_batches) END AS t
             FROM throughput_batches
+          UNION ALL
+            SELECT 52 AS qid, NULL AS q, printf('\\numprint{{%.2f}}', time)
+            FROM benchmark_time
         )
         ORDER BY qid, q;
     """)
@@ -228,4 +252,4 @@ else:
 con.execute("""SELECT * FROM all_throughput_batches""")
 tb = con.fetchone()
 print()
-print(f"total throughput batches executed: {tb[0]} batches in {tb[1]:.2f}s")
+print(f"total throughput batches executed: {tb[0]} batch(es) in {tb[1]:.2f}s")
