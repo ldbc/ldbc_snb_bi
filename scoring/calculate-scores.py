@@ -85,26 +85,26 @@ con.execute(f"""
         SELECT *
         FROM (
           -- -100..-98
-            SELECT -100 AS qid, NULL AS q, (SELECT printf('\\numprint{{%.1f}}', time) FROM load_time) AS t
+            SELECT -100 AS qid, NULL AS q, (SELECT printf('\\numprint{{%.2f}}', time) FROM load_time) AS t
           UNION ALL
-            SELECT  -99 AS qid, NULL AS q, printf('\\numprint{{%.1f}}', total_time) AS t
+            SELECT  -99 AS qid, NULL AS q, printf('\\numprint{{%.2f}}', avg_time) AS t
             FROM power_test_stats
             WHERE q = 'writes'
           UNION ALL
-            SELECT  -98 AS qid, NULL AS q, printf('\\numprint{{%.1f}}', total_time) AS t
+            SELECT  -98 AS qid, NULL AS q, printf('\\numprint{{%.2f}}', avg_time) AS t
             FROM power_test_stats
             WHERE q = 'reads'
           -- 1..20
           UNION ALL
-            SELECT regexp_replace('0' || q, '\D','','g')::int AS qid, q, printf('\\numprint{{%.1f}}', total_time) AS t
+            SELECT regexp_replace('0' || q, '\D','','g')::int AS qid, q, printf('\\numprint{{%.2f}}', avg_time) AS t
             FROM power_test_stats
             WHERE regexp_matches(q, '^[0-9]+[ab]?')
           -- 48..inf
           UNION ALL
-            SELECT 48 AS qid, NULL AS q, CASE WHEN n_batches = 0 THEN 'n/a' ELSE n_batches END AS t
+            SELECT 48 AS qid, NULL AS q, CASE WHEN n_batches = 0 THEN 'n/a' ELSE printf('%d batches', n_batches) END AS t
             FROM throughput_batches
           UNION ALL
-            SELECT 49 AS qid, NULL AS q, CASE WHEN t_batches IS NULL THEN 'n/a' ELSE printf('\\numprint{{%.1f}}', t_batches) END AS t
+            SELECT 49 AS qid, NULL AS q, CASE WHEN t_batches IS NULL THEN 'n/a' ELSE printf('\\numprint{{%.2f}}', t_batches) END AS t
             FROM throughput_batches
         )
         ORDER BY qid, q;
@@ -180,6 +180,8 @@ con.execute(f"""
     COPY
         (SELECT
             q,
+            -- there is only a **single value** per benchmark execution for each operation (reads, writes, precomputation for query X),
+            -- hence we can select min (we could also select the max or any of the statistical columns)
             printf('\\numprint{{%.3f}} \\\\', min_time) AS 'time \\\\',
         FROM power_test_stats
         WHERE count = 1
@@ -226,4 +228,4 @@ else:
 con.execute("""SELECT * FROM all_throughput_batches""")
 tb = con.fetchone()
 print()
-print(f"total throughput batches executed: {tb[0]} batches in {tb[1]:.1f}s")
+print(f"total throughput batches executed: {tb[0]} batches in {tb[1]:.2f}s")
