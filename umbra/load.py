@@ -4,7 +4,7 @@ import os
 import re
 import time
 import argparse
-from queries import run_script, load_mht, load_plm, load_post, load_comment
+from queries import run_script, load_mht, load_plm, load_post
 
 
 parser = argparse.ArgumentParser()
@@ -29,8 +29,8 @@ print("Load initial snapshot")
 static_path = f"{data_dir}/initial_snapshot/static"
 dynamic_path = f"{data_dir}/initial_snapshot/dynamic"
 static_entities = ["Organisation", "Place", "Tag", "TagClass"]
-csv_entities =  ["Comment", "Post", "Comment_hasTag_Tag", "Post_hasTag_Tag", "Person_likes_Comment", "Person_likes_Post"]
-dynamic_entities = ["Forum", "Forum_hasMember_Person", "Forum_hasTag_Tag", "Person", "Person_hasInterest_Tag", "Person_knows_Person", "Person_studyAt_University", "Person_workAt_Company"]
+csv_entities =  ["Post", "Comment_hasTag_Tag", "Post_hasTag_Tag", "Person_likes_Comment", "Person_likes_Post"]
+dynamic_entities = ["Comment", "Forum", "Forum_hasMember_Person", "Forum_hasTag_Tag", "Person", "Person_hasInterest_Tag", "Person_knows_Person", "Person_studyAt_University", "Person_workAt_Company"]
 
 if local:
     dbs_data_dir = data_dir
@@ -82,12 +82,6 @@ for entity in ["Post"]:
     for csv_file in [f for f in os.listdir(f"{dynamic_path}/{entity}") if f.startswith("part-") and f.endswith(".csv")]:
         csvpath = f"{dbs_data_dir}/initial_snapshot/dynamic/{entity}/{csv_file}"
         load_post(cur, csvpath)
-
-
-for entity in ["Comment"]:
-    for csv_file in [f for f in os.listdir(f"{dynamic_path}/{entity}") if f.startswith("part-") and f.endswith(".csv")]:
-        csvpath = f"{dbs_data_dir}/initial_snapshot/dynamic/{entity}/{csv_file}"
-        load_comment(cur, csvpath)
 
 print("Loaded dynamic entities.")
 

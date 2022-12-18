@@ -43,29 +43,6 @@ FROM UMBRA.CSVVIEW(
 """)
     cur.execute("COMMIT;")
 
-def load_comment(cur, csvpath):
-    cur.execute("BEGIN BULK WRITE;")
-    ccsv = f"UMBRA.CSVVIEW('{csvpath}','DELIMITER \"|\", HEADER, NULL \"\", FORMAT text','creationDate timestamp with time zone NOT NULL, id bigint NOT NULL, locationIP text NOT NULL, browserUsed text NOT NULL, content text NOT NULL, length int NOT NULL, CreatorPersonId bigint NOT NULL, LocationCountryId bigint NOT NULL, ParentPostId bigint, ParentCommentId bigint')"
-    cur.execute(f"""
-INSERT INTO Message
-SELECT
-    creationDate AS creationDate,
-    id AS MessageId,
-    -1 AS RootPostId,
-    NULL::text AS RootPostLanguage,
-    content AS content,
-    NULL::text AS imageFile,
-    locationIP AS locationIP,
-    browserUsed AS browserUsed,
-    length AS length,
-    CreatorPersonId AS CreatorPersonId,
-    -1 AS ContainerForumId,
-    LocationCountryId AS LocationCityId,
-    coalesce(ParentPostId, ParentCommentId) AS ParentMessageId
-FROM {ccsv}
-""")
-    cur.execute("COMMIT;")
-
 def convert_value_to_string(value, result_type):
     if result_type == "ID[]" or result_type == "INT[]" or result_type == "INT32[]" or result_type == "INT64[]":
         return [int(x) for x in value.replace("{", "").replace("}", "").split(";")]
