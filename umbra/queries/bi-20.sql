@@ -17,7 +17,7 @@ anyPath(pos) as (
         with
         ss as (select pos from anyPath)
         select dst
-        from anyPath, PathQ20
+        from ss, PathQ20
         where pos = src and not exists (select 1 from ss, dsts where ss.pos = dsts.t)
     )
 ),
