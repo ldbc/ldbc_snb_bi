@@ -13,6 +13,11 @@ timings_dir = args.timings_dir
 tool = args.tool
 throughput_min_time = args.throughput_min_time
 
+# cleanup
+db_file = "bi.duckdb"
+if os.path.exists(db_file):
+    os.remove(db_file)
+
 con = duckdb.connect("bi.duckdb")
 con.execute(f"""
     CREATE OR REPLACE TABLE load_time(time float);
@@ -79,7 +84,98 @@ con.execute(f"""
                 END
               AS throughput
         FROM throughput_batches;
+    """)
 
+con.execute("""SELECT sf FROM timings LIMIT 1;""");
+sf = con.fetchone()[0]
+sf_string = str(round(sf, 3)).rstrip('0').rstrip('.')
+print(f"SF: {sf_string}")
+
+# cleanup old .tex files
+for f in glob.glob(f'./*-{tool}-sf{sf_string}.tex'):
+    os.remove(f)
+
+# calculate the geometric mean of runtimes for the power score
+# only include writes (w) and queries (q1, q2a, ...)
+con.execute("""
+    CREATE OR REPLACE TABLE power_score AS
+        SELECT 3600 / ( exp(sum(ln(total_time::real)) * (1.0/count(total_time))) ) AS power
+        FROM power_test_stats
+        WHERE q IN ('writes', '1', '2a', '2b', '3', '4', '5', '6', '7', '8a', '8b', '9', '10a', '10b', '11', '12', '13', '14a', '14b', '15a', '15b', '16a', '16b', '17', '18', '19a', '19b', '20a', '20b');
+    """)
+con.execute("""SELECT power FROM power_score""")
+p = con.fetchone()[0]
+print(f"power score:    {p:.02f}")
+
+con.execute("""
+    CREATE OR REPLACE TABLE power_at_sf_score AS
+        SELECT (SELECT power FROM power_score) * (SELECT sf FROM timings LIMIT 1) AS power_at_sf;
+    """)
+con.execute("""SELECT power_at_sf FROM power_at_sf_score""")
+p_at_sf = con.fetchone()[0]
+print(f"power@SF score: {p_at_sf:.02f}")
+
+con.execute("""
+    SELECT time
+    FROM timings
+    WHERE batch_type = 'power'
+      AND q = 'reads';
+    """)
+r = con.fetchone()[0]
+print(f"power test's read block time: {r:.01f}")
+print()
+
+# calculate and print throughput statistics
+con.execute("""SELECT n_batches FROM throughput_batches""")
+s = con.fetchone()
+if s[0] == 0:
+    print(f"throughput score: n/a (the throughput run was <{throughput_min_time}s)")
+    con.execute("""
+        CREATE OR REPLACE TABLE throughput_score AS
+            SELECT NULL AS throughput_at_sf
+        """)
+    con.execute("""
+        CREATE OR REPLACE TABLE throughput_at_sf_score AS
+            SELECT NULL AS throughput_at_sf
+        """)
+else:
+    con.execute("""
+        CREATE OR REPLACE TABLE throughput_score AS
+            SELECT (24 - (SELECT time/3600 FROM load_time)) * (n_batches / (t_batches/3600)) AS throughput
+            FROM throughput_batches;
+        """)
+
+    con.execute("""SELECT throughput FROM throughput_score""")
+    t = con.fetchone()[0]
+    print(f"throughput score: {t:.02f}")
+
+    con.execute("""
+        CREATE OR REPLACE TABLE throughput_at_sf_score AS
+            SELECT (SELECT throughput FROM throughput_score) * (SELECT sf FROM timings LIMIT 1) AS throughput_at_sf
+        """)
+    con.execute("""SELECT throughput_at_sf FROM throughput_at_sf_score""")
+    t_at_sf = con.fetchone()[0]
+    print(f"throughput@SF score: {t_at_sf:.02f}")
+
+    con.execute(f"""
+        COPY
+            (SELECT
+                (SELECT printf('\\numprint{{%.2f}} minutes', time/60      ) FROM benchmark_time        ),
+                (SELECT printf('\\numprint{{%.2f}}', power                ) FROM power_score           ),
+                (SELECT printf('\\numprint{{%.2f}}', power_at_sf          ) FROM power_at_sf_score     ),
+                (SELECT printf('\\numprint{{%.2f}}', throughput           ) FROM throughput_score      ),
+                (SELECT printf('\\numprint{{%.2f}} \\\\', throughput_at_sf) FROM throughput_at_sf_score),
+            )
+        TO 'summary-{tool}-sf{sf_string}.tex' (HEADER false, QUOTE '', DELIMITER ' & ');
+        """)
+
+con.execute("""SELECT * FROM all_throughput_batches""")
+tb = con.fetchone()
+print()
+print(f"total throughput batches executed: {tb[0]} batch(es) in {tb[1]:.2f}s")
+
+# produce the table in the VLDB paper
+con.execute(f"""
     -- order as t_load, w, r, followed by q_1, ..., q_20
     CREATE OR REPLACE TABLE results_table_sorted AS
         SELECT *
@@ -89,8 +185,8 @@ con.execute(f"""
             FROM power_at_sf_score
           UNION ALL
           -- -199: throughput@SF
-            SELECT -199 AS qid, NULL AS q, CASE WHEN n_batches = 0 THEN 'n/a' ELSE (SELECT printf('\\numprint{{%.2f}}', throughput_at_sf) AS t FROM throughput_at_sf_score) END AS t
-            FROM throughput_batches
+            SELECT -199 AS qid, NULL AS q, CASE WHEN throughput_at_sf IS NULL THEN 'n/a' ELSE printf('\\numprint{{%.2f}}', throughput_at_sf) END AS t
+            FROM throughput_at_sf_score
           UNION ALL
           -- -100...
             SELECT -100 AS qid, NULL AS q, (SELECT printf('\\numprint{{%.2f}}', time) FROM load_time) AS t
@@ -133,46 +229,6 @@ con.execute(f"""
         )
         ORDER BY qid, q;
     """)
-
-con.execute("""SELECT sf FROM timings LIMIT 1;""");
-sf = con.fetchone()[0]
-sf_string = str(round(sf, 3)).rstrip('0').rstrip('.')
-print(f"SF: {sf_string}")
-
-# cleanup old .tex files
-for f in glob.glob(f'./*-{tool}-sf{sf_string}.tex'):
-    os.remove(f)
-
-# calculate the geometric mean of runtimes for the power score
-# only include writes (w) and queries (q1, q2a, ...)
-con.execute("""
-    CREATE OR REPLACE TABLE power_score AS
-        SELECT 3600 / ( exp(sum(ln(total_time::real)) * (1.0/count(total_time))) ) AS power
-        FROM power_test_stats
-        WHERE q IN ('writes', '1', '2a', '2b', '3', '4', '5', '6', '7', '8a', '8b', '9', '10a', '10b', '11', '12', '13', '14a', '14b', '15a', '15b', '16a', '16b', '17', '18', '19a', '19b', '20a', '20b');
-    """)
-con.execute("""SELECT power FROM power_score""")
-p = con.fetchone()[0]
-print(f"power score:    {p:.02f}")
-
-con.execute("""
-    CREATE OR REPLACE TABLE power_at_sf_score AS
-        SELECT (SELECT power FROM power_score) * (SELECT sf FROM timings LIMIT 1) AS power_at_sf
-    """)
-con.execute("""SELECT power_at_sf FROM power_at_sf_score""")
-p_at_sf = con.fetchone()[0]
-print(f"power@SF score: {p_at_sf:.02f}")
-
-con.execute("""
-    SELECT time
-    FROM timings
-    WHERE batch_type = 'power'
-      AND q = 'reads';
-    """)
-r = con.fetchone()[0]
-print(f"power test's read block time: {r:.01f}")
-print()
-
 con.execute(f"""
     COPY 
         (SELECT string_agg(t, ' \n')
@@ -180,7 +236,7 @@ con.execute(f"""
     TO 'runtimes-{tool}-sf{sf_string}.tex' (HEADER false, QUOTE '');
     """)
 
-# power test statistics
+# produce power test statistics in the Full Disclosure Report
 con.execute(f"""
     COPY
         (SELECT
@@ -213,43 +269,3 @@ con.execute(f"""
         )
     TO 'operations-{tool}-sf{sf_string}.tex' (HEADER false, QUOTE '', DELIMITER ' & ');
     """)
-
-con.execute("""SELECT * FROM throughput_batches""")
-s = con.fetchone()
-if s[0] == 0:
-    print(f"throughput score: n/a (the throughput run was <{throughput_min_time}s)")
-else:
-    con.execute("""
-        CREATE OR REPLACE TABLE throughput_score AS
-            SELECT (24 - (SELECT time/3600 FROM load_time)) * (n_batches / (t_batches/3600)) AS throughput
-            FROM throughput_batches;
-        """)
-
-    con.execute("""SELECT throughput FROM throughput_score""")
-    t = con.fetchone()[0]
-    print(f"throughput score: {t:.02f}")
-
-    con.execute("""
-        CREATE OR REPLACE TABLE throughput_at_sf_score AS
-            SELECT (SELECT throughput FROM throughput_score) * (SELECT sf FROM timings LIMIT 1) AS throughput_at_sf
-        """)
-    con.execute("""SELECT throughput_at_sf FROM throughput_at_sf_score""")
-    t_at_sf = con.fetchone()[0]
-    print(f"throughput@SF score: {t_at_sf:.02f}")
-
-    con.execute(f"""
-        COPY
-            (SELECT
-                (SELECT printf('\\numprint{{%.2f}} minutes', time/60      ) FROM benchmark_time        ),
-                (SELECT printf('\\numprint{{%.2f}}', power                ) FROM power_score           ),
-                (SELECT printf('\\numprint{{%.2f}}', power_at_sf          ) FROM power_at_sf_score     ),
-                (SELECT printf('\\numprint{{%.2f}}', throughput           ) FROM throughput_score      ),
-                (SELECT printf('\\numprint{{%.2f}} \\\\', throughput_at_sf) FROM throughput_at_sf_score),
-            )
-        TO 'summary-{tool}-sf{sf_string}.tex' (HEADER false, QUOTE '', DELIMITER ' & ');
-        """)
-
-con.execute("""SELECT * FROM all_throughput_batches""")
-tb = con.fetchone()
-print()
-print(f"total throughput batches executed: {tb[0]} batch(es) in {tb[1]:.2f}s")
