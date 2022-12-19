@@ -24,6 +24,7 @@ jobs:
           name: Setup
           command: |
             export DEBIAN_FRONTEND=noninteractive
+            export NEEDRESTART_SUSPEND=a
             sudo apt update
             # install dependencies
             sudo apt install -y wget unzip
