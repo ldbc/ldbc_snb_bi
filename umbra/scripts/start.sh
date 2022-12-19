@@ -10,7 +10,7 @@ cd ..
 
 python3 -c 'import psycopg2' || (echo "psycopg2 Python package is missing or broken" && exit 1)
 
-echo -n "Outputting umbra parameters"
+echo -n "Outputting Umbra parameters"
 docker run \
     --volume=${UMBRA_DATABASE_DIR}:/var/db/:z \
     --volume=${UMBRA_DDL_DIR}:/ddl/:z \
