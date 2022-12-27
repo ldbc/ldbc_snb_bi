@@ -218,7 +218,7 @@ con.execute(f"""
             WHERE regexp_matches(q, '^[0-9]+[ab]?')
           UNION ALL
           -- 50..inf
-            SELECT 50 AS qid, NULL AS q, CASE WHEN n_batches = 0 THEN 'n/a' ELSE printf('%d batch(es)', n_batches) END AS t
+            SELECT 50 AS qid, NULL AS q, CASE WHEN n_batches = 0 THEN 'n/a' ELSE printf('%d batch%s', n_batches, CASE WHEN n_batches > 1 THEN 'es' ELSE '' END) END AS t
             FROM throughput_batches
           UNION ALL
             SELECT 51 AS qid, NULL AS q, CASE WHEN t_batches IS NULL THEN 'n/a' ELSE printf('\\numprint{{%.2f}}', t_batches) END AS t
