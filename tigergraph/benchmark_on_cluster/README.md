@@ -1,3 +1,87 @@
+# Benchmark on AWS Cluster
+# Pre-requisites
+[Install AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html) and [configure the AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html). The default AWS Access Jey ID/secret and region need to be configured using `aws configure`.
+## Set up the cluster
+1. Create EC2 instances. The number of machines is dependent on the data size and machine memory. 
+NUMBER_OF_NODES * MEMORY_PER_MACHINE >= SCALE_FACTOR;boot system `Amazon Linux 2 AMI(HVM) Kernel 5.10, SSD Volume Type`;select Key pair `benchmark`;select existing security group `TigerGraphCluster` and select maximum IOPS `16000` and Throuhput `1000` for `gp3` volume type. Others are default settings.
+
+    For SF-100, we created 1 instance of  `r6a.4xlarge` with `gp3` volume of `400GB`;
+
+    For SF-1000, we created 4 instances of `r6a.8xlarge` with `gp3` volume of `1000GB`;
+
+    For SF-10000, we created 48 instances of `r6a.8xlarge` with `gp3` volume of `1000GB`.
+
+2. Obtian public IP addresses of all instances and save to a file
+    ```sh
+    aws ec2 describe-instances --filters "Name=instance-type,Values=r6a.xlarge" --query "Reservations[].Instances[].PublicIpAddress" | sed '1d' | sed '$d' | sed '1,$s/"//g'| sed '1,$s/,//g' > ip_list
+    ```
+3. Setup all instances.
+    ```sh
+    vi setup.sh
+   #Change `yourpassword` in line 3 in `setup.sh` to your own password. 
+    ./setup_AWS.sh ~/benchmark.pem ./ip_list
+    ```
+
+4. log into instances
+    ```sh
+    ssh -i ~/benchmark.pem ec2-user@[publicIpAddress]
+    ```
+5. Download TigerGraph package and modify `install_conf.json`. Please provide the license, IP address, and sudo username (here is tigergraph) and password. Then run
+
+    ```
+    #the following command can obtain the IP address with corresponding format
+    awk 'BEGIN {print "{"} {printf "\"m%d:%s\",\n",NR,$0} END {print "}"}' ip_list
+
+    #install TigerGraph
+    ./install.sh -n
+    ```
+## Download Data
+Download data, replace the ip address with the start ip in your case.
+```sh
+# on AWS m1 
+# log in as tigergraph
+su - tigergraph 
+# password yourpassword
+sudo python3 -m pip install --upgrade pip
+sudo pip3 install paramiko scp
+git clone https://github.com/ldbc/ldbc_snb_bi.git
+cd ldbc_snb_bi/tigergraph/benchmark_on_cluster
+```
+Create service key.json file to access the Google Storage Bucket for data downloading and create a file for IP addresses.
+```sh
+vi key.json
+vi ip_list
+```
+
+Modify the password of TigerGraph user in `download_all.py`, then run
+```sh
+python3 download_all.py 10000 ./ip_list -k ./key.json -t 20
+```
+This script will run `./k8s/download_decompress.sh` on all the machines, the downloaded data is located in `~/sf10000`. Usage of the `download_all.py` is 
+```sh
+download_all.py [scale factor] [ip address file] -k [service key json file] -t [download threads]`
+```
+
+## Load data
+Update `TG_DATA_DIR` and `TG_PARAMETER` in `../k8s/vars.sh` and then load the data
+```sh
+nohup ./k8s/setup.sh > log.setup 2>&1 < /dev/null &
+```
+
+## Run benchmark
+To run benchmark scripts
+
+```bash
+nohup ./k8s/benchmark.sh > log.benchmark 2>&1 < /dev/null &
+```
+
+The `queries.sh` and `batches.sh` can be run using a similar approach.
+
+To clear the TigerGraph database
+
+```bash
+gsql drop all
+```
 
 # Benchmark on Google Cloud Cluster
 

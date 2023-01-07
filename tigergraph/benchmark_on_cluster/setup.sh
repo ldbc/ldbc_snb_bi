@@ -1,6 +1,6 @@
 # !/usr/bin/sh
 sudo useradd -ms /bin/bash tigergraph
-echo 'tigergraph:tigergraph' | sudo chpasswd # The second tigergraph is the default password, please change it  
+echo 'tigergraph:yourpassword' | sudo chpasswd # The second tigergraph is the default password, please change it  
 mkdir -p /home/tigergraph
 sudo bash -c 'echo "tigergraph    ALL=(ALL)       NOPASSWD: ALL" >> /etc/sudoers'
 sudo bash -c 'echo "export VISIBLE=now" >> /etc/profile'
