@@ -2,7 +2,7 @@
 # Pre-requisites
 [Install AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html) and [configure the AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html). The default AWS Access Jey ID/secret and region need to be configured using `aws configure`.
 ## Set up the cluster
-1. Create EC2 instances. The number of machines is dependent on the data size and machine memory. 
+1. Create EC2 instances via [AWS Management Console](https://aws.amazon.com/console/). The number of machines is dependent on the data size and machine memory. 
 NUMBER_OF_NODES * MEMORY_PER_MACHINE >= SCALE_FACTOR;boot system `Amazon Linux 2 AMI(HVM) Kernel 5.10, SSD Volume Type`;select Key pair `benchmark`;select existing security group `TigerGraphCluster` and select maximum IOPS `16000` and Throuhput `1000` for `gp3` volume type. Others are default settings.
 
     For SF-100, we created 1 instance of  `r6a.4xlarge` with `gp3` volume of `400GB`;
