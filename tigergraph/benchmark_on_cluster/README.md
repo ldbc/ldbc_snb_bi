@@ -1,40 +1,56 @@
 # Benchmark on AWS Cluster
-# Pre-requisites
+## Pre-requisites
 [Install AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html) and [configure the AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html). The default AWS Access Jey ID/secret and region need to be configured using `aws configure`.
 ## Set up the cluster
-1. Create EC2 instances via [AWS Management Console](https://aws.amazon.com/console/). The number of machines is dependent on the data size and machine memory. 
-NUMBER_OF_NODES * MEMORY_PER_MACHINE >= SCALE_FACTOR;boot system `Amazon Linux 2 AMI(HVM) Kernel 5.10, SSD Volume Type`;select Key pair `benchmark`;select existing security group `TigerGraphCluster` and select maximum IOPS `16000` and Throuhput `1000` for `gp3` volume type. Others are default settings.
+### A. Create EC2 instances via [AWS Management Console](https://aws.amazon.com/console/). 
 
-    For SF-100, we created 1 instance of  `r6a.4xlarge` with `gp3` volume of `400GB`;
+The number of machines is dependent on the data size and machine memory. 
 
-    For SF-1000, we created 4 instances of `r6a.8xlarge` with `gp3` volume of `1000GB`;
+On the `Launch instances page` under `EC2` service:
 
-    For SF-10000, we created 48 instances of `r6a.8xlarge` with `gp3` volume of `1000GB`.
+- Name: `e.g., SF1000`;
 
-2. Obtian public IP addresses of all instances and save to a file
+- Application and OS Images: select
+`Amazon Linux 2 AMI(HVM) Kernel 5.10, SSD Volume Type`;
+
+- Instance type: select `e.g., r6a.8xlarge` for SF-1000;
+- Key pair: select `benchmark` or create new key pair;
+- Network settings: `Select existing security group` -> select `TigerGraphCluster`
+- Configure storage: `e.g., Size: 1000Gib; Volume type: gp3; IOPS: 16000; Throughput: 1000` for SF-1000. 
+
+Others are default settings.
+
+|Config         |SF100      |SF1000     |SF10000    |
+|---------------|-----------|-----------|-----------|
+|Instance type  |r6a.4xlarge|r6a.8xlarge|r6a.8xlarge|
+|Instance number|1          |4          |48         |
+|Storage(GiB)   |400        |1000       |1000       |
+
+### B. Configure intances and Set up TigerGraph Cluster
+1. Obtian public IP addresses of all instances and save to a file
     ```sh
     aws ec2 describe-instances --filters "Name=instance-type,Values=r6a.xlarge" --query "Reservations[].Instances[].PublicIpAddress" | sed '1d' | sed '$d' | sed '1,$s/"//g'| sed '1,$s/,//g' > ip_list
     ```
-3. Setup all instances.
+2. Setup all instances.
     ```sh
     vi setup.sh
    #Change `yourpassword` in line 3 in `setup.sh` to your own password. 
     ./setup_AWS.sh ~/benchmark.pem ./ip_list
     ```
 
-4. log into instances
+3. log into instances
     ```sh
     ssh -i ~/benchmark.pem ec2-user@[publicIpAddress]
     ```
-5. Download TigerGraph package and modify `install_conf.json`. Please provide the license, IP address, and sudo username (here is tigergraph) and password. Then run
-
-    ```
-    #the following command can obtain the IP address with corresponding format
+5. Download TigerGraph package and modify `install_conf.json`. Please provide the license, IP address, and sudo username (here is tigergraph) and password.
+    ```sh
+    # Obtain the NodeList for install_config.json
     awk 'BEGIN {print "{"} {printf "\"m%d:%s\",\n",NR,$0} END {print "}"}' ip_list
-
-    #install TigerGraph
-    ./install.sh -n
     ```
+    Then run
+
+        ./install.sh -n
+    
 ## Download Data
 Download data, replace the ip address with the start ip in your case.
 ```sh
