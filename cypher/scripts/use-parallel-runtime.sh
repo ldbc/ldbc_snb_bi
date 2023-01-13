@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Use the Neo4j parallel runtime, available in the Enterprise Edition, where possible.
 # Note that unlike the Community Edition, the Enterprise Edition is not free. Please ensure you have a license before using it.
