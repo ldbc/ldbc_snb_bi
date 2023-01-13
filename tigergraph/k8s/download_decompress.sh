@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 i=$1
 target=${2:-$HOME/tigergraph/data}
 mydir="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 DDL_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 DATA_PATH=${1:-"/data"}
 QUERY_PATH=${2:-"/queries"}
