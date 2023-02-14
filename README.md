@@ -73,3 +73,13 @@ SF1-SF10,000 (projected FK variant) and
 SF1-SF1,000 (merged FK variant).
 
 Data sets are also being uploaded to the [SURF CWI repository](https://repository.surfsara.nl/datasets/cwi/snb) and expected to be published there in 2023.
+
+## Scoring
+
+To run the scoring on a full benchmark run, use the `scripts/score-full.sh` script, e.g.:
+
+```bash
+scripts/score-full.sh umbra 100
+```
+
+The script prints its summary to the standard output and saves the detailed output tables in the `scoring` directory (as `.tex` files).
