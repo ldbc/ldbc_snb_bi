@@ -100,3 +100,9 @@ This command works on both standalone files (`.tar.zst`) and chunked ones (`.tar
 ### Parameters
 
 * https://pub-383410a98aef4cb686f0c7601eddd25f.r2.dev/bi-pre-audit/parameters-2022-10-01.zip
+
+### Validation parameters
+
+Validation parameters for SF10, generated with Umbra:
+
+* https://pub-383410a98aef4cb686f0c7601eddd25f.r2.dev/bi-pre-audit/output-sf10-validation-umbra.tar.zst
