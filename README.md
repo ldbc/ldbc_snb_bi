@@ -38,7 +38,7 @@ Running an SNB BI experiment requires the following steps.
 
 :warning:
 Note that deriving official LDBC results requires commissioning an _audited benchmark_, which is a more complex process as it entails code review, cross-validation, etc.
-See [the specification's Auditing chapter](https://ldbcouncil.org/ldbc_snb_docs/ldbc-snb-specification.pdf#chapter.7) for details.
+For details, see [the specification's Auditing chapter](https://ldbcouncil.org/ldbc_snb_docs/ldbc-snb-specification.pdf#chapter.7) and the [audit questionnaire](snb-bi-audit-questionnaire.md).
 
 ## Cross-validation
 
