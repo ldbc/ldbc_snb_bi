@@ -11,20 +11,14 @@ cypher/scripts/install-dependencies.sh
 umbra/scripts/install-dependencies.sh
 tigergraph/scripts/install-dependencies.sh
 
-# install numdiff
-
 if [[ ! -z $(which yum) ]]; then
-    sudo dnf install -y make automake gcc texinfo-tex texlive-collection-fontsrecommended
-    git clone https://github.com/tjhei/numdiff
-    cd numdiff
-    git checkout db19fceea94a3a13976b3d2e3d7539eb25bf9441
-    ./configure
-    make
-    sudo make install
-    cd ..
+    sudo yum install -y python3-pip
 elif [[ ! -z $(which apt-get) ]]; then
     sudo apt-get update
-    sudo apt-get install -y numdiff
+    sudo apt-get install -y python3-pip
 else
     echo "Operating system not supported, please install the dependencies manually"
 fi
+
+# dependencies for cross-validation
+pip3 install --user recursive_diff more_itertools
