@@ -17,10 +17,11 @@ cat <data-set-filename>.tar.zst* | tar -xv --use-compress-program=unzstd
 
 This command works on both standalone files (`.tar.zst`) and chunked ones (`.tar.zst.XXX`).
 
-
 ## Data sets links
 
 ### Compressed CSVs in the composite-merged-fk format
+
+**Checksums:** https://pub-383410a98aef4cb686f0c7601eddd25f.r2.dev/bi-pre-audit/bi-composite-merged-fk-md5sums.tar.zst
 
 * https://pub-383410a98aef4cb686f0c7601eddd25f.r2.dev/bi-pre-audit/bi-sf1-composite-merged-fk.tar.zst
 * https://pub-383410a98aef4cb686f0c7601eddd25f.r2.dev/bi-pre-audit/bi-sf3-composite-merged-fk.tar.zst
@@ -32,6 +33,8 @@ This command works on both standalone files (`.tar.zst`) and chunked ones (`.tar
 * https://pub-383410a98aef4cb686f0c7601eddd25f.r2.dev/bi-pre-audit/bi-sf1000-composite-merged-fk.tar.zst.001
 
 ### Compressed CSVs in the composite-projected-fk format
+
+**Checksums:** https://pub-383410a98aef4cb686f0c7601eddd25f.r2.dev/bi-pre-audit/bi-composite-projected-fk-md5sums.tar.zst
 
 * https://pub-383410a98aef4cb686f0c7601eddd25f.r2.dev/bi-pre-audit/bi-sf1-composite-projected-fk.tar.zst
 * https://pub-383410a98aef4cb686f0c7601eddd25f.r2.dev/bi-pre-audit/bi-sf3-composite-projected-fk.tar.zst
@@ -74,11 +77,15 @@ This command works on both standalone files (`.tar.zst`) and chunked ones (`.tar
 
 ### Compressed CSVs in the composite-projected CSV format with quotes and without headers
 
+**Checksums:** https://pub-383410a98aef4cb686f0c7601eddd25f.r2.dev/bi-pre-audit/bi-composite-projected-fk-with-quotes-without-headers-md5sums.tar.zst
+
 * https://pub-383410a98aef4cb686f0c7601eddd25f.r2.dev/bi-pre-audit/bi-sf1-composite-projected-fk-with-quotes-without-headers.tar.zst
 * https://pub-383410a98aef4cb686f0c7601eddd25f.r2.dev/bi-pre-audit/bi-sf3-composite-projected-fk-with-quotes-without-headers.tar.zst
 * https://pub-383410a98aef4cb686f0c7601eddd25f.r2.dev/bi-pre-audit/bi-sf10-composite-projected-fk-with-quotes-without-headers.tar.zst
 
 ### Raw (up to SF30)
+
+**Checksums:** https://pub-383410a98aef4cb686f0c7601eddd25f.r2.dev/bi-pre-audit/bi-raw-md5sums.tar.zst
 
 * https://pub-383410a98aef4cb686f0c7601eddd25f.r2.dev/bi-pre-audit/bi-sf1-raw.tar.zst
 * https://pub-383410a98aef4cb686f0c7601eddd25f.r2.dev/bi-pre-audit/bi-sf3-raw.tar.zst
@@ -86,6 +93,8 @@ This command works on both standalone files (`.tar.zst`) and chunked ones (`.tar
 * https://pub-383410a98aef4cb686f0c7601eddd25f.r2.dev/bi-pre-audit/bi-sf30-raw.tar.zst
 
 ### Factor tables
+
+**Checksums:** https://pub-383410a98aef4cb686f0c7601eddd25f.r2.dev/bi-pre-audit/bi-factors-md5sums.tar.zst
 
 * https://pub-383410a98aef4cb686f0c7601eddd25f.r2.dev/bi-pre-audit/factors/factors-sf1.tar.zst
 * https://pub-383410a98aef4cb686f0c7601eddd25f.r2.dev/bi-pre-audit/factors/factors-sf3.tar.zst
