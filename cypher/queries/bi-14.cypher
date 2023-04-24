@@ -1,9 +1,6 @@
 // Q14. International dialog
 /*
-:param [{ country1, country2 }] => { RETURN
-  'Chile' AS country1,
-  'Argentina' AS country2
-}
+:params { country1: 'Chile', country2: 'Argentina' }
 */
 MATCH
   (country1:Country {name: $country1})<-[:IS_PART_OF]-(city1:City)<-[:IS_LOCATED_IN]-(person1:Person),

@@ -1,9 +1,6 @@
 // Q2. Tag evolution
 /*
-:param [{ date, tagClass }] => { RETURN
-  datetime('2012-06-01') AS date,
-  'MusicalArtist' AS tagClass
-}
+:params { date: datetime('2012-06-01'), tagClass: 'MusicalArtist' }
 */
 MATCH (tag:Tag)-[:HAS_TYPE]->(:TagClass {name: $tagClass})
 // window 1

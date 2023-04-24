@@ -1,12 +1,12 @@
 // Q16. Fake news detection
 // These parameters return a 'false positive' as the maxKnowsLimit is set too high.
 /*
-:param [{ tagA, dateA, tagB, dateB, maxKnowsLimit }] => { RETURN
-  'Meryl_Streep' AS tagA,
-  datetime('2012-09-16') AS dateA,
-  'Hank_Williams' AS tagB,
-  datetime('2012-05-08') AS dateB,
-  4 AS maxKnowsLimit
+:params {
+  tagA: 'Meryl_Streep',
+  dateA: datetime('2012-09-16'),
+  tagB: 'Hank_Williams',
+  dateB: datetime('2012-05-08'),
+  maxKnowsLimit: 4
 }
 */
 UNWIND [

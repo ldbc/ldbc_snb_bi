@@ -1,11 +1,7 @@
 // Q20. Recruitment
 // Requires the Neo4j Graph Data Science library
 /*
-:param [{ company, person2Id }] => {
-  RETURN
-    'Falcon_Air' AS company,
-    66 AS person2Id
-  }
+:params { company: 'Falcon_Air', person2Id: 66 }
 */
 MATCH
   (company:Company {name: $company})<-[:WORK_AT]-(person1:Person),

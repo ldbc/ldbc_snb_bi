@@ -1,13 +1,12 @@
 // Q10. Experts in social circle
 // Requires the Neo4j APOC library
 /*
-:param [{ personId, country, tagClass, minPathDistance, maxPathDistance }] => {
-  RETURN
-    30786325588624 AS personId,
-    'China' AS country,
-    'MusicalArtist' AS tagClass,
-    3 AS minPathDistance,
-    4 AS maxPathDistance
+:params {
+    personId: 30786325588624,
+    country: 'China',
+    tagClass: 'MusicalArtist',
+    minPathDistance: 3,
+    maxPathDistance: 4
 }
 */
 MATCH (startPerson:Person {id: $personId})

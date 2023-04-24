@@ -1,11 +1,6 @@
 // Q8. Central Person for a Tag
 /*
-:param [{ tag, startDate, endDate }] => {
-  RETURN
-    'Che_Guevara' AS tag,
-    datetime('2011-07-20') AS startDate,
-    datetime('2011-07-25') AS endDate
-  }
+:params { tag: 'Che_Guevara', startDate: datetime('2011-07-20'), endDate: datetime('2011-07-25') }
 */
 MATCH (tag:Tag {name: $tag})
 // score

@@ -1,9 +1,9 @@
 // Q11. Friend triangles
 /*
-:param [{ country, startDate, endDate }] => { RETURN
-  'India' AS country,
-  datetime('2012-09-29') AS startDate,
-  datetime('2013-01-01') AS endDate
+:params {
+  country: 'India',
+  startDate: datetime('2012-09-29'),
+  endDate: datetime('2013-01-01')
 }
 */
 MATCH (a:Person)-[:IS_LOCATED_IN]->(:City)-[:IS_PART_OF]->(country:Country {name: $country}),

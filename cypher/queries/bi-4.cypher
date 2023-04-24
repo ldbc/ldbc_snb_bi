@@ -1,6 +1,6 @@
 // Q4. Top message creators in a country
 /*
-:param date => datetime('2010-01-29') AS date
+:params { date: datetime('2010-01-29') }
 */
 MATCH (country:Country)<-[:IS_PART_OF]-(:City)<-[:IS_LOCATED_IN]-(person:Person)<-[:HAS_MEMBER]-(forum:Forum)
 WHERE forum.creationDate > $date

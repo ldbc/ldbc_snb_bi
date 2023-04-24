@@ -1,9 +1,9 @@
 // Q12. How many persons have a given number of posts
 /*
-:param [{ startDate, lengthThreshold, languages }] => { RETURN
-  datetime('2010-07-22') AS startDate,
-  20 AS lengthThreshold,
-  ['ar', 'hu'] AS languages
+:params {
+  startDate: datetime('2010-07-22'),
+  lengthThreshold: 20,
+  languages: ['ar', 'hu']
 }
 */
 MATCH (person:Person)

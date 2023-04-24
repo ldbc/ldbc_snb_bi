@@ -1,11 +1,11 @@
 // Q15. Weighted interaction paths
 // Requires the Neo4j Graph Data Science library
 /*
-:param [{ person1Id, person2Id, startDate, endDate }] => { RETURN
-    14 AS person1Id,
-    16 AS person2Id,
-    datetime('2010-11-01') AS startDate,
-    datetime('2010-12-01') AS endDate
+:params {
+    person1Id: 14,
+    person2Id: 16,
+    startDate: datetime('2010-11-01'),
+    endDate: datetime('2010-12-01')
 }
 */
 CALL gds.graph.drop('bi15', false)
