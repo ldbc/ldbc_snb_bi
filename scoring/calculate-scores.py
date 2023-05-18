@@ -57,7 +57,7 @@ con.execute(f"""
           AND q IN ('reads', 'writes');
 
     CREATE OR REPLACE TABLE throughput_batches AS
-        SELECT count(day)/2 AS n_batches, sum(time) AS t_batches -- /2 is needed because writes+reads are counted separately 
+        SELECT count(day)//2 AS n_batches, sum(time) AS t_batches -- //2 is needed because writes+reads are counted separately 
         FROM throughput_test
         -- we drop the days executed after the minimum throughput time passed
         WHERE day <= (
@@ -73,7 +73,7 @@ con.execute(f"""
         );
 
     CREATE OR REPLACE TABLE all_throughput_batches AS
-        SELECT count(day)/2 AS n_batches, sum(time) As t_batches
+        SELECT count(day)//2 AS n_batches, sum(time) As t_batches
         FROM throughput_test;
 
     CREATE OR REPLACE TABLE throughput_score AS
