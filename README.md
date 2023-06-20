@@ -60,8 +60,6 @@ cd ..
 scripts/cross-validate.sh cypher umbra
 ```
 
-Note that the cross-validation uses the [numdiff](scripts/numdiff.md) CLI tool.
-
 ## Usage
 
 See [`.circleci/config.yml`](.circleci/config.yml) for an up-to-date example on how to use the projects in this repository.
