@@ -23,6 +23,8 @@ INSERT INTO Message
             Comment.ParentCommentId AS ParentMessageId
         FROM Comment
         JOIN Message_CTE
+          -- FORCEORDER is an optimizer hint,
+          -- see https://github.com/ldbc/ldbc_snb_bi/issues/163#issuecomment-1621316001
           ON FORCEORDER(Comment.ParentCommentId = Message_CTE.MessageId)
     )
     SELECT
@@ -41,6 +43,8 @@ INSERT INTO Message
         coalesce(Comment.ParentPostId, Comment.ParentCommentId) AS ParentMessageId
     FROM Message_CTE
     JOIN Comment
+      -- FORCEORDER is an optimizer hint,
+      -- see https://github.com/ldbc/ldbc_snb_bi/issues/163#issuecomment-1621316001
       ON FORCEORDER(Message_CTE.MessageId = Comment.id)
 ;
 
