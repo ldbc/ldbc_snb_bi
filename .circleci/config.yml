@@ -18,7 +18,7 @@ jobs:
       - run:
           name: Load Umbra Docker image
           command: |
-            # ${UMBRA_URL_PREFIX} should be set as a sercet variable
+            # ${UMBRA_URL_PREFIX} should be set as a secret variable
             umbra/scripts/docker-load.sh
       - run:
           name: Setup
