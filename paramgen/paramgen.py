@@ -48,4 +48,4 @@ for query_variant in ["1", "2a", "2b", "3", "4", "5", "6", "7", "8a", "8b", "9",
     print(f"- Q{query_variant}")
     with open(f"paramgen-queries/pg-{query_variant}.sql", "r") as parameter_query_file:
         parameter_query = parameter_query_file.read()
-        con.execute(f"COPY ({parameter_query}) TO '../parameters/parameters-sf{sf}/bi-{query_variant}.csv' WITH (HEADER, DELIMITER '|');")
+        con.execute(f"COPY ({parameter_query}) TO '../parameters/parameters-sf{sf}/bi-{query_variant}.csv' WITH (HEADER, DELIMITER '|')")
