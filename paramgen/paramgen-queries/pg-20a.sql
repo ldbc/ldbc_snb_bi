@@ -1,9 +1,4 @@
 -- variant (a): guaranteed that no path exists
--- we use the following algorithm:
--- 1) we first select 20 of companies
--- 2) we list *all* their employees (person1 candidates)
--- 3) for each company, we select person2s who do not have a path to *any* of the person1 candidates,
---    i.e. they are in different connected components
 SELECT
     s1.companyName AS 'company:STRING',
     s2.personId AS 'person2Id:ID'
