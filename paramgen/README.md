@@ -56,4 +56,5 @@ Assuming that your `${LDBC_SNB_DATAGEN_DIR}` and `${SF}` environment variables a
 
 ## Memory consumption
 
-Note that the parameter generator uses a significant amount of memory. E.g. SF10000 uses 503.7GiB and took about 22 minutes to run.
+The parameter generator process performs several join and aggregation operations on large tables, therefore, it uses a significant amount of memory.
+For example, the process for SF30,000 uses 404.8 GB RAM and takes about 11 minutes to run on an [AWS EC2 `m6id.32xlarge` instance](https://instances.vantage.sh/aws/ec2/m6id.32xlarge) with a 128 vCPUs.
