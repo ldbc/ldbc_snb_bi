@@ -27,7 +27,9 @@ con.execute(f"""
 
     COPY benchmark_time FROM '{timings_dir}/benchmark.csv' (HEADER, DELIMITER '|');
     COPY load_time      FROM '{timings_dir}/load.csv'      (HEADER, DELIMITER '|');
-    COPY timings        FROM '{timings_dir}/timings.csv'   (HEADER, DELIMITER '|');
+    -- COPY timings        FROM '{timings_dir}/timings.csv'   (HEADER, DELIMITER '|');
+    CREATE OR REPLACE TABLE timings AS SELECT * FROM read_csv('{timings_dir}/timings.csv', header=true, delim='|', parallel=false,
+        columns={{'tool': 'string', 'sf': 'float', 'day': 'string', 'batch_type': 'string', 'q': 'string', 'parameters': 'string', 'time': 'float'}});
 
     INSERT INTO power_test_individual
         SELECT regexp_replace('0' || q, '\D','','g')::int AS qid, q, time
@@ -57,7 +59,7 @@ con.execute(f"""
           AND q IN ('reads', 'writes');
 
     CREATE OR REPLACE TABLE throughput_batches AS
-        SELECT count(day)/2 AS n_batches, sum(time) AS t_batches -- /2 is needed because writes+reads are counted separately 
+        SELECT count(day)//2 AS n_batches, sum(time) AS t_batches -- //2 is needed because writes+reads are counted separately 
         FROM throughput_test
         -- we drop the days executed after the minimum throughput time passed
         WHERE day <= (
@@ -73,7 +75,7 @@ con.execute(f"""
         );
 
     CREATE OR REPLACE TABLE all_throughput_batches AS
-        SELECT count(day)/2 AS n_batches, sum(time) As t_batches
+        SELECT count(day)//2 AS n_batches, sum(time) As t_batches
         FROM throughput_test;
 
     CREATE OR REPLACE TABLE throughput_score AS
@@ -157,17 +159,6 @@ else:
     t_at_sf = con.fetchone()[0]
     print(f"throughput@SF score: {t_at_sf:.02f}")
 
-    con.execute(f"""
-        COPY
-            (SELECT
-                (SELECT printf('\\numprint{{%.2f}} minutes', time/60      ) FROM benchmark_time        ),
-                (SELECT printf('\\numprint{{%.2f}}', power                ) FROM power_score           ),
-                (SELECT printf('\\numprint{{%.2f}}', power_at_sf          ) FROM power_at_sf_score     ),
-                (SELECT printf('\\numprint{{%.2f}}', throughput           ) FROM throughput_score      ),
-                (SELECT printf('\\numprint{{%.2f}} \\\\', throughput_at_sf) FROM throughput_at_sf_score),
-            )
-        TO 'summary-{tool}-sf{sf_string}.tex' (HEADER false, QUOTE '', DELIMITER ' & ');
-        """)
 
 con.execute("""SELECT * FROM all_throughput_batches""")
 tb = con.fetchone()
@@ -178,94 +169,57 @@ print(f"total throughput batches executed: {tb[0]} batch(es) in {tb[1]:.2f}s")
 con.execute(f"""
     -- order as t_load, w, r, followed by q_1, ..., q_20
     CREATE OR REPLACE TABLE results_table_sorted AS
-        SELECT *
+        SELECT q, t
         FROM (
           -- -200: power@SF
-            SELECT -200 AS qid, NULL AS q, printf('\\numprint{{%.2f}}', power_at_sf) AS t
+            SELECT -200 AS qid, 'power@SF' AS q, printf('%.2f', power_at_sf) AS t
             FROM power_at_sf_score
           UNION ALL
           -- -199: throughput@SF
-            SELECT -199 AS qid, NULL AS q, CASE WHEN throughput_at_sf IS NULL THEN 'n/a' ELSE printf('\\numprint{{%.2f}}', throughput_at_sf) END AS t
+            SELECT -199 AS qid, 'throughput@SF' AS q, CASE WHEN throughput_at_sf IS NULL THEN 'n/a' ELSE printf('%.2f', throughput_at_sf) END AS t
             FROM throughput_at_sf_score
           UNION ALL
           -- -100...
-            SELECT -100 AS qid, NULL AS q, (SELECT printf('\\numprint{{%.2f}}', time) FROM load_time) AS t
+            SELECT -100 AS qid, 'load time' AS q, (SELECT printf('%.2f', time) FROM load_time) AS t
           UNION ALL
-            SELECT -99 AS qid, NULL AS q, printf('\\numprint{{%.2f}}', avg_time) AS t
+            SELECT -99 AS qid, 'power batch writes' AS q, printf('%.2f', avg_time) AS t
             FROM power_test_stats
             WHERE q = 'writes'
           UNION ALL
             -- time to apply writes: write time minus the sum of precomputation times
-            SELECT -98 AS qid, NULL AS q, printf('\\numprint{{%.2f}}', (SELECT min_time FROM power_test_stats WHERE q = 'writes') - (SELECT sum(min_time) FROM power_test_stats WHERE q LIKE '%precomp%')) AS t
+            SELECT -98 AS qid, 'power writes w/o prec.' AS q, printf('%.2f', (SELECT min_time FROM power_test_stats WHERE q = 'writes') - (SELECT sum(min_time) FROM power_test_stats WHERE q LIKE '%precomp%')) AS t
           UNION ALL
           -- -75 (group for precomputations)
-            SELECT -75 + regexp_replace('q|precomp' || q, '\D','','g')::int AS qid, q, printf('\\numprint{{%.2f}}', min_time) AS t
+            SELECT -75 + regexp_replace('q|precomp' || q, '\D','','g')::int AS qid, printf('Q%d precomputation', qid) AS q, printf('%.2f', min_time) AS t
             FROM power_test_stats
             WHERE q LIKE '%precomp%'
           UNION ALL
           -- -50 (total precomputation time)
-            SELECT -50 AS qid, NULL, printf('\\numprint{{%.2f}}', sum(min_time)) AS t
+            SELECT -50 AS qid, 'total precomputation' AS q, printf('%.2f', sum(min_time)) AS t
             FROM power_test_stats
             WHERE q LIKE '%precomp%'
           UNION ALL
-            SELECT  -25 AS qid, NULL AS q, printf('\\numprint{{%.2f}}', avg_time) AS t
+            SELECT  -25 AS qid, 'power batch reads' AS q, printf('%.2f', avg_time) AS t
             FROM power_test_stats
             WHERE q = 'reads'
           UNION ALL
           -- 1..20
-            SELECT regexp_replace('0' || q, '\D','','g')::int AS qid, q, printf('\\numprint{{%.2f}}', avg_time) AS t
+            SELECT regexp_replace('0' || q, '\D','','g')::int AS qid, printf('Q%s', q), printf('%.2f', avg_time) AS t
             FROM power_test_stats
             WHERE regexp_matches(q, '^[0-9]+[ab]?')
           UNION ALL
           -- 50..inf
-            SELECT 50 AS qid, NULL AS q, CASE WHEN n_batches = 0 THEN 'n/a' ELSE printf('%d batch(es)', n_batches) END AS t
+            SELECT 50 AS qid, 'n_{{throughput batches}}' AS q, CASE WHEN n_batches = 0 THEN 'n/a' ELSE printf('%d batch(es)', n_batches) END AS t
             FROM throughput_batches
           UNION ALL
-            SELECT 51 AS qid, NULL AS q, CASE WHEN t_batches IS NULL THEN 'n/a' ELSE printf('\\numprint{{%.2f}}', t_batches) END AS t
+            SELECT 51 AS qid, 't_{{throughput batches}}' AS q, CASE WHEN t_batches IS NULL THEN 'n/a' ELSE printf('%.2f', t_batches) END AS t
             FROM throughput_batches
           UNION ALL
-            SELECT 52 AS qid, NULL AS q, printf('\\numprint{{%.2f}}', time)
+            SELECT 52 AS qid, 'total execution time' AS q, printf('%.2f', time)
             FROM benchmark_time
         )
         ORDER BY qid, q;
     """)
 con.execute(f"""
-    COPY 
-        (SELECT string_agg(t, ' \n')
-        FROM results_table_sorted)
-    TO 'runtimes-{tool}-sf{sf_string}.tex' (HEADER false, QUOTE '');
-    """)
-
-# produce power test statistics in the Full Disclosure Report
-con.execute(f"""
-    COPY
-        (SELECT
-            q,
-            count,
-            printf('\\numprint{{%.3f}}', min_time) AS min,
-            printf('\\numprint{{%.3f}}', max_time) AS max,
-            printf('\\numprint{{%.3f}}', avg_time) AS mean,
-            printf('\\numprint{{%.3f}}', p50_time) AS p50,
-            printf('\\numprint{{%.3f}}', p90_time) AS p90,
-            printf('\\numprint{{%.3f}}', p95_time) AS p95,
-            printf('\\numprint{{%.3f}} \\\\', p99_time) AS 'p99 \\\\',
-        FROM power_test_stats
-        WHERE count > 1
-        ORDER BY qid, q
-        )
-    TO 'queries-{tool}-sf{sf_string}.tex' (HEADER false, QUOTE '', DELIMITER ' & ');
-    """)
-
-con.execute(f"""
-    COPY
-        (SELECT
-            q,
-            -- there is only a **single value** per benchmark execution for each operation (reads, writes, precomputation for query X),
-            -- hence we can select min (we could also select the max or any of the statistical columns)
-            printf('\\numprint{{%.3f}} \\\\', min_time) AS 'time \\\\',
-        FROM power_test_stats
-        WHERE count = 1
-        ORDER BY qid, q
-        )
-    TO 'operations-{tool}-sf{sf_string}.tex' (HEADER false, QUOTE '', DELIMITER ' & ');
+    COPY results_table_sorted TO 'runtimes-{tool}-sf{sf_string}.csv' (HEADER fals, QUOTE '');
     """)
