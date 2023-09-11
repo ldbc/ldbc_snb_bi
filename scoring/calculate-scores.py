@@ -221,5 +221,5 @@ con.execute(f"""
         ORDER BY qid, q;
     """)
 con.execute(f"""
-    COPY results_table_sorted TO 'runtimes-{tool}-sf{sf_string}.csv' (HEADER fals, QUOTE '');
+    COPY results_table_sorted TO 'runtimes-{tool}-sf{sf_string}.csv' (HEADER false, QUOTE '');
     """)
