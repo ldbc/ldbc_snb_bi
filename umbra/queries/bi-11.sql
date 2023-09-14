@@ -27,7 +27,7 @@ SELECT count(*)
     -- filter: unique triangles only
    AND p1.PersonId < p2.PersonId
    AND p2.PersonId < p3.PersonId
-    -- filter: only edges created after :startDate
+    -- filter: only edges created after :startDate and before :endDate
    AND :startDate <= p1.creationDate AND p1.creationDate <= :endDate
    AND :startDate <= p2.creationDate AND p2.creationDate <= :endDate
    AND :startDate <= p3.creationDate AND p3.creationDate <= :endDate
