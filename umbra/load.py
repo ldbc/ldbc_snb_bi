@@ -29,7 +29,6 @@ print("Load initial snapshot")
 static_path = f"{data_dir}/initial_snapshot/static"
 dynamic_path = f"{data_dir}/initial_snapshot/dynamic"
 static_entities = ["Organisation", "Place", "Tag", "TagClass"]
-csv_entities =  ["Post", "Comment_hasTag_Tag", "Post_hasTag_Tag", "Person_likes_Comment", "Person_likes_Post"]
 dynamic_entities = ["Comment", "Forum", "Forum_hasMember_Person", "Forum_hasTag_Tag", "Person", "Person_hasInterest_Tag", "Person_knows_Person", "Person_studyAt_University", "Person_workAt_Company"]
 
 if local:
