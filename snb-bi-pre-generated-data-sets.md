@@ -31,6 +31,8 @@ This command works on both standalone files (`.tar.zst`) and chunked ones (`.tar
 * https://pub-383410a98aef4cb686f0c7601eddd25f.r2.dev/bi-pre-audit/bi-sf300-composite-merged-fk.tar.zst
 * https://pub-383410a98aef4cb686f0c7601eddd25f.r2.dev/bi-pre-audit/bi-sf1000-composite-merged-fk.tar.zst.000
 * https://pub-383410a98aef4cb686f0c7601eddd25f.r2.dev/bi-pre-audit/bi-sf1000-composite-merged-fk.tar.zst.001
+* https://pub-383410a98aef4cb686f0c7601eddd25f.r2.dev/bi-pre-audit/bi-sf3000-composite-merged-fk.tar.zst.000
+* https://pub-383410a98aef4cb686f0c7601eddd25f.r2.dev/bi-pre-audit/bi-sf3000-composite-merged-fk.tar.zst.001
 * https://pub-383410a98aef4cb686f0c7601eddd25f.r2.dev/bi-pre-audit/bi-sf3000-composite-merged-fk.tar.zst.002
 * https://pub-383410a98aef4cb686f0c7601eddd25f.r2.dev/bi-pre-audit/bi-sf3000-composite-merged-fk.tar.zst.003
 * https://pub-383410a98aef4cb686f0c7601eddd25f.r2.dev/bi-pre-audit/bi-sf3000-composite-merged-fk.tar.zst.004
