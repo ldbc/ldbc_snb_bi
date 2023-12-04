@@ -19,6 +19,10 @@ This command works on both standalone files (`.tar.zst`) and chunked ones (`.tar
 
 ## Data sets links
 
+### SURF
+
+The data sets are available in [the SURF/CWI repository](https://repository.surfsara.nl/datasets/cwi/ldbc-snb-bi).
+
 ### Compressed CSVs in the composite-merged-fk format
 
 **Checksums:** https://pub-383410a98aef4cb686f0c7601eddd25f.r2.dev/bi-pre-audit/bi-composite-merged-fk-md5sums.tar.zst
