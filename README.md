@@ -38,7 +38,7 @@ Running an SNB BI experiment requires the following steps.
 
 :warning:
 Note that deriving official LDBC results requires commissioning an _audited benchmark_, which is a more complex process as it entails code review, cross-validation, etc.
-For details, see [the specification's Auditing chapter](https://ldbcouncil.org/ldbc_snb_docs/ldbc-snb-specification.pdf) and the [audit questionnaire](snb-bi-audit-questionnaire.md).
+For details, see [LDBC's auditing process](https://ldbcouncil.org/docs/ldbc-snb-auditing-process.pdf), the specification's [Auditing chapter](https://ldbcouncil.org/ldbc_snb_docs/ldbc-snb-specification.pdf#chapter.9) and the [audit questionnaire](snb-bi-audit-questionnaire.md).
 
 ## Cross-validation
 
@@ -66,11 +66,7 @@ See [`.circleci/config.yml`](.circleci/config.yml) for an up-to-date example on 
 
 ## Data sets
 
-[Pre-generated data sets and parameters](snb-bi-pre-generated-data-sets.md) are now available for
-SF1-SF10,000 (projected FK variant) and
-SF1-SF1,000 (merged FK variant).
-
-Data sets are also being uploaded to the [SURF CWI repository](https://repository.surfsara.nl/datasets/cwi/snb) and expected to be published there in 2023.
+We have pre-generated [data sets and parameters](snb-bi-pre-generated-data-sets).
 
 ## Scoring
 

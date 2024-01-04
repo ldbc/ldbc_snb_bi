@@ -22,8 +22,21 @@ This command works on both standalone files (`.tar.zst`) and chunked ones (`.tar
 ### SURF
 
 The data sets are available in [the SURF/CWI repository](https://repository.surfsara.nl/datasets/cwi/ldbc-snb-bi).
+We provide [direct download links](https://ldbcouncil.org/data-sets-surf-repository/snb-business-intelligence) and a [download script](https://ldbcouncil.org/data-sets-surf-repository/#usage) (which stages the data sets from tape storage if they are not immediately available).
 
-### Compressed CSVs in the composite-merged-fk format
+### Cloudflare R2
+
+#### Substitution parameters
+
+* https://pub-383410a98aef4cb686f0c7601eddd25f.r2.dev/snb-bi/ldbc-snb-bi-parameters-sf1-to-sf30000.zip
+
+#### Validation parameters
+
+Validation parameters for SF10, generated with Umbra:
+
+* https://pub-383410a98aef4cb686f0c7601eddd25f.r2.dev/bi-pre-audit/output-sf10-validation-umbra.tar.zst
+
+#### Compressed CSVs in the composite-merged-fk format
 
 **Checksums:** https://pub-383410a98aef4cb686f0c7601eddd25f.r2.dev/bi-pre-audit/bi-composite-merged-fk-md5sums.tar.zst
 
@@ -41,7 +54,7 @@ The data sets are available in [the SURF/CWI repository](https://repository.surf
 * https://pub-383410a98aef4cb686f0c7601eddd25f.r2.dev/bi-pre-audit/bi-sf3000-composite-merged-fk.tar.zst.003
 * https://pub-383410a98aef4cb686f0c7601eddd25f.r2.dev/bi-pre-audit/bi-sf3000-composite-merged-fk.tar.zst.004
 
-### Compressed CSVs in the composite-projected-fk format
+#### Compressed CSVs in the composite-projected-fk format
 
 **Checksums:** https://pub-383410a98aef4cb686f0c7601eddd25f.r2.dev/bi-pre-audit/bi-composite-projected-fk-md5sums.tar.zst
 
@@ -84,7 +97,7 @@ The data sets are available in [the SURF/CWI repository](https://repository.surf
 * https://pub-383410a98aef4cb686f0c7601eddd25f.r2.dev/bi-pre-audit/bi-sf10000-composite-projected-fk.tar.zst.020
 * https://pub-383410a98aef4cb686f0c7601eddd25f.r2.dev/bi-pre-audit/bi-sf10000-composite-projected-fk.tar.zst.021
 
-### Compressed CSVs in the composite-projected CSV format with quotes and without headers
+#### Compressed CSVs in the composite-projected CSV format with quotes and without headers
 
 **Checksums:** https://pub-383410a98aef4cb686f0c7601eddd25f.r2.dev/bi-pre-audit/bi-composite-projected-fk-with-quotes-without-headers-md5sums.tar.zst
 
@@ -92,7 +105,7 @@ The data sets are available in [the SURF/CWI repository](https://repository.surf
 * https://pub-383410a98aef4cb686f0c7601eddd25f.r2.dev/bi-pre-audit/bi-sf3-composite-projected-fk-with-quotes-without-headers.tar.zst
 * https://pub-383410a98aef4cb686f0c7601eddd25f.r2.dev/bi-pre-audit/bi-sf10-composite-projected-fk-with-quotes-without-headers.tar.zst
 
-### Raw (up to SF30)
+#### Raw (up to SF30)
 
 **Checksums:** https://pub-383410a98aef4cb686f0c7601eddd25f.r2.dev/bi-pre-audit/bi-raw-md5sums.tar.zst
 
@@ -101,7 +114,7 @@ The data sets are available in [the SURF/CWI repository](https://repository.surf
 * https://pub-383410a98aef4cb686f0c7601eddd25f.r2.dev/bi-pre-audit/bi-sf10-raw.tar.zst
 * https://pub-383410a98aef4cb686f0c7601eddd25f.r2.dev/bi-pre-audit/bi-sf30-raw.tar.zst
 
-### Factor tables
+#### Factor tables
 
 **Checksums:** https://pub-383410a98aef4cb686f0c7601eddd25f.r2.dev/bi-pre-audit/bi-factors-md5sums.tar.zst
 
@@ -115,13 +128,3 @@ The data sets are available in [the SURF/CWI repository](https://repository.surf
 * https://pub-383410a98aef4cb686f0c7601eddd25f.r2.dev/bi-pre-audit/factors/factors-sf3000.tar.zst
 * https://pub-383410a98aef4cb686f0c7601eddd25f.r2.dev/bi-pre-audit/factors/factors-sf10000.tar.zst
 * https://pub-383410a98aef4cb686f0c7601eddd25f.r2.dev/snb-factors/snb-sf30000-factors.tar.zst (the SF30k factors were generated with a newer version of the data generator)
-
-### Parameters
-
-* https://pub-383410a98aef4cb686f0c7601eddd25f.r2.dev/bi-pre-audit/parameters-2022-10-01.zip
-
-### Validation parameters
-
-Validation parameters for SF10, generated with Umbra:
-
-* https://pub-383410a98aef4cb686f0c7601eddd25f.r2.dev/bi-pre-audit/output-sf10-validation-umbra.tar.zst
