@@ -66,7 +66,7 @@ See [`.circleci/config.yml`](.circleci/config.yml) for an up-to-date example on 
 
 ## Data sets
 
-We have pre-generated [data sets and parameters](snb-bi-pre-generated-data-sets).
+We have pre-generated [data sets and parameters](snb-bi-pre-generated-data-sets.md).
 
 ## Scoring
 
