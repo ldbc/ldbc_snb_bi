@@ -83,7 +83,7 @@ export VERSION=0.0.4
 export DOCKER_REGISTRY=docker.io
 export DOCKER_IMAGE_REPO=tginternal
 export HELM_REPO=http://docker.tigergraph.com
-export TG_CLUSTER_VERSION_DEFAULT=3.7.0
+export TG_CLUSTER_VERSION_DEFAULT=3.9.3-2
 kubectl tg init --helm-repo ${HELM_REPO} --docker-registry ${DOCKER_REGISTRY} --docker-image-repo ${DOCKER_IMAGE_REPO} --image-pull-policy Always --operator-version ${VERSION}
 ```
 
@@ -205,7 +205,7 @@ Deploy the containers using the script `k8s/tg` from [tigergraph/ecosys](https:/
 ```
 git clone https://github.com/tigergraph/ecosys.git
 cd ecosys/k8s
-./tg gke kustomize -v 3.7.0 -n tigergraph -s 4 --pv 700 --cpu 30 --mem 200 -l [license string]
+./tg gke kustomize -v 3.9.3-2 -n tigergraph -s 4 --pv 700 --cpu 30 --mem 200 -l [license string]
 kubectl apply -f ./deploy/tigergraph-eks-tigergraph.yaml
 ```
 ## Verify deployment

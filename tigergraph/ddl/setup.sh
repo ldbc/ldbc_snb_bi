@@ -12,7 +12,6 @@ echo "DATA_PATH: ${DATA_PATH}"
 echo "QUERY_PATH: ${QUERY_PATH}"
 echo "QUERY_PATH: ${DML_PATH}"
 echo "==============================================================================="
-t0=$SECONDS
 
 function enable_put_expr() {
     echo "Enable put ExprFunctions feature"
@@ -33,9 +32,10 @@ function enable_put_expr() {
         sleep 30
     fi
 }
-
-#gsql drop all
 enable_put_expr
+
+t0=$SECONDS
+#gsql drop all
 gsql PUT TokenBank FROM \"$DDL_PATH/TokenBank.cpp\"
 gsql PUT ExprFunctions FROM \"$DDL_PATH/ExprFunctions.hpp\"
 gsql $DDL_PATH/schema.gsql
