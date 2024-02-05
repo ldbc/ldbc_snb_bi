@@ -3,7 +3,7 @@ pushd . > /dev/null
 cd "$( cd "$( dirname "${BASH_SOURCE[0]:-${(%):-%x}}" )" >/dev/null 2>&1 && pwd )"
 cd ..
 
-export TG_VERSION=3.7.0
+export TG_VERSION=3.9.3-2
 export TG_CONTAINER_NAME=snb-bi-tg
 export TG_DDL_DIR=`pwd`/ddl
 export TG_QUERIES_DIR=`pwd`/queries

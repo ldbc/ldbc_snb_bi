@@ -57,12 +57,6 @@ namespace UDIMPL {
   inline int64_t float_to_int (float val) {
     return (int64_t) val;
   }
-
-  inline string to_string (double val) {
-    char result[200];
-    sprintf(result, "%g", val);
-    return string(result);
-  }
   
   inline string bigint_to_string (int64_t val) {
     char result[200];
