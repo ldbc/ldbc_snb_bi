@@ -13,7 +13,29 @@ echo "QUERY_PATH: ${QUERY_PATH}"
 echo "QUERY_PATH: ${DML_PATH}"
 echo "==============================================================================="
 t0=$SECONDS
+
+function enable_put_expr() {
+    echo "Enable put ExprFunctions feature"
+    if [[ -z "$(gadmin config list entry | grep "GSQL.UDF.Policy.Enable")" ]];then
+        echo "Config GSQL.UDF.EnablePutExpr does not exist, skip."
+    else
+        gadmin config set GSQL.UDF.Policy.Enable false
+    fi
+
+    if [[ -z "$(gadmin config list entry | grep "GSQL.UDF.EnablePutExpr")" ]]; then
+        echo "Config GSQL.UDF.EnablePutExpr does not exist, skip."
+    else
+        gadmin config set GSQL.UDF.EnablePutExpr true
+        gadmin config set GSQL.UDF.EnablePutTokenBank true
+        gadmin config set GSQL.UDF.EnablePutTgExpr true
+        gadmin config apply -y
+        gadmin restart -y
+        sleep 30
+    fi
+}
+
 #gsql drop all
+enable_put_expr
 gsql PUT TokenBank FROM \"$DDL_PATH/TokenBank.cpp\"
 gsql PUT ExprFunctions FROM \"$DDL_PATH/ExprFunctions.hpp\"
 gsql $DDL_PATH/schema.gsql
