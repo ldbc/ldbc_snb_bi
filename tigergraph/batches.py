@@ -52,7 +52,7 @@ def load_by_restpp(job, data_dir, names, batch_dir, endpoint):
             curl = f"curl -X POST -H 'GSQL-TIMEOUT:3600000' --data-binary  @{f} '{url}'"
             res = subprocess.run(curl, shell=True, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
             res = json.loads(res.stdout.decode("utf-8"))
-            nlines = res["results"][0]["statistics"]["validLine"]
+            nlines = res["results"][0]["statistics"]["parsingStatistics"]["fileLevel"]["validLine"]
             print(f'> {nlines} changes')
 
 """
