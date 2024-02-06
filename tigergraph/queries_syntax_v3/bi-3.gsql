@@ -16,7 +16,8 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi3(STRING tagClass, STRING country) SYNTAX 
     FROM (m:messages) -[:ROOT_POST]-> (p:Post)
     ACCUM p.@messageCount += 1;
   posts2 =
-    SELECT p FROM (p:messages{type:"Post"})
+    SELECT p FROM (p:messages)
+    WHERE p.type == "Post"
     ACCUM p.@messageCount += 1;
   posts = posts1 UNION posts2; 
   tmp =

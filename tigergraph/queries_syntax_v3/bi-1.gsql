@@ -16,9 +16,8 @@ CREATE OR REPLACE DISTRIBUTED QUERY bi1(DATETIME date) SYNTAX v3{
   messages = SELECT m FROM (m:Comment:Post) WHERE m.creationDate < epoch;
   total = messages.size();
   messages =
-    SELECT m
-    FROM (m:Comment:Post)
-    WHERE m.creationDate < date AND m.length>0
+     SELECT m FROM (m:messages)
+     WHERE m.length > 0
     ACCUM
       m.@isComment = (m.type == "Comment"),
       IF m.length < 40 THEN
