@@ -6,5 +6,5 @@ SELECT
 FROM
     (SELECT id FROM personNumFriends ORDER BY md5(id) ASC  LIMIT 20) p1,
     (SELECT id FROM personNumFriends ORDER BY md5(id) DESC LIMIT 20) p2
-ORDER BY md5(131::bigint*p1.id + 241::bigint*p2.id), md5(p1.id)
+ORDER BY md5((131::bigint*p1.id + 241::bigint*p2.id)::::VARCHAR), md5(p1.id::VARCHAR)
 LIMIT 400

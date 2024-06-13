@@ -19,7 +19,7 @@ FROM (SELECT
                     lang.language AS lng
                 FROM
                     (SELECT
-                        (SELECT creationDay FROM creationDayNumMessages ORDER BY md5(creationDay)) + INTERVAL (salt*3) DAY AS startDate, salt
+                        (SELECT creationDay FROM creationDayNumMessages ORDER BY md5(creationDay::VARCHAR)) + INTERVAL (salt*3) DAY AS startDate, salt
                         FROM (SELECT unnest(generate_series(1, 20)) AS salt)
                     ) sd,
                     (SELECT
@@ -36,4 +36,4 @@ FROM (SELECT
 )
 WHERE rn <= 3
 GROUP BY startDate, salt, lang_perm
-ORDER BY md5(startDate), lang_perm
+ORDER BY md5(startDate::VARCHAR), lang_perm
