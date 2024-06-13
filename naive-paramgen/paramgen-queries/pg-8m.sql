@@ -1,8 +1,8 @@
 -- materialize table
 CREATE OR REPLACE TABLE tagAndWindowNumMessages AS
     SELECT
-        d.anchorDate + INTERVAL (-10 + s.salt) DAY AS startDate,
-        d.anchorDate + INTERVAL (-10 + s.salt + 10 + s.salt * 37 % 5) DAY AS endDate,
+        (d.anchorDate + INTERVAL (-10 + s.salt) DAY)::DATE AS startDate,
+        (d.anchorDate + INTERVAL (-10 + s.salt + 10 + s.salt * 37 % 5) DAY)::DATE  AS endDate,
         name,
         sum(frequency) AS frequency
     FROM

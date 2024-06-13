@@ -1,6 +1,6 @@
-SELECT date_trunc('day', creationDay) AS 'date:DATE'
+SELECT creationDay AS 'date:DATE'
 FROM (
-    SELECT creationDay
+    SELECT creationDay::DATE AS creationDay
     FROM creationDayNumMessages
     ORDER BY creationDay ASC
     LIMIT 40

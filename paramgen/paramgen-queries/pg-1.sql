@@ -1,8 +1,8 @@
 SELECT
     strftime(
-        creationDay::timestamp + INTERVAL ( epoch(creationDay) / 37 % 24) HOUR
-            + INTERVAL ( epoch(creationDay) / 37 % 60) MINUTE
-            + INTERVAL ( epoch(creationDay) / 31 % 60) SECOND,
+        creationDay::TIMESTAMP + INTERVAL ( epoch(creationDay::TIMESTAMP) / 37 % 24) HOUR
+            + INTERVAL ( epoch(creationDay::TIMESTAMP) / 37 % 60) MINUTE
+            + INTERVAL ( epoch(creationDay::TIMESTAMP) / 31 % 60) SECOND,
         '%Y-%m-%dT%H:%M:%S.%g+00:00'
         ) AS 'datetime:DATETIME'
 FROM (

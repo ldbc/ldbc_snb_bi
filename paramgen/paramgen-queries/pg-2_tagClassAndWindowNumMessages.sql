@@ -1,5 +1,5 @@
 SELECT
-    d.anchorDate + INTERVAL (-10 + s.salt) DAY AS date,
+    (d.anchorDate + INTERVAL (-10 + s.salt) DAY)::DATE AS date,
     name AS tagClassName,
     sum(frequency) AS frequency
 FROM

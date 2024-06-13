@@ -1,7 +1,7 @@
 SELECT
     tagName AS 'tag:STRING',
-    date_trunc('day', startDate) AS 'startDate:DATE',
-    date_trunc('day', endDate) AS 'endDate:DATE'
+    startDate AS 'startDate:DATE',
+    endDate AS 'endDate:DATE'
 FROM (
     SELECT
         tagName,

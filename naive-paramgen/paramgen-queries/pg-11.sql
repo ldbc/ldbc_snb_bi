@@ -1,7 +1,7 @@
 SELECT
     countryNumPersons.name AS 'country:STRING',
-    creationDay::date + INTERVAL (-15 + salt*37 % 30) DAY AS 'startDate:DATE',
-    creationDay::date + INTERVAL (-15 + salt*37 % 30 + 92 + salt*47 % 18) DAY AS 'endDate:DATE'
+    (creationDay + INTERVAL (-15 + salt*37 % 30) DAY)::DATE AS 'startDate:DATE',
+    (creationDay + INTERVAL (-15 + salt*37 % 30 + 92 + salt*47 % 18) DAY)::DATE AS 'endDate:DATE'
 FROM
     countryNumPersons,
     creationDayNumMessages,

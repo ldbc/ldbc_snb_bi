@@ -3,7 +3,7 @@ SELECT
     endDate AS 'endDate:DATE'
 FROM (
     SELECT DISTINCT
-        anchorDate::date + INTERVAL (-5 + salt1*47 % 20) DAY AS endDate
+        (anchorDate::DATE + INTERVAL (-5 + salt1*47 % 20) DAY)::DATE AS endDate
     FROM (
         SELECT percentile_disc(0.94) WITHIN GROUP (ORDER BY creationDay) AS anchorDate
         FROM creationDayNumMessages

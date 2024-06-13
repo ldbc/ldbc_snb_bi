@@ -1,6 +1,6 @@
 SELECT
     countryNumPersons.name AS 'country:STRING',
-    date_trunc('day', creationDay) AS 'endDate:DATE'
+    creationDay AS 'endDate:DATE'
 FROM
     countryNumPersons,
     creationDayNumMessages
