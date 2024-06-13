@@ -22,7 +22,7 @@ FROM
     FROM personNumFriends
     JOIN personDays_window
       ON personDays_window.id = personNumFriends.id
-    ORDER BY diff, md5(personNumFriends.id)
+    ORDER BY diff, md5(personNumFriends.id::VARCHAR)
     LIMIT 50
     ) s2
 JOIN sameUniversityConnected c1
@@ -36,5 +36,5 @@ WHERE NOT EXISTS (
       AND w.PersonId = c2.personId
       AND c1.Component = c2.Component
     )
-ORDER BY md5(concat(s2.personId, s1.companyId)), md5(s2.personId), md5(s1.companyId)
+ORDER BY md5(concat(s2.personId, s1.companyId)), md5(s2.personId::VARCHAR), md5(s1.companyId::VARCHAR)
 LIMIT 400

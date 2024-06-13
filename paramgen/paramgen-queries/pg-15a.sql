@@ -14,4 +14,4 @@ JOIN personKnowsPersonDays_window knows3
 -- meet in the middle
 WHERE middleCandidate = knows3.person2Id
 
-ORDER BY md5(131*q15a_core.person1Id + 241*q15a_core.person2Id), md5(q15a_core.person1Id)
+ORDER BY md5((131*q15a_core.person1Id + 241*q15a_core.person2Id)::VARCHAR), md5(q15a_core.person1Id::VARCHAR)

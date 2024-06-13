@@ -14,4 +14,4 @@ FROM (
     ORDER BY diff, creationDay
     LIMIT 80
 )
-ORDER BY md5(creationDay)
+ORDER BY md5(creationDay::VARCHAR)

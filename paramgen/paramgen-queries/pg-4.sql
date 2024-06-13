@@ -5,4 +5,4 @@ FROM (
     ORDER BY creationDay ASC
     LIMIT 40
 )
-ORDER BY md5(creationDay)
+ORDER BY md5(creationDay::VARCHAR)

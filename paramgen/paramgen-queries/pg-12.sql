@@ -36,9 +36,9 @@ FROM (SELECT
                 ORDER BY salt, md5(concat(lang.language, salt))
             ),
             (SELECT unnest(generate_series(1, 4)) AS lang_perm)
-        ORDER BY startDate, salt, md5(3532569367*salt + 342663089*lang_perm)
+        ORDER BY startDate, salt, md5((3532569367*salt + 342663089*lang_perm)::VARCHAR)
     )
 )
 WHERE rn <= 3
 GROUP BY startDate, salt, lang_perm
-ORDER BY md5(startDate), lang_perm
+ORDER BY md5(startDate::VARCHAR), lang_perm
