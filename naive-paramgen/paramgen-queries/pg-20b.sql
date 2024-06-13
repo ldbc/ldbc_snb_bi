@@ -4,5 +4,5 @@ SELECT
 FROM
     companyNumEmployees,
     (SELECT id FROM personNumFriends ORDER BY md5(id::VARCHAR) LIMIT 100) personNumFriends_sample
-ORDER BY md5((3532569367::bigint*companyNumEmployees.id + 211::bigint*personNumFriends_sample.id)::VARCHAR)
+ORDER BY md5((3532569367::BIGINT*companyNumEmployees.id + 211::BIGINT*personNumFriends_sample.id)::VARCHAR)
 LIMIT 400
