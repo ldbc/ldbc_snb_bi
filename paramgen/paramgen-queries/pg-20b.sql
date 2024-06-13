@@ -9,5 +9,5 @@ WHERE NOT EXISTS (SELECT 1
         WHERE work.companyId = q20b_twohop.companyId
           AND work.personId = q20b_twohop.person2Id
         )
-ORDER BY md5(q20b_twohop.person2Id), md5(q20b_twohop.companyId)
+ORDER BY md5(q20b_twohop.person2Id::VARCHAR), md5(q20b_twohop.companyId::VARCHAR)
 LIMIT 400

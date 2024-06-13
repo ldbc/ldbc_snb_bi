@@ -10,5 +10,5 @@ JOIN personKnowsPersonDays_window knows1
 JOIN personKnowsPersonDays_window knows2
   ON knows2.person1Id = knows1.person2Id
  AND knows2.person2Id = people2Hops.person2Id
-ORDER BY md5(131*people2Hops.person1Id + 241*people2Hops.person2Id), md5(people2Hops.person1Id)
+ORDER BY md5((131*people2Hops.person1Id + 241*people2Hops.person2Id)::VARCHAR), md5(people2Hops.person1Id::VARCHAR)
 LIMIT 400
