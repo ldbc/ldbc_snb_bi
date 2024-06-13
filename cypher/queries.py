@@ -44,7 +44,7 @@ def cast_parameter_to_driver_input(value, parameter_type):
         return value
     elif parameter_type == "DATETIME":
         dt = datetime.datetime.strptime(value, '%Y-%m-%dT%H:%M:%S.%f+00:00')
-        return datetime.datetime(dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second, dt.microsecond*1000, tzinfo=datetime.timezone.utc)
+        return datetime.datetime(dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second, dt.microsecond, tzinfo=datetime.timezone.utc)
     elif parameter_type == "DATE":
         dt = datetime.datetime.strptime(value, '%Y-%m-%d')
         return datetime.datetime(dt.year, dt.month, dt.day, tzinfo=datetime.timezone.utc)
