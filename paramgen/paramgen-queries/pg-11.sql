@@ -4,8 +4,8 @@ SELECT
     endDate AS 'endDate:DATE'
 FROM (
     SELECT
-        anchorDate::date + INTERVAL (-15 + salt1*37 % 30) DAY AS startDate,
-        anchorDate::date + INTERVAL (-15 + salt1*37 % 30  +  92 + salt2*47 % 18 + salt2) DAY AS endDate,
+        (anchorDate + INTERVAL (-15 + salt1*37 % 30) DAY)::DATE AS startDate,
+        (anchorDate + INTERVAL (-15 + salt1*37 % 30  +  92 + salt2*47 % 18 + salt2) DAY)::DATE AS endDate,
         salt2
     FROM (
             SELECT percentile_disc(0.92) WITHIN GROUP (ORDER BY creationDay) AS anchorDate

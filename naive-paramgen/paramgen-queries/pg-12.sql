@@ -1,5 +1,5 @@
 SELECT
-    date_trunc('day', startDate) AS 'startDate:DATE',
+    startDate AS 'startDate:DATE',
     150 - salt*5 AS 'lengthThreshold:INT',
     string_agg(lng, ';') AS 'languages:STRING[]'
 FROM (SELECT
@@ -19,7 +19,7 @@ FROM (SELECT
                     lang.language AS lng
                 FROM
                     (SELECT
-                        (SELECT creationDay FROM creationDayNumMessages ORDER BY md5(creationDay::VARCHAR)) + INTERVAL (salt*3) DAY AS startDate, salt
+                        ((SELECT creationDay FROM creationDayNumMessages ORDER BY md5(creationDay::VARCHAR)) + INTERVAL (salt*3) DAY)::DATE AS startDate, salt
                         FROM (SELECT unnest(generate_series(1, 20)) AS salt)
                     ) sd,
                     (SELECT

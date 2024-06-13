@@ -10,5 +10,5 @@ FROM
     FROM cityPairsNumFriends
     WHERE country1Id <> country2Id
     ORDER BY diff, city1Id, city2Id)
-ORDER BY md5((3532569367::bigint*city1Id + 342663089::bigint*city2Id)::VARCHAR)
+ORDER BY md5((3532569367::BIGINT*city1Id + 342663089::BIGINT*city2Id)::VARCHAR)
 LIMIT 400

@@ -1,5 +1,5 @@
 SELECT
-    date_trunc('day', startDate) AS 'startDate:DATE',
+    startDate AS 'startDate:DATE',
     150 - salt*5 AS 'lengthThreshold:INT',
     string_agg(lng, ';') AS 'languages:STRING[]'
 FROM (SELECT
@@ -19,8 +19,8 @@ FROM (SELECT
                     lang.language AS lng
                 FROM
                     (SELECT
-                        (SELECT percentile_disc(0.79) WITHIN GROUP (ORDER BY creationDay) AS anchorDate FROM creationDayNumMessages)
-                            + INTERVAL (salt*3) DAY
+                        ((SELECT percentile_disc(0.79) WITHIN GROUP (ORDER BY creationDay) AS anchorDate FROM creationDayNumMessages)
+                            + INTERVAL (salt*3) DAY)::DATE
                             AS startDate,
                             salt
                     FROM (SELECT unnest(generate_series(1, 20)) AS salt)

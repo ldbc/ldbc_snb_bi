@@ -1,5 +1,5 @@
 SELECT
-    date_trunc('day', date) AS 'date:DATE',
+    date AS 'date:DATE',
     tagClassName AS 'tagClass:STRING'
 FROM (
     SELECT
