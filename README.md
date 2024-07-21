@@ -4,9 +4,9 @@
 
 [![Build Status](https://circleci.com/gh/ldbc/ldbc_snb_bi.svg?style=svg)](https://circleci.com/gh/ldbc/ldbc_snb_bi)
 
-Implementations for the BI workload of the [LDBC Social Network Benchmark](https://ldbcouncil.org/ldbc_snb_docs/ldbc-snb-specification.pdf).
+Implementations for the BI workload of the [LDBC Social Network Benchmark](https://ldbcouncil.org/ldbc_snb_docs/ldbc-snb-specification.pdf). See our [VLDB 2023 paper](https://www.vldb.org/pvldb/vol16/p877-szarnyas.pdf) and [its presentation](https://ldbcouncil.org/docs/presentations/vldb-2023-ldbc-snb-bi-slides-szarnyasg.pdf) for details on the design and implementation of the benchmark.
 
-To get started with the LDBC SNB benchmarks, check out our introductory presentation: [The LDBC Social Network Benchmark](https://docs.google.com/presentation/d/1p-nuHarSOKCldZ9iEz__6_V3sJ5kbGWlzZHusudW_Cc/) ([PDF](https://ldbcouncil.org/docs/presentations/ldbc-snb-2021-12.pdf)).
+To get started with the LDBC SNB benchmarks, visit the [ldbcouncil.org site](https://ldbcouncil.org/benchmarks/snb/).
 
 :scroll: If you wish to cite the LDBC SNB, please refer to the [documentation repository](https://github.com/ldbc/ldbc_snb_docs#how-to-cite-ldbc-benchmarks) ([bib snippet](https://github.com/ldbc/ldbc_snb_docs/blob/dev/bib/specification.bib)).
 
