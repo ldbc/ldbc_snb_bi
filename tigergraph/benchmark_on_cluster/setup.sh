@@ -45,6 +45,6 @@ if ! command -v parallel > /dev/null; then
 fi
 
 sudo python3 -m pip install --upgrade pip
-sudo pip3 install google-cloud-storage
+sudo pip3 install boto3
 sudo pip3 install paramiko scp
 echo 'done setup'

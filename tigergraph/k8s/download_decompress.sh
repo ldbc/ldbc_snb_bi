@@ -14,11 +14,21 @@ fi
 
 sudo $installer update
 sudo $installer install -y python3-pip parallel gzip
-sudo pip3 install google-cloud-storage
+sudo pip3 install boto3
 
 echo "download SF$SF($i/$NUM_NODES) using $DOWNLOAD_THREAD threads"
 time1=$SECONDS
-python3 -u ${mydir}/download_one_partition.py $SF $i $NUM_NODES --target $target -t $DOWNLOAD_THREAD $SERVICE_KEY && \
+python3 -u ${mydir}/download_one_partition.py \
+    --scale_factor $SF \
+    --index $i \
+    --nodes $NUM_NODES \
+    --thread $DOWNLOAD_THREAD \
+    --access_key_id $ACCESS_KEY_ID \
+    --secret_access_key $SECRET_ACCESS_KEY \
+    --target $target \
+    --region $BUCKET_REGION \
+    --bucket_name $BUCKET_NAME \
+    --provider $CLOUD_PROVIDER && \
 echo 'done download' && \
 time2=$SECONDS
 echo "decompose files in $target/sf$SF" && \
