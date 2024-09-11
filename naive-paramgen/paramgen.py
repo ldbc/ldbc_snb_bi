@@ -7,6 +7,7 @@ if sf is None:
     exit(1)
 
 con = duckdb.connect(database='factors.duckdb')
+con.sql("SET scalar_subquery_error_on_multiple_rows = false")
 
 factor_parquet_path = "scratch/factors/"
 
