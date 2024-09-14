@@ -8,7 +8,8 @@ FROM (SELECT
         lang_perm,
         ROW_NUMBER() OVER(PARTITION BY lang_perm, salt ORDER BY md5(concat(lng, lang_perm))) rn,
         lng
-    FROM (SELECT
+    FROM (
+        SELECT
             salt,
             startDate,
             lang_perm,
@@ -19,8 +20,9 @@ FROM (SELECT
                     lang.language AS lng
                 FROM
                     (SELECT
-                        ((SELECT creationDay FROM creationDayNumMessages ORDER BY md5(creationDay::VARCHAR)) + INTERVAL (salt*3) DAY)::DATE AS startDate, salt
-                        FROM (SELECT unnest(generate_series(1, 20)) AS salt)
+                        (
+                            (SELECT creationDay FROM creationDayNumMessages ORDER BY md5(creationDay::VARCHAR) LIMIT 1) + INTERVAL (salt*3) DAY)::DATE AS startDate, salt
+                            FROM (SELECT unnest(generate_series(1, 20)) AS salt)
                     ) sd,
                     (SELECT
                         language
