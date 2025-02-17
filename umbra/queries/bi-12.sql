@@ -4,15 +4,13 @@
 \set languages '\'{"ar", "hu"}\''::varchar[]
  */
 WITH person_w_posts AS (
-    SELECT Person.id, count(Message.MessageId) as messageCount
-      FROM Person
-      LEFT JOIN Message
-        ON Person.id = Message.CreatorPersonId
-       AND Message.content IS NOT NULL
+    SELECT Message.CreatorPersonId, count(Message.MessageId) as messageCount
+      FROM Message
+     WHERE Message.content IS NOT NULL
        AND Message.length < :lengthThreshold
        AND Message.creationDate > :startDate
        AND Message.RootPostLanguage IN :languages
-     GROUP BY Person.id
+     GROUP BY Message.CreatorPersonId
 )
 , message_count_distribution AS (
     SELECT pp.messageCount, count(*) as personCount
