@@ -9,7 +9,7 @@ WITH MyMessage AS (
 SELECT RelatedTag.name AS "relatedTag.name"
      , count(*) AS count
   FROM MyMessage ParentMessage_HasTag_Tag
-  -- as an optimization, we don't need message here as it's ID is in ParentMessage_HasTag_Tag
+  -- as an optimization, we don't need message here as its ID is in ParentMessage_HasTag_Tag
   -- so proceed to the comment directly
   INNER JOIN Message Comment
           ON ParentMessage_HasTag_Tag.MessageId = Comment.ParentMessageId
