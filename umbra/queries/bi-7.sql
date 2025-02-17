@@ -20,7 +20,7 @@ SELECT RelatedTag.name AS "relatedTag.name"
           ON RelatedTag.id = ct.TagId
  WHERE TRUE
   -- comment doesn't have the given tag
-   AND Comment.MessageId NOT In (SELECT MessageId FROM MyMessage)
+   AND Comment.MessageId NOT IN (SELECT MessageId FROM MyMessage)
    AND Comment.ParentMessageId IS NOT NULL
  GROUP BY RelatedTag.Name
  ORDER BY count DESC, RelatedTag.name
