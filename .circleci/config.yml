@@ -32,11 +32,11 @@ jobs:
       - run:
           name: Download data sets
           command: |
-            # Cypher
-            cd cypher
-            ## compressed CSVs for Cypher
+            # Neo4j
+            cd neo4j
+            ## compressed CSVs for Neo4j
             scripts/get-sample-data-set.sh
-            ## uncompressed CSVs for Cypher
+            ## uncompressed CSVs for Neo4j
             wget -q https://ldbcouncil.org/ldbc_snb_datagen_spark/social-network-sf0.003-bi-composite-projected-fk-neo4j.zip
             unzip -q social-network-sf0.003-bi-composite-projected-fk-neo4j.zip
             cd ..
@@ -90,9 +90,9 @@ jobs:
             cd ..
             scripts/score-test.sh umbra ${SF}
       - run:
-          name: Test Cypher toolchain with uncompressed CSVs
+          name: Test Neo4j toolchain with uncompressed CSVs
           command: |
-            cd cypher
+            cd neo4j
             export SF=0.003
             export NEO4J_CSV_DIR=`pwd`/social-network-sf${SF}-bi-composite-projected-fk-neo4j/graphs/csv/bi/composite-projected-fk/
             scripts/load-in-one-step.sh
@@ -109,13 +109,13 @@ jobs:
 
             # cross-validate using the test mode results
             cd ..
-            scripts/cross-validate.sh cypher umbra
-            scripts/score-test.sh cypher ${SF}
+            scripts/cross-validate.sh neo4j umbra
+            scripts/score-test.sh neo4j ${SF}
       - run:
-          name: Test Cypher toolchain with compressed CSVs
+          name: Test Neo4j toolchain with compressed CSVs
           command: |
             # the sample data set contains compressed CSVs
-            cd cypher
+            cd neo4j
             . scripts/use-sample-data-set.sh
             scripts/load-in-one-step.sh
             scripts/backup-database.sh
@@ -131,6 +131,6 @@ jobs:
 
             # cross-validate using the test mode results
             cd ..
-            scripts/cross-validate.sh cypher umbra
-            scripts/score-test.sh cypher ${SF}
+            scripts/cross-validate.sh neo4j umbra
+            scripts/score-test.sh neo4j ${SF}
       - slack/status

@@ -14,7 +14,7 @@ To get started with the LDBC SNB benchmarks, visit the [ldbcouncil.org site](htt
 
 The repository contains the following implementations:
 
-* [`cypher`](cypher/): an implementation using the [Neo4j graph database management system](https://dbdb.io/db/neo4j) with queries expressed in the [Cypher language](https://neo4j.com/developer/cypher/)
+* [`neo4j`](neo4j/): an implementation using the [Neo4j graph database management system](https://dbdb.io/db/neo4j) with queries expressed in the [Cypher language](https://neo4j.com/developer/cypher/)
 * [`umbra`](umbra/): an implementation using the [Umbra JIT-compiled columnar relational database management system](https://dbdb.io/db/umbra) with expressed in SQL queries written in the PostgreSQL dialect
 * [`tigergraph`](tigergraph/): an implementation using the [TigerGraph graph database management system](https://dbdb.io/db/tigergraph) with queries expressed in the [GSQL language](https://www.tigergraph.com/gsql/)
 
@@ -43,13 +43,13 @@ For details, see [LDBC's auditing process](https://ldbcouncil.org/docs/ldbc-snb-
 ## Cross-validation
 
 To cross-validate the results of two implementations, use two systems.
-Load the data into both, then run the benchmark in validation mode, e.g. [Cypher](cypher/) and [Umbra](umbra/) results.
+Load the data into both, then run the benchmark in validation mode, e.g. [Neo4j](neo4j/) and [Umbra](umbra/) results.
 Then, run:
 
 ```bash
 export SF=10
 
-cd cypher
+cd neo4j
 scripts/benchmark.sh --validate
 cd ..
 
@@ -57,7 +57,7 @@ cd umbra
 scripts/benchmark.sh --validate
 cd ..
 
-scripts/cross-validate.sh cypher umbra
+scripts/cross-validate.sh neo4j umbra
 ```
 
 ## Usage
