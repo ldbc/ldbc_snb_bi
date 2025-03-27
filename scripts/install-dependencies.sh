@@ -7,7 +7,7 @@ cd "$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 cd ..
 
 paramgen/scripts/install-dependencies.sh
-cypher/scripts/install-dependencies.sh
+neo4j/scripts/install-dependencies.sh
 umbra/scripts/install-dependencies.sh
 tigergraph/scripts/install-dependencies.sh
 
