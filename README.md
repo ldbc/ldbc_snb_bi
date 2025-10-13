@@ -17,8 +17,18 @@ The repository contains the following implementations:
 * [`neo4j`](neo4j/): an implementation using the [Neo4j graph database management system](https://dbdb.io/db/neo4j) with queries expressed in the [Cypher language](https://neo4j.com/developer/cypher/)
 * [`umbra`](umbra/): an implementation using the [Umbra JIT-compiled columnar relational database management system](https://dbdb.io/db/umbra) with expressed in SQL queries written in the PostgreSQL dialect
 * [`tigergraph`](tigergraph/): an implementation using the [TigerGraph graph database management system](https://dbdb.io/db/tigergraph) with queries expressed in the [GSQL language](https://www.tigergraph.com/gsql/)
+* [`avantgraph`](avantgraph/): an implementation using [AvantGraph](https://github.com/AvantGraph/avantgraph), a modern graph database system with **Meta Property Graph (MPG)** support. This implementation extends the original LDBC SNB BI dataset with reification data structures to enable MPG-specific benchmarking and serves as a starting benchmark for the emerging MPG data model.
 
 All implementations use Docker containers for ease of setup and execution. However, the setups can be adjusted to use a non-containerized DBMS.
+
+### Meta Property Graph (MPG) Implementation
+
+The [`avantgraph`](avantgraph/) implementation is unique in that it serves **scientific research purposes** for the emerging Meta Property Graph data model. Unlike traditional property graph implementations, this version:
+
+- **Extends the original dataset** with automatically generated sub structures
+- **Provides a starting benchmark** for evaluating MPG compatible database systems
+
+This implementation is particularly valuable for researchers studying the performance and expressiveness differences between MPG and traditional property graph systems. The reified data structures allow for more sophisticated relationship modeling and querying patterns that showcase the potential of the MPG data model.
 
 ## Reproducing SNB BI experiments
 
