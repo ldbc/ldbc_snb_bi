@@ -6,14 +6,14 @@ WITH MyMessage as (
     SELECT *
     FROM Message
 -- (tag)<-[:HAS_TAG]-(message)
-    WHERE MessageId in (SELECT MessageId FROM Message_hasTag_Tag WHERE TagId IN (SELECT id FROM Tag WHERE Tag.name = :tag))
+    WHERE MessageId in (SELECT MessageId FROM Message_hasTag_Tag WHERE TagId IN (SELECT id FROM Tag WHERE Tag.name = 'Slavoj_Žižek'))
 )
 -- (message1)-[:HAS_CREATOR]->(person1)
 SELECT Message1.CreatorPersonId AS "person1.id", count(DISTINCT Message2.MessageId) AS messageCount
 FROM MyMessage Message1
 -- (message2 <date filtering>})
 JOIN MyMessage Message2
- ON (Message1.creationDate + ':delta hour'::interval) < Message2.creationDate
+ ON (Message1.creationDate + '4 hour'::interval) < Message2.creationDate
 JOIN MyMessage Comment
  ON Comment.ParentMessageId = Message2.MessageId
 -- (forum1)-[:Has_MEMBER]->(person2)
