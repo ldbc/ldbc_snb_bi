@@ -8,4 +8,4 @@ cd ..
 
 . scripts/vars.sh
 
-curl -s ${UMBRA_URL_PREFIX}${UMBRA_VERSION}.tar.gz | docker load
+curl -s https://datasets.ldbcouncil.org/bi-pre-audit/umbra-docker-${UMBRA_VERSION}.tar.gz | docker load
